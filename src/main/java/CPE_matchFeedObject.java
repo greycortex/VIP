@@ -60,6 +60,10 @@ public class CPE_matchFeedObject {
                     splitstr[i] = splitstr[i].replace("'","`");
                 }
             }
+            if (splitstr[13] != null){
+                splitstr[13] = splitstr[13].replace("\",","");
+                splitstr[13] = splitstr[13].replace("\"","");
+            }
             CPE_matchFeedObject obj = new CPE_matchFeedObject(splitstr[4],splitstr[5],splitstr[6],splitstr[7],splitstr[8],splitstr[9],splitstr[10],splitstr[11],splitstr[12],splitstr[13]);
             obj_list.add(obj);
         }
