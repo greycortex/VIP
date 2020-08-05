@@ -4,8 +4,11 @@ import java.sql.*;
 import java.util.ArrayList;
 
 
-public class CPE_matchFeedObject {
-
+public class CPE_matchFeedObject implements Comparable {
+    // TODO: 
+    private static Connection db;
+    
+    private final Long id;
     private final String vendor;
     private final String product;
     private final String version;
@@ -19,6 +22,7 @@ public class CPE_matchFeedObject {
 
     public CPE_matchFeedObject(String vendor, String product, String version, String update, String edition, String language,
                                String swEdition, String targetSw, String targetHw, String other) {
+        this.id = null;
         this.vendor = vendor;
         this.product = product;
         this.version = version;
@@ -34,7 +38,7 @@ public class CPE_matchFeedObject {
     public static ArrayList<String> parserToLineArrayList() {
         ArrayList<String> cpe23urilines = new ArrayList<>();
         ArrayList<CPE_matchFeedObject> obj_list = new ArrayList<CPE_matchFeedObject>();
-        try(BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\nvdcpematch-1.0.json"))) {
+        try(BufferedReader br = new BufferedReader(new FileReader("exclude/nvdcpematch-1.0.json"))) {
             for(String line; (line = br.readLine()) != null; ) {
                 if(line.contains("cpe23Uri")){
                     cpe23urilines.add(line);
@@ -57,7 +61,8 @@ public class CPE_matchFeedObject {
                     splitstr[i] = null;
                 }
                 if (splitstr[i] != null){
-                    splitstr[i] = splitstr[i].replace("'","`");
+                    splitstr[i] = splitstr[i].replace("'","\'");
+                    // CHECK: dalsi divny znaky???
                 }
             }
             if (splitstr[13] != null){
@@ -72,14 +77,11 @@ public class CPE_matchFeedObject {
 
     public static void obj_listToDatabase() throws ClassNotFoundException, SQLException, FileNotFoundException {
         ArrayList<CPE_matchFeedObject> obj_list = stringArrayListToObjectArraylist();
-
-        String url = "jdbc:postgresql://localhost:5432/postgres";
-        String user = "postgres";
-        String pass = "admin";
-
+        
+        // TODO: conection string to exclude/db.connection && use this.db (in a separate connect)
+        String url = "jdbc:postgresql://localhost:5432/postgres?user=postgres&password=postgres";
         Class.forName("org.postgresql.Driver");
-
-        Connection conn = DriverManager.getConnection(url, user, pass);
+        Connection conn = DriverManager.getConnection(url);
 
         for (CPE_matchFeedObject object : obj_list){
             Statement stat = conn.createStatement();
@@ -104,5 +106,39 @@ public class CPE_matchFeedObject {
                 ", targetHw='" + targetHw + '\'' +
                 ", other='" + other + '\'' +
                 '}';
+    }
+
+    /**
+     * Compares to other
+     * 
+     * @param other
+     * @return 
+     */
+    @Override
+    public int compareTo(Object other) {
+        if (other.getClass().getName().compareTo(this.getClass().getName()) != 0) return Integer.MIN_VALUE;
+        return this.compareTo((CPE_matchFeedObject)other);
+    }
+    
+    /**
+     * Compares to other by value
+     * 
+     * @param other
+     * @return compareTo
+     */
+    public int compareTo(CPE_matchFeedObject other) {
+        // id does not need to be compared
+        if (this.vendor.compareToIgnoreCase(other.vendor) != 0) return this.vendor.compareToIgnoreCase(other.vendor);
+        // ...
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * Compares to other object by ID
+     * @param other
+     * @return 
+     */
+    public int match(CPE_matchFeedObject other) {
+        return ((int)(this.id - other.id));
     }
 }
