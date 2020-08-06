@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 public class CPE_matchFeedObject {
 
+    private static Connection db;
+    private final Long id;
     private final String vendor;
     private final String product;
     private final String version;
@@ -19,6 +21,8 @@ public class CPE_matchFeedObject {
 
     public CPE_matchFeedObject(String vendor, String product, String version, String update, String edition, String language,
                                String swEdition, String targetSw, String targetHw, String other) {
+
+        this.id = null;
         this.vendor = vendor;
         this.product = product;
         this.version = version;
@@ -34,7 +38,8 @@ public class CPE_matchFeedObject {
     public static ArrayList<String> parserToLineArrayList() {
         ArrayList<String> cpe23urilines = new ArrayList<>();
         ArrayList<CPE_matchFeedObject> obj_list = new ArrayList<CPE_matchFeedObject>();
-        try(BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\nvdcpematch-1.0.json"))) {
+
+        try(BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\VIP\\exclude\\nvdcpematch-1.0.json"))) {
             for(String line; (line = br.readLine()) != null; ) {
                 if(line.contains("cpe23Uri")){
                     cpe23urilines.add(line);
@@ -43,6 +48,7 @@ public class CPE_matchFeedObject {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return cpe23urilines;
     }
 
@@ -50,20 +56,27 @@ public class CPE_matchFeedObject {
         ArrayList<CPE_matchFeedObject> obj_list = new ArrayList<>();
         ArrayList<String> cpe23urilines = new ArrayList<>();
         cpe23urilines = parserToLineArrayList();
+
         for (String line : cpe23urilines){
+
             String[] splitstr = line.split(":");
+
             for (int i = 0; i<splitstr.length; i++){
                 if (splitstr[i].equals("*") || splitstr[i].equals("*\",") || splitstr[i].equals("*\"")){
                     splitstr[i] = null;
                 }
                 if (splitstr[i] != null){
-                    splitstr[i] = splitstr[i].replace("'","`");
+                    splitstr[i] = splitstr[i].replace("'","''");
+                    splitstr[i] = splitstr[i].replace("\\\\","");
+                    splitstr[i] = splitstr[i].replace("!",""); /*Je obtizne najit specialni znaky, ktere by se daly nahradit, radeji to necham takto, aby
+                                                                                   se pak nic neznicilo a mohlo se co nejlepe vyhledavat*/
                 }
             }
             if (splitstr[13] != null){
                 splitstr[13] = splitstr[13].replace("\",","");
                 splitstr[13] = splitstr[13].replace("\"","");
             }
+
             CPE_matchFeedObject obj = new CPE_matchFeedObject(splitstr[4],splitstr[5],splitstr[6],splitstr[7],splitstr[8],splitstr[9],splitstr[10],splitstr[11],splitstr[12],splitstr[13]);
             obj_list.add(obj);
         }
@@ -72,22 +85,27 @@ public class CPE_matchFeedObject {
 
     public static void obj_listToDatabase() throws ClassNotFoundException, SQLException, FileNotFoundException {
         ArrayList<CPE_matchFeedObject> obj_list = stringArrayListToObjectArraylist();
+        ArrayList<String> url_conn = new ArrayList<>();
 
-        String url = "jdbc:postgresql://localhost:5432/postgres";
-        String user = "postgres";
-        String pass = "admin";
+        try(BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\VIP\\exclude\\dbconnection.txt"))) { // "exclude\dbconnection.txt" -> umisteni souboru s connection url
+            for(String line; (line = br.readLine()) != null; ) {
+                url_conn.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Class.forName("org.postgresql.Driver");
 
-        Connection conn = DriverManager.getConnection(url, user, pass);
+        db = DriverManager.getConnection(url_conn.get(0));
 
         for (CPE_matchFeedObject object : obj_list){
-            Statement stat = conn.createStatement();
+            Statement stat = db.createStatement();
             stat.execute("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) " +
                     "VALUES ('"+object.vendor+"', '"+object.product+"', '"+object.version+"', '"+object.update+"', '"+object.edition+"', '"+object.language+"', '"+object.swEdition+"', " +
                     "'"+object.targetSw+"', '"+object.targetHw+"', '"+object.other+"')");
         }
-        conn.close();
+        db.close();
     }
 
     @Override
