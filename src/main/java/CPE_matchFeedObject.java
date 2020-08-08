@@ -108,6 +108,51 @@ public class CPE_matchFeedObject {
         db.close();
     }
 
+    public static void comparingForUpdate() throws ClassNotFoundException, SQLException, NullPointerException, FileNotFoundException {
+        ArrayList<CPE_matchFeedObject> compared_objects = stringArrayListToObjectArraylist();
+        ArrayList<String> url_conn = new ArrayList<>();
+        int duplicity;
+
+        try(BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\VIP\\exclude\\dbconnection.txt"))) {
+            for(String line; (line = br.readLine()) != null; ) {
+                url_conn.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for (CPE_matchFeedObject obj : compared_objects){
+            ArrayList<CPE_matchFeedObject> objects_to_compare = new ArrayList<>();
+
+            Class.forName("org.postgresql.Driver");
+            db = DriverManager.getConnection(url_conn.get(0));
+            Statement stat = db.createStatement();
+            ResultSet result = stat.executeQuery("SELECT * FROM cpe_match_feed_objects WHERE vendor = '"+obj.vendor+"'");
+            while(result.next()) {
+                CPE_matchFeedObject obj_to_compare = new CPE_matchFeedObject(result.getString(2),result.getString(3),result.getString(4),result.getString(5),result.getString(6)
+                        ,result.getString(7),result.getString(8),result.getString(9),result.getString(10),result.getString(11));
+                objects_to_compare.add(obj_to_compare);
+            }
+            db.close();
+
+            duplicity = 0;
+            for (CPE_matchFeedObject compared_obj : objects_to_compare){ // ???
+                if(duplicity==0){
+                    System.out.println("Jop");
+                }
+            }
+            if(duplicity != 0){
+                Class.forName("org.postgresql.Driver");
+                db = DriverManager.getConnection(url_conn.get(0));
+
+                Statement addstat = db.createStatement();
+                addstat.execute("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) " +
+                        "VALUES ('"+obj.vendor+"', '"+obj.product+"', '"+obj.version+"', '"+obj.update+"', '"+obj.edition+"', '"+obj.language+"', '"+obj.swEdition+"', " +
+                        "'"+obj.targetSw+"', '"+obj.targetHw+"', '"+obj.other+"')");
+                db.close();
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return "CPE_matchFeedObject{" +
