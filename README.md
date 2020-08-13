@@ -1,7 +1,7 @@
 # VIP
 GREYCORTEX Vulnerability Intelligence Platform
 
-##About
+### About
 This program's purpose is to work with CPE objects - vulnerabilities parsed from the NVD CPE Match Feed file.
 
 It can read from file, create objects representing vulnerabilities and insert them into the database.
