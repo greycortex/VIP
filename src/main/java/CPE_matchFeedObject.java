@@ -148,7 +148,7 @@ public class CPE_matchFeedObject {
      * @throws SQLException
      * @throws IOException
      */
-    public static void obj_listToDatabase() {
+    public static void objListToDatabase() {
 
         // Arraylist of objects returned by the stringArrayListToObjectArraylist() method
         ArrayList<CPE_matchFeedObject> obj_list = stringArrayListToObjectArraylist();
