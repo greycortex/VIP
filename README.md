@@ -8,6 +8,4 @@ It can read from file, create objects representing vulnerabilities and insert th
 
 It also can update vulnerabilities in the database by working with the up-to-date CPE Match Feed file.
 
-
-
 Copyright (c) 2020 GreyCortex s.r.o.
