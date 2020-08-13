@@ -1,11 +1,12 @@
 import com.google.gson.Gson;
+
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
 
 /**
  * This class represents a CPE object (vendor, product, version, ...)
- *
+ * <p>
  * It can read from file, create objects representing vulnerabilities and insert them into the database including updates
  *
  * @author Tomas Bozek (XarfNao)
@@ -48,7 +49,7 @@ public class CPE_matchFeedObject {
      * @param other
      */
     public CPE_matchFeedObject(String vendor, String product, String version, String update, String edition, String language,
-            String swEdition, String targetSw, String targetHw, String other) {
+                               String swEdition, String targetSw, String targetHw, String other) {
 
         this.id = null;
         this.vendor = vendor;
@@ -65,7 +66,6 @@ public class CPE_matchFeedObject {
 
     /**
      * @return ArrayList that contains parsed lines (Strings) from the CPE file
-     *
      * @throws IOException
      */
     public static ArrayList<String> parserToLineArrayList() {
@@ -75,7 +75,7 @@ public class CPE_matchFeedObject {
 
         // This block of code goes through the selected file line by line and add the lines that contain "cpe23uri" to the cpe23urilines ArrayList
         try (BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\VIP\\exclude\\nvdcpematch-1.0.json"))) {
-            for (String line; (line = br.readLine()) != null;) {
+            for (String line; (line = br.readLine()) != null; ) {
                 if (line.contains("cpe23Uri")) {
                     cpe23urilines.add(line);
                 }
@@ -160,8 +160,8 @@ public class CPE_matchFeedObject {
          * "exclude\dbconnection.txt" -> place of the separate file with the connection url
          * This block of code takes the connection url from the separate file and puts it into the url_conn's 0 index
          */
-        try (BufferedReader br = new BufferedReader(new  FileReader("C:\\Users\\Xarf\\Desktop\\VIP\\exclude\\dbconnection.txt"))) {
-            for (String line; (line = br.readLine()) != null;) {
+        try (BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\VIP\\exclude\\dbconnection.txt"))) {
+            for (String line; (line = br.readLine()) != null; ) {
                 url_conn.add(line);
             }
         } catch (IOException e) {
@@ -171,8 +171,7 @@ public class CPE_matchFeedObject {
 
         try {
             Class.forName("org.postgresql.Driver");
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -191,16 +190,14 @@ public class CPE_matchFeedObject {
 
             // Closing the database connection
             db.close();
-        }
-
-        catch (SQLException throwables) {
+        } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
     }
 
     /**
      * This method's purpose is to update the database full of CPE objects so that it can be up-to-date
-     *
+     * <p>
      * This method loads all the objects from the up-to-date file,
      * then it always loads all the objects with the same one vendor from the database (vendor by vendor)
      * and compares them to objects with the same vendor from the up-to-date file,
@@ -223,7 +220,7 @@ public class CPE_matchFeedObject {
 
         // This block of code takes the connection url from the separate file and puts it into the url_conn's 0 index
         try (BufferedReader br = new BufferedReader(new FileReader("exclude/dbconnection.txt"))) {
-            for (String line; (line = br.readLine()) != null;) {
+            for (String line; (line = br.readLine()) != null; ) {
                 url_conn.add(line);
             }
         } catch (IOException e) {
@@ -231,19 +228,19 @@ public class CPE_matchFeedObject {
         }
 
         // This for cycle fills the obj_vendor ArrayList with all vendors that exist in the up-to-date file
-        for (CPE_matchFeedObject obj : compared_objects){
+        for (CPE_matchFeedObject obj : compared_objects) {
 
-            if (obj_vendors.contains(obj.vendor));
+            if (obj_vendors.contains(obj.vendor)) ;
 
-            else{
+            else {
                 obj_vendors.add(obj.vendor);
             }
         }
 
         // This for cycle is for the purpose to go through all the vendors that exist in the up-to-date file one by one
-        for (String vendor : obj_vendors){
+        for (String vendor : obj_vendors) {
 
-            try{
+            try {
 
                 // list of CPE objects from DB with the specific vendor
                 ArrayList<CPE_matchFeedObject> objects_to_compare = new ArrayList<>();
@@ -251,8 +248,8 @@ public class CPE_matchFeedObject {
                 ArrayList<CPE_matchFeedObject> compared_objects_vendor = new ArrayList<>();
 
                 // This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the current specific vendor from the up-to-date file
-                for(CPE_matchFeedObject obj : compared_objects){
-                    if(obj.vendor.equals(vendor)){
+                for (CPE_matchFeedObject obj : compared_objects) {
+                    if (obj.vendor.equals(vendor)) {
                         compared_objects_vendor.add(obj);
                     }
                 }
@@ -265,8 +262,8 @@ public class CPE_matchFeedObject {
                 // This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the current specific vendor from the database
                 Statement stat = db.createStatement();
                 ResultSet result = stat.executeQuery("SELECT * FROM cpe_match_feed_objects WHERE vendor = '" + vendor + "'");
-                while(result.next()){
-                    CPE_matchFeedObject obj_to_compare = new CPE_matchFeedObject(result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getString(6),result.getString(7), result.getString(8), result.getString(9), result.getString(10), result.getString(11));
+                while (result.next()) {
+                    CPE_matchFeedObject obj_to_compare = new CPE_matchFeedObject(result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getString(6), result.getString(7), result.getString(8), result.getString(9), result.getString(10), result.getString(11));
                     objects_to_compare.add(obj_to_compare);
                 }
 
@@ -276,9 +273,9 @@ public class CPE_matchFeedObject {
                  * It uses the compare() method which can be seen at the bottom of this class.
                  */
                 boolean duplicity = false;
-                for (CPE_matchFeedObject new_obj : compared_objects_vendor){
-                    for (CPE_matchFeedObject old_obj : objects_to_compare){
-                        if(new_obj.compare(old_obj)){
+                for (CPE_matchFeedObject new_obj : compared_objects_vendor) {
+                    for (CPE_matchFeedObject old_obj : objects_to_compare) {
+                        if (new_obj.compare(old_obj)) {
                             System.out.println("Jop");
                             duplicity = true;
                             break;
@@ -286,12 +283,12 @@ public class CPE_matchFeedObject {
                     }
 
                     // If the object isn't in the database (its new), its added into the database
-                    if(!duplicity){
+                    if (!duplicity) {
                         //db = DriverManager.getConnection(url_conn.get(0));
                         //Statement addstat = db.createStatement();
                         stat.execute("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
-                                            + "VALUES ('" + new_obj.vendor + "', '" + new_obj.product + "', '" + new_obj.version + "', '" + new_obj.update + "', '" + new_obj.edition + "', '" + new_obj.language + "', '" + new_obj.swEdition + "', "
-                                            + "'" + new_obj.targetSw + "', '" + new_obj.targetHw + "', '" + new_obj.other + "')");
+                                + "VALUES ('" + new_obj.vendor + "', '" + new_obj.product + "', '" + new_obj.version + "', '" + new_obj.update + "', '" + new_obj.edition + "', '" + new_obj.language + "', '" + new_obj.swEdition + "', "
+                                + "'" + new_obj.targetSw + "', '" + new_obj.targetHw + "', '" + new_obj.other + "')");
                     }
                 }
 
@@ -329,126 +326,114 @@ public class CPE_matchFeedObject {
     public boolean compare(CPE_matchFeedObject input_obj) {
 
         // Comparing vendor parameter of compared objects
-        if (this.vendor == null || input_obj.vendor == null){
-            if(this.vendor == null && input_obj.vendor == null);
-            else{
+        if (this.vendor == null || input_obj.vendor == null) {
+            if (this.vendor == null && input_obj.vendor == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.vendor.compareTo(input_obj.vendor) == 0);
-        else{
+        } else if (this.vendor.compareTo(input_obj.vendor) == 0) ;
+        else {
             return false;
         }
 
         // Comparing product parameter of compared objects
-        if (this.product == null || input_obj.product == null){
-            if(this.product == null && input_obj.product == null);
-            else{
+        if (this.product == null || input_obj.product == null) {
+            if (this.product == null && input_obj.product == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.product.compareTo(input_obj.product) == 0);
-        else{
+        } else if (this.product.compareTo(input_obj.product) == 0) ;
+        else {
             return false;
         }
 
         // Comparing version parameter of compared objects
-        if (this.version == null || input_obj.version == null){
-            if(this.version == null && input_obj.version == null);
-            else{
+        if (this.version == null || input_obj.version == null) {
+            if (this.version == null && input_obj.version == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.version.compareTo(input_obj.version) == 0);
-        else{
+        } else if (this.version.compareTo(input_obj.version) == 0) ;
+        else {
             return false;
         }
 
         // Comparing update parameter of compared objects
-        if (this.update == null || input_obj.update == null){
-            if(this.update == null && input_obj.update == null);
-            else{
+        if (this.update == null || input_obj.update == null) {
+            if (this.update == null && input_obj.update == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.update.compareTo(input_obj.update) == 0);
-        else{
+        } else if (this.update.compareTo(input_obj.update) == 0) ;
+        else {
             return false;
         }
 
         // Comparing edition parameter of compared objects
-        if (this.edition == null || input_obj.edition == null){
-            if(this.edition == null && input_obj.edition == null);
-            else{
+        if (this.edition == null || input_obj.edition == null) {
+            if (this.edition == null && input_obj.edition == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.edition.compareTo(input_obj.edition) == 0); // This is the furthest that the compare goes
-        else{
+        } else if (this.edition.compareTo(input_obj.edition) == 0) ; // This is the furthest that the compare goes
+        else {
             return false;
         }
 
         // Comparing language parameter of compared objects
-        if (this.language == null || input_obj.language == null){
-            if(this.language == null && input_obj.language == null){ // It never reaches this place
+        if (this.language == null || input_obj.language == null) {
+            if (this.language == null && input_obj.language == null) { // It never reaches this place
                 System.out.println("1");
-            }
-            else{
+            } else {
                 return false;
             }
-        }
-        else if(this.language.compareTo(input_obj.language) == 0){
+        } else if (this.language.compareTo(input_obj.language) == 0) {
             System.out.println("1");
-        }
-        else{
+        } else {
             return false;
         }
 
         // Comparing swEdition parameter of compared objects
-        if (this.swEdition == null || input_obj.swEdition == null){
-            if(this.swEdition == null && input_obj.swEdition == null);
-            else{
+        if (this.swEdition == null || input_obj.swEdition == null) {
+            if (this.swEdition == null && input_obj.swEdition == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.swEdition.compareTo(input_obj.swEdition) == 0);
-        else{
+        } else if (this.swEdition.compareTo(input_obj.swEdition) == 0) ;
+        else {
             return false;
         }
 
         // Comparing targetSw parameter of compared objects
-        if (this.targetSw == null || input_obj.targetSw == null){
-            if(this.targetSw == null && input_obj.targetSw == null);
-            else{
+        if (this.targetSw == null || input_obj.targetSw == null) {
+            if (this.targetSw == null && input_obj.targetSw == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.targetSw.compareTo(input_obj.targetSw) == 0);
-        else{
+        } else if (this.targetSw.compareTo(input_obj.targetSw) == 0) ;
+        else {
             return false;
         }
 
         // Comparing targetHw parameter of compared objects
-        if (this.targetHw == null || input_obj.targetHw == null){
-            if(this.targetHw == null && input_obj.targetHw == null);
-            else{
+        if (this.targetHw == null || input_obj.targetHw == null) {
+            if (this.targetHw == null && input_obj.targetHw == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.targetHw.compareTo(input_obj.targetHw) == 0);
-        else{
+        } else if (this.targetHw.compareTo(input_obj.targetHw) == 0) ;
+        else {
             return false;
         }
 
         // Comparing other parameter of compared objects
-        if (this.other == null || input_obj.other == null){
-            if(this.other == null && input_obj.other == null);
-            else{
+        if (this.other == null || input_obj.other == null) {
+            if (this.other == null && input_obj.other == null) ;
+            else {
                 return false;
             }
-        }
-        else if(this.other.compareTo(input_obj.other) == 0);
-        else{
+        } else if (this.other.compareTo(input_obj.other) == 0) ;
+        else {
             return false;
         }
 
