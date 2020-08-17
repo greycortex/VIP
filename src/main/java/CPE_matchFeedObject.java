@@ -3,10 +3,11 @@ import com.google.gson.Gson;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * This class represents a CPE object (vendor, product, version, ...)
- * <p>
+ *
  * It can read from file, create objects representing vulnerabilities and insert them into the database including updates
  *
  * @author Tomas Bozek (XarfNao)
@@ -178,6 +179,8 @@ public class CPE_matchFeedObject {
         // This block of code uses the connection url from the url_conn's 0 index and connects to the database
 
         try {
+
+            // Connection to the database
             db = DriverManager.getConnection(url_conn.get(0));
 
             // This for cycle goes through the object ArrayList full of CPE objects object by object and puts them into the database
@@ -272,11 +275,11 @@ public class CPE_matchFeedObject {
                  * all objects with the current specific vendor from the database.
                  * It uses the compare() method which can be seen at the bottom of this class.
                  */
-                boolean duplicity = false;
+                boolean duplicity;
                 for (CPE_matchFeedObject new_obj : compared_objects_vendor) {
+                    duplicity = false;
                     for (CPE_matchFeedObject old_obj : objects_to_compare) {
                         if (new_obj.compare(old_obj)) {
-                            System.out.println("Jop");
                             duplicity = true;
                             break;
                         }
@@ -322,12 +325,14 @@ public class CPE_matchFeedObject {
      *
      * @param input_obj Object that is compared with
      * @return If the CPE objects are the same or not (true or false)
+     *
+     * the String "null" values are there because selecting a null value from database puts it into the object in this form
      */
     public boolean compare(CPE_matchFeedObject input_obj) {
 
         // Comparing vendor parameter of compared objects
-        if (this.vendor == null || input_obj.vendor == null) {
-            if (this.vendor == null && input_obj.vendor == null) ;
+        if (this.vendor == null || input_obj.vendor.equals("null")) {
+            if (this.vendor == null && input_obj.vendor.equals("null")) ;
             else {
                 return false;
             }
@@ -337,8 +342,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing product parameter of compared objects
-        if (this.product == null || input_obj.product == null) {
-            if (this.product == null && input_obj.product == null) ;
+        if (this.product == null || input_obj.product.equals("null")) {
+            if (this.product == null && input_obj.product.equals("null")) ;
             else {
                 return false;
             }
@@ -348,8 +353,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing version parameter of compared objects
-        if (this.version == null || input_obj.version == null) {
-            if (this.version == null && input_obj.version == null) ;
+        if (this.version == null || input_obj.version.equals("null")) {
+            if (this.version == null && input_obj.version.equals("null")) ;
             else {
                 return false;
             }
@@ -359,8 +364,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing update parameter of compared objects
-        if (this.update == null || input_obj.update == null) {
-            if (this.update == null && input_obj.update == null) ;
+        if (this.update == null || input_obj.update.equals("null")) {
+            if (this.update == null && input_obj.update.equals("null")) ;
             else {
                 return false;
             }
@@ -370,32 +375,30 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing edition parameter of compared objects
-        if (this.edition == null || input_obj.edition == null) {
-            if (this.edition == null && input_obj.edition == null) ;
+        if (this.edition == null || input_obj.edition.equals("null")) {
+            if (this.edition == null && input_obj.edition.equals("null")) ;
             else {
                 return false;
             }
-        } else if (this.edition.compareTo(input_obj.edition) == 0) ; // This is the furthest that the compare goes
+        } else if (this.edition.compareTo(input_obj.edition) == 0) ;
         else {
             return false;
         }
 
         // Comparing language parameter of compared objects
-        if (this.language == null || input_obj.language == null) {
-            if (this.language == null && input_obj.language == null) { // It never reaches this place
-                System.out.println("1");
-            } else {
+        if (this.language == null || input_obj.language.equals("null")) {
+            if (this.language == null && input_obj.language.equals("null")) ;
+            else {
                 return false;
             }
-        } else if (this.language.compareTo(input_obj.language) == 0) {
-            System.out.println("1");
-        } else {
+        } else if (this.language.compareTo(input_obj.language) == 0) ;
+        else {
             return false;
         }
 
         // Comparing swEdition parameter of compared objects
-        if (this.swEdition == null || input_obj.swEdition == null) {
-            if (this.swEdition == null && input_obj.swEdition == null) ;
+        if (this.swEdition == null || input_obj.swEdition.equals("null")) {
+            if (this.swEdition == null && input_obj.swEdition.equals("null")) ;
             else {
                 return false;
             }
@@ -405,8 +408,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing targetSw parameter of compared objects
-        if (this.targetSw == null || input_obj.targetSw == null) {
-            if (this.targetSw == null && input_obj.targetSw == null) ;
+        if (this.targetSw == null || input_obj.targetSw.equals("null")) {
+            if (this.targetSw == null && input_obj.targetSw.equals("null")) ;
             else {
                 return false;
             }
@@ -416,8 +419,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing targetHw parameter of compared objects
-        if (this.targetHw == null || input_obj.targetHw == null) {
-            if (this.targetHw == null && input_obj.targetHw == null) ;
+        if (this.targetHw == null || input_obj.targetHw.equals("null")) {
+            if (this.targetHw == null && input_obj.targetHw.equals("null")) ;
             else {
                 return false;
             }
@@ -427,8 +430,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing other parameter of compared objects
-        if (this.other == null || input_obj.other == null) {
-            if (this.other == null && input_obj.other == null) ;
+        if (this.other == null || input_obj.other.equals("null")) {
+            if (this.other == null && input_obj.other.equals("null")) ;
             else {
                 return false;
             }
