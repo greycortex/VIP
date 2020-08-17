@@ -326,7 +326,7 @@ public class CPE_matchFeedObject {
      * @param input_obj Object that is compared with
      * @return If the CPE objects are the same or not (true or false)
      *
-     * the String "null" values are there because taking a null value from database puts it into the object in this form
+     * The String "null" values are there because taking a null value from database puts it into the object in this form
      */
     public boolean compare(CPE_matchFeedObject input_obj) {
 
