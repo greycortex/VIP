@@ -3,7 +3,6 @@ import com.google.gson.Gson;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * This class represents a CPE object (vendor, product, version, ...)
@@ -75,7 +74,7 @@ public class CPE_matchFeedObject {
         ArrayList<String> cpe23urilines = new ArrayList<>();
 
         // This block of code goes through the selected file line by line and add the lines that contain "cpe23uri" to the cpe23urilines ArrayList
-        try (BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\VIP\\exclude\\nvdcpematch-1.0.json"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("exclude/nvdcpematch-1.0.json"))) {
             for (String line; (line = br.readLine()) != null; ) {
                 if (line.contains("cpe23Uri")) {
                     cpe23urilines.add(line);
@@ -161,7 +160,7 @@ public class CPE_matchFeedObject {
          * "exclude\dbconnection.txt" -> place of the separate file with the connection url
          * This block of code takes the connection url from the separate file and puts it into the url_conn's 0 index
          */
-        try (BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Xarf\\Desktop\\VIP\\exclude\\dbconnection.txt"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("exclude/dbconnection.txt"))) {
             for (String line; (line = br.readLine()) != null; ) {
                 url_conn.add(line);
             }
