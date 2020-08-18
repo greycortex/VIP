@@ -182,12 +182,30 @@ public class CPE_matchFeedObject {
             // Connection to the database
             db = DriverManager.getConnection(url_conn.get(0));
 
-            // This for cycle goes through the object ArrayList full of CPE objects object by object and puts them into the database
+            /**
+             * This for cycle goes through the object ArrayList full of CPE objects object by object and puts them into the database
+             * null values handling included
+             */
             for (CPE_matchFeedObject object : obj_list) {
-                Statement stat = db.createStatement();
-                stat.execute("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
-                        + "VALUES ('" + object.vendor + "', '" + object.product + "', '" + object.version + "', '" + object.update + "', '" + object.edition + "', '" + object.language + "', '" + object.swEdition + "', "
-                        + "'" + object.targetSw + "', '" + object.targetHw + "', '" + object.other + "')");
+                PreparedStatement stat = db.prepareStatement("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
+                        + "VALUES ('"+object.vendor+"','"+object.product+"',?,?,?,?,?,?,?,?)");
+                if(object.version == null) stat.setString(1,null);
+                else stat.setString(1, object.version);
+                if(object.update == null) stat.setString(2, null);
+                else stat.setString(2, object.update);
+                if(object.edition == null) stat.setString(3, null);
+                else stat.setString(3, object.edition);
+                if(object.language == null) stat.setString(4, null);
+                else stat.setString(4, object.language);
+                if(object.swEdition == null) stat.setString(5, null);
+                else stat.setString(5, object.swEdition);
+                if(object.targetSw == null) stat.setString(6, null);
+                else stat.setString(6, object.targetSw);
+                if(object.targetHw == null) stat.setString(7, null);
+                else stat.setString(7, object.targetHw);
+                if(object.other == null) stat.setString(8, null);
+                else stat.setString(8, object.other);
+                stat.executeUpdate();
             }
 
             // Closing the database connection
@@ -233,10 +251,7 @@ public class CPE_matchFeedObject {
         for (CPE_matchFeedObject obj : compared_objects) {
 
             if (obj_vendors.contains(obj.vendor)) ;
-
-            else {
-                obj_vendors.add(obj.vendor);
-            }
+            else obj_vendors.add(obj.vendor) ;
         }
 
         // This for cycle is for the purpose to go through all the vendors that exist in the up-to-date file one by one
@@ -249,11 +264,13 @@ public class CPE_matchFeedObject {
                 // list of CPE objects from up-to-date file with the specific vendor
                 ArrayList<CPE_matchFeedObject> compared_objects_vendor = new ArrayList<>();
 
-                // This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the current specific vendor from the up-to-date file
+                /**
+                 * This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the
+                 * current specific vendor from the up-to-date file
+                 */
                 for (CPE_matchFeedObject obj : compared_objects) {
-                    if (obj.vendor.equals(vendor)) {
-                        compared_objects_vendor.add(obj);
-                    }
+                    if (obj.vendor.equals(vendor)) compared_objects_vendor.add(obj) ;
+
                 }
 
                 Class.forName("org.postgresql.Driver");
@@ -261,7 +278,10 @@ public class CPE_matchFeedObject {
                 // Connection to the database
                 db = DriverManager.getConnection(url_conn.get(0));
 
-                // This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the current specific vendor from the database
+                /**
+                 * This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the
+                 * current specific vendor from the database
+                 */
                 Statement stat = db.createStatement();
                 ResultSet result = stat.executeQuery("SELECT * FROM cpe_match_feed_objects WHERE vendor = '" + vendor + "'");
                 while (result.next()) {
@@ -286,11 +306,26 @@ public class CPE_matchFeedObject {
 
                     // If the object isn't in the database (its new), its added into the database
                     if (!duplicity) {
-                        //db = DriverManager.getConnection(url_conn.get(0));
-                        //Statement addstat = db.createStatement();
-                        stat.execute("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
-                                + "VALUES ('" + new_obj.vendor + "', '" + new_obj.product + "', '" + new_obj.version + "', '" + new_obj.update + "', '" + new_obj.edition + "', '" + new_obj.language + "', '" + new_obj.swEdition + "', "
-                                + "'" + new_obj.targetSw + "', '" + new_obj.targetHw + "', '" + new_obj.other + "')");
+                        // PreparedStatement is used to handle null values
+                        PreparedStatement addstat = db.prepareStatement("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
+                                + "VALUES ('"+new_obj.vendor+"','"+new_obj.product+"',?,?,?,?,?,?,?,?)");
+                        if(new_obj.version == null) addstat.setString(1,null);
+                        else addstat.setString(1, new_obj.version);
+                        if(new_obj.update == null) addstat.setString(2, null);
+                        else addstat.setString(2, new_obj.update);
+                        if(new_obj.edition == null) addstat.setString(3, null);
+                        else addstat.setString(3, new_obj.edition);
+                        if(new_obj.language == null) addstat.setString(4, null);
+                        else addstat.setString(4, new_obj.language);
+                        if(new_obj.swEdition == null) addstat.setString(5, null);
+                        else addstat.setString(5, new_obj.swEdition);
+                        if(new_obj.targetSw == null) addstat.setString(6, null);
+                        else addstat.setString(6, new_obj.targetSw);
+                        if(new_obj.targetHw == null) addstat.setString(7, null);
+                        else addstat.setString(7, new_obj.targetHw);
+                        if(new_obj.other == null) addstat.setString(8, null);
+                        else addstat.setString(8, new_obj.other);
+                        addstat.executeUpdate();
                     }
                 }
 
@@ -330,30 +365,20 @@ public class CPE_matchFeedObject {
     public boolean compare(CPE_matchFeedObject input_obj) {
 
         // Comparing vendor parameter of compared objects
-        if (this.vendor == null || input_obj.vendor.equals("null")) {
-            if (this.vendor == null && input_obj.vendor.equals("null")) ;
-            else {
-                return false;
-            }
-        } else if (this.vendor.compareTo(input_obj.vendor) == 0) ;
+        if (this.vendor.compareTo(input_obj.vendor) == 0) ;
         else {
             return false;
         }
 
         // Comparing product parameter of compared objects
-        if (this.product == null || input_obj.product.equals("null")) {
-            if (this.product == null && input_obj.product.equals("null")) ;
-            else {
-                return false;
-            }
-        } else if (this.product.compareTo(input_obj.product) == 0) ;
+        if (this.product.compareTo(input_obj.product) == 0) ;
         else {
             return false;
         }
 
         // Comparing version parameter of compared objects
-        if (this.version == null || input_obj.version.equals("null")) {
-            if (this.version == null && input_obj.version.equals("null")) ;
+        if (this.version == null || input_obj.version == null) {
+            if (this.version == null && input_obj.version == null) ;
             else {
                 return false;
             }
@@ -363,8 +388,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing update parameter of compared objects
-        if (this.update == null || input_obj.update.equals("null")) {
-            if (this.update == null && input_obj.update.equals("null")) ;
+        if (this.update == null || input_obj.update == null) {
+            if (this.update == null && input_obj.update == null) ;
             else {
                 return false;
             }
@@ -374,8 +399,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing edition parameter of compared objects
-        if (this.edition == null || input_obj.edition.equals("null")) {
-            if (this.edition == null && input_obj.edition.equals("null")) ;
+        if (this.edition == null || input_obj.edition == null) {
+            if (this.edition == null && input_obj.edition == null) ;
             else {
                 return false;
             }
@@ -385,8 +410,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing language parameter of compared objects
-        if (this.language == null || input_obj.language.equals("null")) {
-            if (this.language == null && input_obj.language.equals("null")) ;
+        if (this.language == null || input_obj.language == null) {
+            if (this.language == null && input_obj.language == null) ;
             else {
                 return false;
             }
@@ -396,8 +421,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing swEdition parameter of compared objects
-        if (this.swEdition == null || input_obj.swEdition.equals("null")) {
-            if (this.swEdition == null && input_obj.swEdition.equals("null")) ;
+        if (this.swEdition == null || input_obj.swEdition == null) {
+            if (this.swEdition == null && input_obj.swEdition == null) ;
             else {
                 return false;
             }
@@ -407,8 +432,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing targetSw parameter of compared objects
-        if (this.targetSw == null || input_obj.targetSw.equals("null")) {
-            if (this.targetSw == null && input_obj.targetSw.equals("null")) ;
+        if (this.targetSw == null || input_obj.targetSw == null) {
+            if (this.targetSw == null && input_obj.targetSw == null) ;
             else {
                 return false;
             }
@@ -418,8 +443,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing targetHw parameter of compared objects
-        if (this.targetHw == null || input_obj.targetHw.equals("null")) {
-            if (this.targetHw == null && input_obj.targetHw.equals("null")) ;
+        if (this.targetHw == null || input_obj.targetHw == null) {
+            if (this.targetHw == null && input_obj.targetHw == null) ;
             else {
                 return false;
             }
@@ -429,8 +454,8 @@ public class CPE_matchFeedObject {
         }
 
         // Comparing other parameter of compared objects
-        if (this.other == null || input_obj.other.equals("null")) {
-            if (this.other == null && input_obj.other.equals("null")) ;
+        if (this.other == null || input_obj.other == null) {
+            if (this.other == null && input_obj.other == null) ;
             else {
                 return false;
             }
