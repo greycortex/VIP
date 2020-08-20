@@ -11,7 +11,7 @@ import java.util.ArrayList;
  *
  * @author Tomas Bozek (XarfNao)
  */
-public class CPE_matchFeedObject {
+public class CPEobject {
 
     /**
      * DB Connection
@@ -48,7 +48,7 @@ public class CPE_matchFeedObject {
      * @param targetHw
      * @param other
      */
-    public CPE_matchFeedObject(String vendor, String product, String version, String update, String edition, String language,
+    public CPEobject(String vendor, String product, String version, String update, String edition, String language,
                                String swEdition, String targetSw, String targetHw, String other) {
 
         this.id = null;
@@ -90,10 +90,10 @@ public class CPE_matchFeedObject {
     /**
      * @return ArrayList that contains CPE objects made from the cpe23urilines ArrayList returned by the parserToLineArrayList() method
      */
-    public static ArrayList<CPE_matchFeedObject> stringArrayListToObjectArraylist() {
+    public static ArrayList<CPEobject> stringArrayListToObjectArraylist() {
 
         // Defining the object ArrayList
-        ArrayList<CPE_matchFeedObject> obj_list = new ArrayList<>();
+        ArrayList<CPEobject> obj_list = new ArrayList<>();
 
         // Taking the lines returned by the parserToLineArrayList() method
         ArrayList<String> cpe23urilines = new ArrayList<>();
@@ -134,7 +134,7 @@ public class CPE_matchFeedObject {
             }
 
             // Finally creates a new CPE object using changed parts of the splitstr array
-            CPE_matchFeedObject obj = new CPE_matchFeedObject(splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]);
+            CPEobject obj = new CPEobject(splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]);
             obj_list.add(obj);
         }
 
@@ -151,7 +151,7 @@ public class CPE_matchFeedObject {
     public static void objListToDatabase() {
 
         // Arraylist of objects returned by the stringArrayListToObjectArraylist() method
-        ArrayList<CPE_matchFeedObject> obj_list = stringArrayListToObjectArraylist();
+        ArrayList<CPEobject> obj_list = stringArrayListToObjectArraylist();
 
         // This ArrayList of strings contains only one string from a separate file which contains a connection url (a name and a password included)
         ArrayList<String> url_conn = new ArrayList<>();
@@ -186,7 +186,7 @@ public class CPE_matchFeedObject {
              * This for cycle goes through the object ArrayList full of CPE objects object by object and puts them into the database
              * null values handling included
              */
-            for (CPE_matchFeedObject object : obj_list) {
+            for (CPEobject object : obj_list) {
                 PreparedStatement stat = db.prepareStatement("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
                         + "VALUES ('"+object.vendor+"','"+object.product+"',?,?,?,?,?,?,?,?)");
                 if(object.version == null) stat.setString(1,null);
@@ -230,7 +230,7 @@ public class CPE_matchFeedObject {
     public static void comparingForUpdate() {
 
         // list of objects from up-to-date file
-        ArrayList<CPE_matchFeedObject> compared_objects = stringArrayListToObjectArraylist();
+        ArrayList<CPEobject> compared_objects = stringArrayListToObjectArraylist();
 
         // ArrayList which will contain all the vendors that exist in the up-to-date file
         ArrayList<String> obj_vendors = new ArrayList<>();
@@ -248,7 +248,7 @@ public class CPE_matchFeedObject {
         }
 
         // This for cycle fills the obj_vendor ArrayList with all vendors that exist in the up-to-date file
-        for (CPE_matchFeedObject obj : compared_objects) {
+        for (CPEobject obj : compared_objects) {
 
             if (obj_vendors.contains(obj.vendor)) ;
             else obj_vendors.add(obj.vendor) ;
@@ -260,15 +260,15 @@ public class CPE_matchFeedObject {
             try {
 
                 // list of CPE objects from DB with the specific vendor
-                ArrayList<CPE_matchFeedObject> objects_to_compare = new ArrayList<>();
+                ArrayList<CPEobject> objects_to_compare = new ArrayList<>();
                 // list of CPE objects from up-to-date file with the specific vendor
-                ArrayList<CPE_matchFeedObject> compared_objects_vendor = new ArrayList<>();
+                ArrayList<CPEobject> compared_objects_vendor = new ArrayList<>();
 
                 /**
                  * This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the
                  * current specific vendor from the up-to-date file
                  */
-                for (CPE_matchFeedObject obj : compared_objects) {
+                for (CPEobject obj : compared_objects) {
                     if (obj.vendor.equals(vendor)) compared_objects_vendor.add(obj) ;
 
                 }
@@ -285,7 +285,7 @@ public class CPE_matchFeedObject {
                 Statement stat = db.createStatement();
                 ResultSet result = stat.executeQuery("SELECT * FROM cpe_match_feed_objects WHERE vendor = '" + vendor + "'");
                 while (result.next()) {
-                    CPE_matchFeedObject obj_to_compare = new CPE_matchFeedObject(result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getString(6), result.getString(7), result.getString(8), result.getString(9), result.getString(10), result.getString(11));
+                    CPEobject obj_to_compare = new CPEobject(result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getString(6), result.getString(7), result.getString(8), result.getString(9), result.getString(10), result.getString(11));
                     objects_to_compare.add(obj_to_compare);
                 }
 
@@ -295,9 +295,9 @@ public class CPE_matchFeedObject {
                  * It uses the compare() method which can be seen at the bottom of this class.
                  */
                 boolean duplicity;
-                for (CPE_matchFeedObject new_obj : compared_objects_vendor) {
+                for (CPEobject new_obj : compared_objects_vendor) {
                     duplicity = false;
-                    for (CPE_matchFeedObject old_obj : objects_to_compare) {
+                    for (CPEobject old_obj : objects_to_compare) {
                         if (new_obj.compare(old_obj)) {
                             duplicity = true;
                             break;
@@ -362,7 +362,7 @@ public class CPE_matchFeedObject {
      *
      * The String "null" values are there because taking a null value from database puts it into the object in this form
      */
-    public boolean compare(CPE_matchFeedObject input_obj) {
+    public boolean compare(CPEobject input_obj) {
 
         // Comparing vendor parameter of compared objects
         if (this.vendor.compareTo(input_obj.vendor) == 0) ;
