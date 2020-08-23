@@ -35,16 +35,16 @@ public class CPEobject {
     /**
      * Copies constructor
      *
-     * @param vendor
-     * @param product
-     * @param version
-     * @param update
-     * @param edition
-     * @param language
-     * @param swEdition
-     * @param targetSw
-     * @param targetHw
-     * @param other
+     * @param vendor vendor attribute
+     * @param product product attribute
+     * @param version version attribute
+     * @param update update attribute
+     * @param edition edition attribute
+     * @param language language attribute
+     * @param swEdition software edition attribute
+     * @param targetSw target software attribute
+     * @param targetHw target hardware attribute
+     * @param other other attribute
      */
     public CPEobject(String vendor, String product, String version, String update, String edition, String language,
                                String swEdition, String targetSw, String targetHw, String other) {
@@ -358,7 +358,6 @@ public class CPEobject {
      * @param input_obj Object that is compared with
      * @return If the CPE objects are the same or not (true or false)
      *
-     * The String "null" values are there because taking a null value from database puts it into the object in this form
      */
     public boolean compare(CPEobject input_obj) {
 
@@ -463,6 +462,5 @@ public class CPEobject {
         }
 
         return true;
-
     }
 }
