@@ -20,6 +20,11 @@ public class CVEobject {
      */
     private static Connection db;
 
+    /**
+     * Automatic ID
+     */
+    private final Long id;
+
     protected final String data_format;
     protected final String data_version;
     protected final String meta_data_id;
@@ -59,6 +64,7 @@ public class CVEobject {
                      ArrayList<String> and_operators, HashMap<String, String> cvss_v3, HashMap<String, String> cvss_v2,
                      Date published_date, Date last_modified_date){
 
+        this.id = null;
         this.data_format = data_format;
         this.data_version = data_version;
         this.meta_data_id = meta_data_id;

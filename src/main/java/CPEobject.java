@@ -21,16 +21,16 @@ public class CPEobject {
      */
     private final Long id;
 
-    protected final String vendor;
-    protected final String product;
-    protected final String version;
-    protected final String update;
-    protected final String edition;
-    protected final String language;
-    protected final String swEdition;
-    protected final String targetSw;
-    protected final String targetHw;
-    protected final String other;
+    protected String vendor;
+    protected String product;
+    protected String version;
+    protected String update;
+    protected String edition;
+    protected String language;
+    protected String swEdition;
+    protected String targetSw;
+    protected String targetHw;
+    protected String other;
 
     /**
      * Copies constructor
@@ -116,16 +116,15 @@ public class CPEobject {
 
                 /**
                  * This block of code replaces all the sql-not-frinedly apostrophes with a sql-friendly apostrophes,
-                 * it also removes backslashes and exclamation marks in a weird places
+                 * it also removes backslashes in weird places
                  */
                 if (splitstr[i] != null) {
                     splitstr[i] = splitstr[i].replace("'", "''");
                     splitstr[i] = splitstr[i].replace("\\\\", "");
-                    splitstr[i] = splitstr[i].replace("!", "");
                 }
             }
 
-            //This block of code removes the apostrophes that can appear at the end of the line
+            // This block of code removes the apostrophes that can appear at the end of the line
             if (splitstr[13] != null) {
                 splitstr[13] = splitstr[13].replace("\",", "");
                 splitstr[13] = splitstr[13].replace("\"", "");
@@ -140,82 +139,8 @@ public class CPEobject {
     }
 
     /**
-     * This method puts all the created objects from the stringArrayListToObjectArraylist() method into a local database
-     *
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws IOException
-     */
-    public static void objListToDatabase() {
-
-        // Arraylist of objects returned by the stringArrayListToObjectArraylist() method
-        ArrayList<CPEobject> obj_list = stringArrayListToObjectArraylist();
-
-        // This ArrayList of strings contains only one string from a separate file which contains a connection url (a name and a password included)
-        ArrayList<String> url_conn = new ArrayList<>();
-
-        /**
-         * "exclude\dbconnection.txt" -> place of the separate file with the connection url
-         * This block of code takes the connection url from the separate file and puts it into the url_conn's 0 index
-         */
-        try (BufferedReader br = new BufferedReader(new FileReader("exclude/dbconnection.txt"))) {
-            for (String line; (line = br.readLine()) != null; ) {
-                url_conn.add(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        // This block of code uses the connection url from the url_conn's 0 index and connects to the database
-
-        try {
-
-            // Connection to the database
-            db = DriverManager.getConnection(url_conn.get(0));
-
-            /**
-             * This for cycle goes through the object ArrayList full of CPE objects object by object and puts them into the database
-             * null values handling included
-             */
-            for (CPEobject object : obj_list) {
-                PreparedStatement stat = db.prepareStatement("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
-                        + "VALUES ('"+object.vendor+"','"+object.product+"',?,?,?,?,?,?,?,?)");
-                if(object.version == null) stat.setString(1,null);
-                else stat.setString(1, object.version);
-                if(object.update == null) stat.setString(2, null);
-                else stat.setString(2, object.update);
-                if(object.edition == null) stat.setString(3, null);
-                else stat.setString(3, object.edition);
-                if(object.language == null) stat.setString(4, null);
-                else stat.setString(4, object.language);
-                if(object.swEdition == null) stat.setString(5, null);
-                else stat.setString(5, object.swEdition);
-                if(object.targetSw == null) stat.setString(6, null);
-                else stat.setString(6, object.targetSw);
-                if(object.targetHw == null) stat.setString(7, null);
-                else stat.setString(7, object.targetHw);
-                if(object.other == null) stat.setString(8, null);
-                else stat.setString(8, object.other);
-                stat.executeUpdate();
-            }
-
-            // Closing the database connection
-            db.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
-
-    /**
      * This method's purpose is to update the database full of CPE objects so that it can be up-to-date
-     * <p>
+     *
      * This method loads all the objects from the up-to-date file,
      * then it always loads all the objects with the same one vendor from the database (vendor by vendor)
      * and compares them to objects with the same vendor from the up-to-date file,
@@ -236,6 +161,9 @@ public class CPEobject {
         // DB connection
         ArrayList<String> url_conn = new ArrayList<>();
 
+        // Count of vendors gone through from the last print of a CPE object
+        int display = 0;
+
         // This block of code takes the connection url from the separate file and puts it into the url_conn's 0 index
         try (BufferedReader br = new BufferedReader(new FileReader("exclude/dbconnection.txt"))) {
             for (String line; (line = br.readLine()) != null; ) {
@@ -248,12 +176,17 @@ public class CPEobject {
         // This for cycle fills the obj_vendor ArrayList with all vendors that exist in the up-to-date file
         for (CPEobject obj : compared_objects) {
 
+            // Replaces double apostrophes with single apostrophe so that there is no problem with comparing later on
+            obj.controlApostrophes();
+
             if (obj_vendors.contains(obj.vendor)) ;
             else obj_vendors.add(obj.vendor) ;
         }
 
         // This for cycle is for the purpose to go through all the vendors that exist in the up-to-date file one by one
+
         for (String vendor : obj_vendors) {
+            display++;
 
             try {
 
@@ -271,6 +204,12 @@ public class CPEobject {
 
                 }
 
+                // Print one of many CPE objects
+                if(display==50){
+                    System.out.println(compared_objects_vendor.get(0)) ;
+                    display=0 ;
+                }
+
                 Class.forName("org.postgresql.Driver");
 
                 // Connection to the database
@@ -281,9 +220,18 @@ public class CPEobject {
                  * current specific vendor from the database
                  */
                 Statement stat = db.createStatement();
+
+                // Controlling if the vendor String is sql-friendly
+                vendor = vendor.replaceAll("'","''") ;
+
                 ResultSet result = stat.executeQuery("SELECT * FROM cpe_match_feed_objects WHERE vendor = '" + vendor + "'");
+
+                // Making vendor comparing-friendly
+                vendor = vendor.replaceAll("''","'") ;
+
                 while (result.next()) {
                     CPEobject obj_to_compare = new CPEobject(result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getString(6), result.getString(7), result.getString(8), result.getString(9), result.getString(10), result.getString(11));
+                    obj_to_compare.controlApostrophes();
                     objects_to_compare.add(obj_to_compare);
                 }
 
@@ -292,6 +240,9 @@ public class CPEobject {
                  * all objects with the current specific vendor from the database.
                  * It uses the compare() method which can be seen at the bottom of this class.
                  */
+
+
+
                 boolean duplicity;
                 for (CPEobject new_obj : compared_objects_vendor) {
                     duplicity = false;
@@ -304,26 +255,12 @@ public class CPEobject {
 
                     // If the object isn't in the database (its new), its added into the database
                     if (!duplicity) {
-                        // PreparedStatement is used to handle null values
-                        PreparedStatement addstat = db.prepareStatement("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
-                                + "VALUES ('"+new_obj.vendor+"','"+new_obj.product+"',?,?,?,?,?,?,?,?)");
-                        if(new_obj.version == null) addstat.setString(1,null);
-                        else addstat.setString(1, new_obj.version);
-                        if(new_obj.update == null) addstat.setString(2, null);
-                        else addstat.setString(2, new_obj.update);
-                        if(new_obj.edition == null) addstat.setString(3, null);
-                        else addstat.setString(3, new_obj.edition);
-                        if(new_obj.language == null) addstat.setString(4, null);
-                        else addstat.setString(4, new_obj.language);
-                        if(new_obj.swEdition == null) addstat.setString(5, null);
-                        else addstat.setString(5, new_obj.swEdition);
-                        if(new_obj.targetSw == null) addstat.setString(6, null);
-                        else addstat.setString(6, new_obj.targetSw);
-                        if(new_obj.targetHw == null) addstat.setString(7, null);
-                        else addstat.setString(7, new_obj.targetHw);
-                        if(new_obj.other == null) addstat.setString(8, null);
-                        else addstat.setString(8, new_obj.other);
-                        addstat.executeUpdate();
+
+                        // Replacing single apostrophes with dual apostrophes so that the CPE object can be sql-friendly
+                        new_obj.sqlFriendlyApost();
+
+                        new_obj.intoDatabase();
+
                     }
                 }
 
@@ -338,7 +275,7 @@ public class CPEobject {
 
     @Override
     public String toString() {
-        return "CPE_matchFeedObject{"
+        return "CPEobject{"
                 + "vendor='" + vendor + '\''
                 + ", product='" + product + '\''
                 + ", version='" + version + '\''
@@ -462,5 +399,118 @@ public class CPEobject {
         }
 
         return true;
+    }
+
+    // Adding an object from input into database using PreparedStatement
+    public void intoDatabase() {
+        try{
+            // PreparedStatement is used to handle null values
+            PreparedStatement addstat = db.prepareStatement("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
+                    + "VALUES ('"+this.vendor+"','"+this.product+"',?,?,?,?,?,?,?,?)");
+
+            addstat.setString(1, this.version);
+            addstat.setString(2, this.update);
+            addstat.setString(3, this.edition);
+            addstat.setString(4, this.language);
+            addstat.setString(5, this.swEdition);
+            addstat.setString(6, this.targetSw);
+            addstat.setString(7, this.targetHw);
+            addstat.setString(8, this.other);
+            addstat.executeUpdate();
+
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * This method's purpose is to take cpeUri line and create a sql-friendly CPE object
+     *
+     * @param cpeUri line which is used to create a final CPE object
+     * @return sql-friendly CPE object
+     */
+    public CPEobject cpeUriToObject(String cpeUri){
+
+        // This array is filled with parts of the cpeUri String (separates by ":")
+        String[] splitstr = cpeUri.split(":");
+
+        /**
+         * This for cycle goes through each part of the splitstr array and changes its parts so that they are
+         * more database and search friendly and have a better form in general
+         */
+        for (int i = 0; i < splitstr.length; i++) {
+
+            // This replaces all the "*" characters (which mean an empty parameter)
+            if (splitstr[i].equals("*") || splitstr[i].equals("*\",") || splitstr[i].equals("*\"")) {
+                splitstr[i] = null;
+            }
+
+            /**
+             * This block of code replaces all sql-not-friendly apostrophes with sql-friendly apostrophes,
+             * it also removes backslashes and exclamation marks in a weird places
+             */
+            if (splitstr[i] != null) {
+                splitstr[i] = splitstr[i].replaceAll("'", "''");
+                splitstr[i] = splitstr[i].replaceAll("\\\\", "");
+            }
+        }
+
+        // This block of code removes the apostrophes that can appear at the end of the cpeUri String
+        if (splitstr[13] != null) {
+            splitstr[13] = splitstr[13].replace("\",", "");
+            splitstr[13] = splitstr[13].replace("\"", "");
+        }
+
+        // Finally creates a new CPE object using changed parts of the splitstr array
+        return new CPEobject(splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]);
+
+    }
+
+    // Replaces double apostrophes with single apostrophe so that there is no problem with comparing later on
+    public void controlApostrophes(){
+
+        this.vendor = this.vendor.replaceAll("''","'") ;
+        this.product = this.product.replaceAll("''","'") ;
+        if(this.version == null) ;
+        else this.version = this.version.replaceAll("''","'") ;
+        if(this.update == null) ;
+        else this.update = this.update.replaceAll("''","'") ;
+        if(this.edition == null) ;
+        else this.edition = this.edition.replaceAll("''","'") ;
+        if(this.language == null) ;
+        else this.language = this.language.replaceAll("''","'") ;
+        if(this.swEdition == null) ;
+        else this.swEdition = this.swEdition.replaceAll("''","'") ;
+        if(this.targetSw == null) ;
+        else this.targetSw = this.targetSw.replaceAll("''","'") ;
+        if(this.targetHw == null) ;
+        else this.targetHw = this.targetHw.replaceAll("''","'") ;
+        if(this.other == null) ;
+        else this.other = this.other.replaceAll("''","'") ;
+
+    }
+
+    // Replaces single apostrophe with double apostrophes so that parametres can be sql-friendly
+    public void sqlFriendlyApost(){
+
+        this.vendor = this.vendor.replaceAll("'","''") ;
+        this.product = this.product.replaceAll("'","''") ;
+        if(this.version == null) ;
+        else this.version = this.version.replaceAll("'","''") ;
+        if(this.update == null) ;
+        else this.update = this.update.replaceAll("'","''") ;
+        if(this.edition == null) ;
+        else this.edition = this.edition.replaceAll("'","''") ;
+        if(this.language == null) ;
+        else this.language = this.language.replaceAll("'","''") ;
+        if(this.swEdition == null) ;
+        else this.swEdition = this.swEdition.replaceAll("'","''") ;
+        if(this.targetSw == null) ;
+        else this.targetSw = this.targetSw.replaceAll("'","''") ;
+        if(this.targetHw == null) ;
+        else this.targetHw = this.targetHw.replaceAll("'","''") ;
+        if(this.other == null) ;
+        else this.other = this.other.replaceAll("'","''") ;
+
     }
 }

@@ -13,7 +13,8 @@ CREATE TABLE cpe_match_feed_objects (
     swedition character varying(255),
     targetsw character varying(255),
     targethw character varying(255),
-    other character varying(255)
+    other character varying(255),
+    timestamp timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE SEQUENCE cpe_match_feed_objects_id_seq;
