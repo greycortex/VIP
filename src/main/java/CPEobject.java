@@ -35,19 +35,19 @@ public class CPEobject {
     /**
      * Copies constructor
      *
-     * @param vendor vendor attribute
-     * @param product product attribute
-     * @param version version attribute
-     * @param update update attribute
-     * @param edition edition attribute
-     * @param language language attribute
+     * @param vendor    vendor attribute
+     * @param product   product attribute
+     * @param version   version attribute
+     * @param update    update attribute
+     * @param edition   edition attribute
+     * @param language  language attribute
      * @param swEdition software edition attribute
-     * @param targetSw target software attribute
-     * @param targetHw target hardware attribute
-     * @param other other attribute
+     * @param targetSw  target software attribute
+     * @param targetHw  target hardware attribute
+     * @param other     other attribute
      */
     public CPEobject(String vendor, String product, String version, String update, String edition, String language,
-                               String swEdition, String targetSw, String targetHw, String other) {
+                     String swEdition, String targetSw, String targetHw, String other) {
 
         this.id = null;
         this.vendor = vendor;
@@ -60,6 +60,49 @@ public class CPEobject {
         this.targetSw = targetSw;
         this.targetHw = targetHw;
         this.other = other;
+    }
+
+    /**
+     * This method's purpose is to take cpeUri line and create a sql-friendly CPE object
+     *
+     * @param cpeUri line which is used to create a final CPE object
+     * @return an sql-friendly CPE object
+     */
+    public CPEobject cpeUriToObject(String cpeUri) {
+
+        // This array is filled with parts of the cpeUri String (separates by ":")
+        String[] splitstr = cpeUri.split(":");
+
+        /**
+         * This for cycle goes through each part of the splitstr array and changes its parts so that they are
+         * more database and search friendly and have a better form in general
+         */
+        for (int i = 0; i < splitstr.length; i++) {
+
+            // This replaces all the "*" characters (which mean an empty parameter)
+            if (splitstr[i].equals("*") || splitstr[i].equals("*\",") || splitstr[i].equals("*\"")) {
+                splitstr[i] = null;
+            }
+
+            /**
+             * This block of code replaces all sql-not-friendly apostrophes with sql-friendly apostrophes,
+             * it also removes backslashes and exclamation marks in a weird places
+             */
+            if (splitstr[i] != null) {
+                splitstr[i] = splitstr[i].replaceAll("'", "''");
+                splitstr[i] = splitstr[i].replaceAll("\\\\", "");
+            }
+        }
+
+        // This block of code removes the apostrophes that can appear at the end of the cpeUri String
+        if (splitstr[13] != null) {
+            splitstr[13] = splitstr[13].replace("\",", "");
+            splitstr[13] = splitstr[13].replace("\"", "");
+        }
+
+        // Finally creates a new CPE object using changed parts of the splitstr array
+        return new CPEobject(splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]);
+
     }
 
     /**
@@ -180,7 +223,7 @@ public class CPEobject {
             obj.controlApostrophes();
 
             if (obj_vendors.contains(obj.vendor)) ;
-            else obj_vendors.add(obj.vendor) ;
+            else obj_vendors.add(obj.vendor);
         }
 
         // This for cycle is for the purpose to go through all the vendors that exist in the up-to-date file one by one
@@ -200,14 +243,14 @@ public class CPEobject {
                  * current specific vendor from the up-to-date file
                  */
                 for (CPEobject obj : compared_objects) {
-                    if (obj.vendor.equals(vendor)) compared_objects_vendor.add(obj) ;
+                    if (obj.vendor.equals(vendor)) compared_objects_vendor.add(obj);
 
                 }
 
                 // Print one of many CPE objects
-                if(display==50){
-                    System.out.println(compared_objects_vendor.get(0)) ;
-                    display=0 ;
+                if (display == 50) {
+                    System.out.println(compared_objects_vendor.get(0));
+                    display = 0;
                 }
 
                 Class.forName("org.postgresql.Driver");
@@ -222,12 +265,12 @@ public class CPEobject {
                 Statement stat = db.createStatement();
 
                 // Controlling if the vendor String is sql-friendly
-                vendor = vendor.replaceAll("'","''") ;
+                vendor = vendor.replaceAll("'", "''");
 
                 ResultSet result = stat.executeQuery("SELECT * FROM cpe_match_feed_objects WHERE vendor = '" + vendor + "'");
 
                 // Making vendor comparing-friendly
-                vendor = vendor.replaceAll("''","'") ;
+                vendor = vendor.replaceAll("''", "'");
 
                 while (result.next()) {
                     CPEobject obj_to_compare = new CPEobject(result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getString(6), result.getString(7), result.getString(8), result.getString(9), result.getString(10), result.getString(11));
@@ -240,9 +283,6 @@ public class CPEobject {
                  * all objects with the current specific vendor from the database.
                  * It uses the compare() method which can be seen at the bottom of this class.
                  */
-
-
-
                 boolean duplicity;
                 for (CPEobject new_obj : compared_objects_vendor) {
                     duplicity = false;
@@ -294,7 +334,6 @@ public class CPEobject {
      *
      * @param input_obj Object that is compared with
      * @return If the CPE objects are the same or not (true or false)
-     *
      */
     public boolean compare(CPEobject input_obj) {
 
@@ -403,10 +442,10 @@ public class CPEobject {
 
     // Adding an object from input into database using PreparedStatement
     public void intoDatabase() {
-        try{
+        try {
             // PreparedStatement is used to handle null values
             PreparedStatement addstat = db.prepareStatement("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
-                    + "VALUES ('"+this.vendor+"','"+this.product+"',?,?,?,?,?,?,?,?)");
+                    + "VALUES ('" + this.vendor + "','" + this.product + "',?,?,?,?,?,?,?,?)");
 
             addstat.setString(1, this.version);
             addstat.setString(2, this.update);
@@ -418,99 +457,56 @@ public class CPEobject {
             addstat.setString(8, this.other);
             addstat.executeUpdate();
 
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * This method's purpose is to take cpeUri line and create a sql-friendly CPE object
-     *
-     * @param cpeUri line which is used to create a final CPE object
-     * @return sql-friendly CPE object
-     */
-    public CPEobject cpeUriToObject(String cpeUri){
-
-        // This array is filled with parts of the cpeUri String (separates by ":")
-        String[] splitstr = cpeUri.split(":");
-
-        /**
-         * This for cycle goes through each part of the splitstr array and changes its parts so that they are
-         * more database and search friendly and have a better form in general
-         */
-        for (int i = 0; i < splitstr.length; i++) {
-
-            // This replaces all the "*" characters (which mean an empty parameter)
-            if (splitstr[i].equals("*") || splitstr[i].equals("*\",") || splitstr[i].equals("*\"")) {
-                splitstr[i] = null;
-            }
-
-            /**
-             * This block of code replaces all sql-not-friendly apostrophes with sql-friendly apostrophes,
-             * it also removes backslashes and exclamation marks in a weird places
-             */
-            if (splitstr[i] != null) {
-                splitstr[i] = splitstr[i].replaceAll("'", "''");
-                splitstr[i] = splitstr[i].replaceAll("\\\\", "");
-            }
-        }
-
-        // This block of code removes the apostrophes that can appear at the end of the cpeUri String
-        if (splitstr[13] != null) {
-            splitstr[13] = splitstr[13].replace("\",", "");
-            splitstr[13] = splitstr[13].replace("\"", "");
-        }
-
-        // Finally creates a new CPE object using changed parts of the splitstr array
-        return new CPEobject(splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]);
-
-    }
-
     // Replaces double apostrophes with single apostrophe so that there is no problem with comparing later on
-    public void controlApostrophes(){
+    public void controlApostrophes() {
 
-        this.vendor = this.vendor.replaceAll("''","'") ;
-        this.product = this.product.replaceAll("''","'") ;
-        if(this.version == null) ;
-        else this.version = this.version.replaceAll("''","'") ;
-        if(this.update == null) ;
-        else this.update = this.update.replaceAll("''","'") ;
-        if(this.edition == null) ;
-        else this.edition = this.edition.replaceAll("''","'") ;
-        if(this.language == null) ;
-        else this.language = this.language.replaceAll("''","'") ;
-        if(this.swEdition == null) ;
-        else this.swEdition = this.swEdition.replaceAll("''","'") ;
-        if(this.targetSw == null) ;
-        else this.targetSw = this.targetSw.replaceAll("''","'") ;
-        if(this.targetHw == null) ;
-        else this.targetHw = this.targetHw.replaceAll("''","'") ;
-        if(this.other == null) ;
-        else this.other = this.other.replaceAll("''","'") ;
+        this.vendor = this.vendor.replaceAll("''", "'");
+        this.product = this.product.replaceAll("''", "'");
+        if (this.version == null) ;
+        else this.version = this.version.replaceAll("''", "'");
+        if (this.update == null) ;
+        else this.update = this.update.replaceAll("''", "'");
+        if (this.edition == null) ;
+        else this.edition = this.edition.replaceAll("''", "'");
+        if (this.language == null) ;
+        else this.language = this.language.replaceAll("''", "'");
+        if (this.swEdition == null) ;
+        else this.swEdition = this.swEdition.replaceAll("''", "'");
+        if (this.targetSw == null) ;
+        else this.targetSw = this.targetSw.replaceAll("''", "'");
+        if (this.targetHw == null) ;
+        else this.targetHw = this.targetHw.replaceAll("''", "'");
+        if (this.other == null) ;
+        else this.other = this.other.replaceAll("''", "'");
 
     }
 
     // Replaces single apostrophe with double apostrophes so that parametres can be sql-friendly
-    public void sqlFriendlyApost(){
+    public void sqlFriendlyApost() {
 
-        this.vendor = this.vendor.replaceAll("'","''") ;
-        this.product = this.product.replaceAll("'","''") ;
-        if(this.version == null) ;
-        else this.version = this.version.replaceAll("'","''") ;
-        if(this.update == null) ;
-        else this.update = this.update.replaceAll("'","''") ;
-        if(this.edition == null) ;
-        else this.edition = this.edition.replaceAll("'","''") ;
-        if(this.language == null) ;
-        else this.language = this.language.replaceAll("'","''") ;
-        if(this.swEdition == null) ;
-        else this.swEdition = this.swEdition.replaceAll("'","''") ;
-        if(this.targetSw == null) ;
-        else this.targetSw = this.targetSw.replaceAll("'","''") ;
-        if(this.targetHw == null) ;
-        else this.targetHw = this.targetHw.replaceAll("'","''") ;
-        if(this.other == null) ;
-        else this.other = this.other.replaceAll("'","''") ;
+        this.vendor = this.vendor.replaceAll("'", "''");
+        this.product = this.product.replaceAll("'", "''");
+        if (this.version == null) ;
+        else this.version = this.version.replaceAll("'", "''");
+        if (this.update == null) ;
+        else this.update = this.update.replaceAll("'", "''");
+        if (this.edition == null) ;
+        else this.edition = this.edition.replaceAll("'", "''");
+        if (this.language == null) ;
+        else this.language = this.language.replaceAll("'", "''");
+        if (this.swEdition == null) ;
+        else this.swEdition = this.swEdition.replaceAll("'", "''");
+        if (this.targetSw == null) ;
+        else this.targetSw = this.targetSw.replaceAll("'", "''");
+        if (this.targetHw == null) ;
+        else this.targetHw = this.targetHw.replaceAll("'", "''");
+        if (this.other == null) ;
+        else this.other = this.other.replaceAll("'", "''");
 
     }
 }
