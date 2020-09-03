@@ -4,16 +4,16 @@
 
 CREATE TABLE cpe_match_feed_objects (
     id integer NOT NULL,
-    vendor character varying(255) NOT NULL,
-    product character varying(255) NOT NULL,
-    version character varying(255),
-    "update" character varying(255),
-    edition character varying(255),
-    language character varying(255),
-    swedition character varying(255),
-    targetsw character varying(255),
-    targethw character varying(255),
-    other character varying(255),
+    vendor character varying NOT NULL,
+    product character varying NOT NULL,
+    version character varying,
+    "update" character varying,
+    edition character varying,
+    language character varying,
+    swedition character varying,
+    targetsw character varying,
+    targethw character varying,
+    other character varying,
     timestamp timestamptz NOT NULL DEFAULT now()
 );
 
