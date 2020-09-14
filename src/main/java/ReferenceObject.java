@@ -3,7 +3,7 @@ import java.util.ArrayList;
 /**
  * This class represents a reference object which can be found in CVE object
  *
- * Its purpose is to create reference objects which are then put into CVE objects
+ //* Its purpose is to create reference objects which are then put into CVE java objects
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -30,18 +30,23 @@ public class ReferenceObject {
         this.tags = tags;
     }
 
-    /**
-     * This method's purpose is to create a reference object from given parameters and return it
-     *
-     * @param url
-     * @param name
-     * @param refsource
-     * @param tags
-     * @return reference object
-     */
-    public ReferenceObject createRefObj(String url, String name, String refsource, ArrayList<String> tags) {
+    ///**
+     //* This method's purpose is to create a reference object from given parameters and return it
+     //*
+     //* @return reference object
+     //*/
+    //public static ReferenceObject createRefObj(String url, String name, String refsource, ArrayList<String> tags) {
+    //
+    //    return new ReferenceObject(url, name, refsource, tags);
+    //}
 
-        return new ReferenceObject(url, name, refsource, tags);
+    @Override
+    public String toString() {
+        return "ReferenceObject{" +
+                "url='" + url + '\'' +
+                ", name='" + name + '\'' +
+                ", refsource='" + refsource + '\'' +
+                ", tags=" + tags +
+                '}';
     }
 }
-

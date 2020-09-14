@@ -2,7 +2,7 @@
 /**
  * This class represents a CVSS v3 object (Base score metrics, ...)
  *
- * --- Description of the class ---
+ //* It can create a CVSS v3 (base metric v3) object from given parametres and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -18,10 +18,10 @@ public class CVSS3object {
     protected String confidentiality_impact;
     protected String integrity_impact;
     protected String availability_impact;
-    protected String base_score_v3;
+    protected double base_score_v3;
     protected String base_severity_v3;
-    protected String exploitability_score_v3;
-    protected String impact_score_v3;
+    protected double exploitability_score_v3;
+    protected double impact_score_v3;
 
     /**
      * Copies constructor
@@ -43,8 +43,8 @@ public class CVSS3object {
      */
     public CVSS3object(String version, String vector_string, String attack_vector, String attack_complexity,
                        String privileges_required, String user_interaction, String scope, String confidentiality_impact,
-                       String integrity_impact, String availability_impact, String base_score_v3, String base_severity_v3,
-                       String exploitability_score_v3, String impact_score_v3) {
+                       String integrity_impact, String availability_impact, double base_score_v3, String base_severity_v3,
+                       double exploitability_score_v3, double impact_score_v3) {
 
         this.version = version;
         this.vector_string = vector_string;
@@ -60,7 +60,40 @@ public class CVSS3object {
         this.base_severity_v3 = base_severity_v3;
         this.exploitability_score_v3 = exploitability_score_v3;
         this.impact_score_v3 = impact_score_v3;
-
     }
 
+    ///**
+     //* This method's purpose is to create a CVSS v3 (base metric v3) object from given parameters and return it
+     //*
+     //* @return CVSS v3 (base metric v3) object
+     //*/
+    //public static CVSS3object createCVSS3obj(String version, String vector_string, String attack_vector, String attack_complexity, String privileges_required,
+    //                                         String user_interaction, String scope, String confidentiality_impact, String integrity_impact,
+    //                                         String availability_impact, double base_score_v3, String base_severity_v3, double exploitability_score_v3,
+    //                                         double impact_score_v3) {
+    //
+    //    return new CVSS3object(version, vector_string, attack_vector, attack_complexity, privileges_required, user_interaction, scope,
+    //            confidentiality_impact, integrity_impact, availability_impact, base_score_v3, base_severity_v3, exploitability_score_v3,
+    //            impact_score_v3);
+    //}
+
+    @Override
+    public String toString() {
+        return "CVSS3object{" +
+                "version='" + version + '\'' +
+                ", vector_string='" + vector_string + '\'' +
+                ", attack_vector='" + attack_vector + '\'' +
+                ", attack_complexity='" + attack_complexity + '\'' +
+                ", privileges_required='" + privileges_required + '\'' +
+                ", user_interaction='" + user_interaction + '\'' +
+                ", scope='" + scope + '\'' +
+                ", confidentiality_impact='" + confidentiality_impact + '\'' +
+                ", integrity_impact='" + integrity_impact + '\'' +
+                ", availability_impact='" + availability_impact + '\'' +
+                ", base_score_v3='" + base_score_v3 + '\'' +
+                ", base_severity_v3='" + base_severity_v3 + '\'' +
+                ", exploitability_score_v3='" + exploitability_score_v3 + '\'' +
+                ", impact_score_v3='" + impact_score_v3 + '\'' +
+                '}';
+    }
 }

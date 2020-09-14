@@ -7,6 +7,8 @@ import java.util.ArrayList;
  *
  * It can read from file, create objects representing vulnerabilities and insert them into the database including updates
  *
+ * It also can create a CPE object from cpe23Uri String and return it
+ *
  * @author Tomas Bozek (XarfNao)
  */
 public class CPEobject {
@@ -68,7 +70,7 @@ public class CPEobject {
      * @param cpeUri line which is used to create a final CPE object
      * @return an sql-friendly CPE object
      */
-    public CPEobject cpeUriToObject(String cpeUri) {
+    public static CPEobject cpeUriToObject(String cpeUri) {
 
         // This array is filled with parts of the cpeUri String (separates by ":")
         String[] splitstr = cpeUri.split(":");
@@ -95,14 +97,13 @@ public class CPEobject {
         }
 
         // This block of code removes the apostrophes that can appear at the end of the cpeUri String
-        if (splitstr[13] != null) {
-            splitstr[13] = splitstr[13].replace("\",", "");
-            splitstr[13] = splitstr[13].replace("\"", "");
+        if (splitstr[12] != null) {
+            splitstr[12] = splitstr[12].replace("\",", "");
+            splitstr[12] = splitstr[12].replace("\"", "");
         }
 
         // Finally creates a new CPE object using changed parts of the splitstr array
-        return new CPEobject(splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]);
-
+        return new CPEobject(splitstr[3], splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12]);
     }
 
     /**
