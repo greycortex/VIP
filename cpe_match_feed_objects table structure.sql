@@ -30,9 +30,6 @@ CREATE INDEX cpe_match_feed_objects_vendor_product_idx ON public.cpe_match_feed_
 ALTER TABLE cpe_match_feed_objects OWNER TO postgres;
 
 
-
-
-
 --
 -- Type: MATERIALIZED VIEW ; Name: products; Owner: postgres
 --
@@ -59,3 +56,11 @@ ALTER MATERIALIZED VIEW products OWNER TO postgres;
 -- WHERE product ilike '%Windows%'
 -- ORDER BY version;
 
+
+-- NEW INSERT (when needed an ID)
+-- WITH t AS (
+--     INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other)
+--                                 VALUES ('GreyCortex', 'VIP', '0.0devel', null, null, null, null, null, null, null)
+--     RETURNING *
+-- )
+-- SELECT t.id FROM t;

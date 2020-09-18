@@ -36,16 +36,16 @@ public class CVEobject {
     protected final String data_version;
     protected final String meta_data_id;
     protected final String meta_data_assigner;
-    protected final ArrayList<CWEobject> problem_type_data;
-    protected final ArrayList<ReferenceObject> references;
+    protected final ArrayList<CWEobject> problem_type_data; // check
+    protected final ArrayList<ReferenceObject> references; // check
     protected final ArrayList<String> descriptions;
     protected final String cve_data_version;
-    protected final ArrayList<CPEnodeObject> cpe_nodes;
-    protected final CVSS2object cvss_v2;
-    protected final CVSS3object cvss_v3;
-    protected final double cvss_v2_base_score;
-    protected final double cvss_v3_base_score;
-    protected final Date published_date;
+    protected final ArrayList<CPEnodeObject> cpe_nodes; // check
+    protected final CVSS2object cvss_v2; // check
+    protected final CVSS3object cvss_v3; // check
+    protected final double cvss_v2_base_score; // check
+    protected final double cvss_v3_base_score; // check
+    protected final Date published_date; // new Timestamp(pd.getMilis) -> timestamp with time zone
     protected final Date last_modified_date;
 
     /**
