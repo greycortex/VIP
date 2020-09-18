@@ -11,9 +11,8 @@ import java.util.Date;
 import java.io.*;
 import java.sql.*;
 
-
 /**
- * This class represents a CVE object (cpe matches (CPE objects), CVSS V2 attributes, CVSS V3 attributes, CWE values, ...)
+ * This class represents a CVE object (cpe matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE values, ...)
  *
  * --- Description of the class ---
  *
@@ -99,7 +98,7 @@ public class CVEobject {
      */
     public static ArrayList<CVEobject> CVEjsonToObjects(String fileName) {
 
-        // Empty arraylist of CVE objects which will later on be filled and returned
+        // Empty ArrayList of CVE objects which will later on be filled and returned
         ArrayList<CVEobject> cve_objs = new ArrayList<>();
 
         // Parsing .json file from input
