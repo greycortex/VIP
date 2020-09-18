@@ -42,19 +42,19 @@ public class CPEnodeObject {
         this.operators = operators;
     }
 
-    ///**
-     //* This method's purpose is to create a CPE node object from given parameters and return it
-     //*
-     //* @return CPE node object
-     //*/
-    //public static CPEnodeObject createCPEnodeObj(ArrayList<ArrayList<CPEobject>> cpe_matches, ArrayList<ArrayList<Boolean>> vulnerables,
-    //                                             ArrayList<ArrayList<String>> version_start_excludings, ArrayList<ArrayList<String>> version_end_excludings,
-    //                                             ArrayList<ArrayList<String>> version_start_includings, ArrayList<ArrayList<String>> version_end_includings,
-    //                                             ArrayList<String> operators) {
-    //
-    //    return new CPEnodeObject(cpe_matches, vulnerables, version_start_excludings, version_end_excludings, version_start_includings, version_end_includings,
-    //            operators);
-    //}
+    /**
+     * This method's purpose is to create a CPE node object from given parameters and return it
+     *
+     * @return CPE node object
+     */
+    public static CPEnodeObject getInstance(ArrayList<ArrayList<CPEobject>> cpe_matches, ArrayList<ArrayList<Boolean>> vulnerables,
+                                                 ArrayList<ArrayList<String>> version_start_excludings, ArrayList<ArrayList<String>> version_end_excludings,
+                                                 ArrayList<ArrayList<String>> version_start_includings, ArrayList<ArrayList<String>> version_end_includings,
+                                                 ArrayList<String> operators) {
+
+        return new CPEnodeObject(cpe_matches, vulnerables, version_start_excludings, version_end_excludings, version_start_includings, version_end_includings,
+                operators);
+    }
 
     @Override
     public String toString() {

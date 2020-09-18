@@ -30,15 +30,15 @@ public class ReferenceObject {
         this.tags = tags;
     }
 
-    ///**
-     //* This method's purpose is to create a reference object from given parameters and return it
-     //*
-     //* @return reference object
-     //*/
-    //public static ReferenceObject createRefObj(String url, String name, String refsource, ArrayList<String> tags) {
-    //
-    //    return new ReferenceObject(url, name, refsource, tags);
-    //}
+    /**
+     * This method's purpose is to create a reference object from given parameters and return it
+     *
+     * @return reference object
+     */
+    public static ReferenceObject getInstance(String url, String name, String refsource, ArrayList<String> tags) {
+
+        return new ReferenceObject(url, name, refsource, tags);
+    }
 
     @Override
     public String toString() {

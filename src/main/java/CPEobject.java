@@ -76,7 +76,7 @@ public class CPEobject {
         String[] splitstr = cpeUri.split(":");
 
         /**
-         * This for cycle goes through each part of the splitstr array and changes its parts so that they are
+         * This for cycle goes through each part of the splitstr Array and changes its parts so that they are
          * more database and search friendly and have a better form in general
          */
         for (int i = 0; i < splitstr.length; i++) {
@@ -87,7 +87,7 @@ public class CPEobject {
             }
 
             /**
-             * This block of code replaces all sql-not-friendly apostrophes with sql-friendly apostrophes,
+             * This block of code replaces all SQL-not-friendly apostrophes with sql-friendly apostrophes,
              * it also removes backslashes and exclamation marks in a weird places
              */
             if (splitstr[i] != null) {
@@ -130,7 +130,7 @@ public class CPEobject {
     }
 
     /**
-     * @return ArrayList that contains CPE objects made from the cpe23urilines ArrayList returned by the parserToLineArrayList() method
+     * @return ArrayList that contains CPE objects made from the cpe23uri lines ArrayList returned by the parserToLineArrayList() method
      */
     public static ArrayList<CPEobject> stringArrayListToObjectArraylist() {
 
@@ -148,7 +148,7 @@ public class CPEobject {
             String[] splitstr = line.split(":");
 
             /**
-             * This for cycle goes through each part of the splitstr array and changes its parts so that they are
+             * This for cycle goes through each part of the splitstr Array and changes its parts so that they are
              * more database and search friendly and have a better form in general
              */
             for (int i = 0; i < splitstr.length; i++) {
@@ -159,7 +159,7 @@ public class CPEobject {
                 }
 
                 /**
-                 * This block of code replaces all the sql-not-frinedly apostrophes with a sql-friendly apostrophes,
+                 * This block of code replaces all the SQL-not-frinedly apostrophes with a sql-friendly apostrophes,
                  * it also removes backslashes in weird places
                  */
                 if (splitstr[i] != null) {
@@ -208,7 +208,7 @@ public class CPEobject {
         // Count of vendors gone through from the last print of a CPE object
         int display = 0;
 
-        // This block of code takes the connection url from the separate file and puts it into the url_conn's 0 index
+        // This block of code takes the connection url from the separate file and puts it into the url_conn's 0th index
         try (BufferedReader br = new BufferedReader(new FileReader("exclude/dbconnection.txt"))) {
             for (String line; (line = br.readLine()) != null; ) {
                 url_conn.add(line);
@@ -487,7 +487,7 @@ public class CPEobject {
 
     }
 
-    // Replaces single apostrophe with double apostrophes so that parametres can be sql-friendly
+    // Replaces single apostrophe with double apostrophes so that parameters can be sql-friendly
     public void sqlFriendlyApost() {
 
         this.vendor = this.vendor.replaceAll("'", "''");

@@ -2,7 +2,7 @@
 /**
  * This class represents a CVSS v2 object (Base score metrics, ...)
  *
- //* It can create a CVSS v2 (base metric v2) object from given parametres and return it
+ //* It can create a CVSS v2 (base metric v2) object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -20,11 +20,11 @@ public class CVSS2object {
     protected String severity;
     protected double exploitability_score_v2;
     protected double impact_score_v2;
-    protected String ac_insuf_info;
-    protected String obtain_all_privilege;
-    protected String obtain_user_privilege;
-    protected String obtain_other_privilege;
-    protected String user_interaction_required;
+    protected String ac_insuf_info; // boolean?
+    protected String obtain_all_privilege; // boolean?
+    protected String obtain_user_privilege; // boolean?
+    protected String obtain_other_privilege; // boolean?
+    protected String user_interaction_required; // boolean?
 
     /**
      * Copies constructor
@@ -72,22 +72,22 @@ public class CVSS2object {
         this.user_interaction_required = user_interaction_required;
     }
 
-    ///**
-     //* This method's purpose is to create a CVSS v2 (base metric v2) object from given parameters and return it
-     //*
-     //* @return CVSS v2 (base metric v2) object
-     //*/
-    //public static CVSS2object createCVSS2obj(String version, String vector_string, String access_vector, String access_complexity,
-    //                                         String authentication, String confidentiality_impact, String integrity_impact,
-    //                                         String availability_impact, double base_score_v2, String severity,
-    //                                         double exploitability_score_v2, double impact_score_v2, String ac_insuf_info,
-    //                                         String obtain_all_privilege, String obtain_user_privilege, String obtain_other_privilege,
-    //                                         String user_interaction_required) {
-    //
-    //    return new CVSS2object(version, vector_string, access_vector, access_complexity, authentication, confidentiality_impact,
-    //            integrity_impact, availability_impact, base_score_v2, severity, exploitability_score_v2, impact_score_v2, ac_insuf_info,
-    //            obtain_all_privilege, obtain_user_privilege, obtain_other_privilege, user_interaction_required);
-    //}
+    /**
+     * This method's purpose is to create a CVSS v2 (base metric v2) object from given parameters and return it
+     *
+     * @return CVSS v2 (base metric v2) object
+     */
+    public static CVSS2object getInstance(String version, String vector_string, String access_vector, String access_complexity,
+                                             String authentication, String confidentiality_impact, String integrity_impact,
+                                             String availability_impact, double base_score_v2, String severity,
+                                             double exploitability_score_v2, double impact_score_v2, String ac_insuf_info,
+                                             String obtain_all_privilege, String obtain_user_privilege, String obtain_other_privilege,
+                                             String user_interaction_required) {
+
+        return new CVSS2object(version, vector_string, access_vector, access_complexity, authentication, confidentiality_impact,
+                integrity_impact, availability_impact, base_score_v2, severity, exploitability_score_v2, impact_score_v2, ac_insuf_info,
+                obtain_all_privilege, obtain_user_privilege, obtain_other_privilege, user_interaction_required);
+    }
 
     @Override
     public String toString() {
