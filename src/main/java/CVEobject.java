@@ -25,10 +25,10 @@ public class CVEobject {
      */
     private static Connection db;
 
-    /**
-     * Automatic ID
-     */
-    private final Long id;
+    ///**
+    //* Automatic ID
+    //*/
+    //private final Long id;
 
     protected final String data_type;
     protected final String data_format;
@@ -68,10 +68,10 @@ public class CVEobject {
      */
     public CVEobject(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
                      ArrayList<CWEobject> problem_type_data, ArrayList<ReferenceObject> references, ArrayList<String> descriptions,
-                     String cve_data_version, ArrayList<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3, double cvss_v2_base_score,
-                     double cvss_v3_base_score, Date published_date, Date last_modified_date) {
+                     String cve_data_version, ArrayList<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3,
+                     double cvss_v2_base_score, double cvss_v3_base_score, Date published_date, Date last_modified_date) {
 
-        this.id = null;
+        //this.id = null;
         this.data_type = data_type;
         this.data_format = data_format;
         this.data_version = data_version;
@@ -96,7 +96,7 @@ public class CVEobject {
      * @param fileName path to the .json file with cve objects
      * @return all created CVE objects
      */
-    public static ArrayList<CVEobject> CVEjsonToObjects(String fileName) {
+    public static ArrayList<CVEobject> CVEjsonToObjects(String fileName) { // https://nvd.nist.gov/vuln/data-feeds
 
         // Empty ArrayList of CVE objects which will later on be filled and returned
         ArrayList<CVEobject> cve_objs = new ArrayList<>();
@@ -190,39 +190,27 @@ public class CVEobject {
                 ArrayList<CPEnodeObject> cpe_nodes_final = new ArrayList<>(); // cpe_nodes
 
                 while (nodes_iterator.hasNext()) {
-                    ArrayList<ArrayList<CPEobject>> cpe_matches_part = new ArrayList<>(); // cpe matches - CPE node object
-                    ArrayList<ArrayList<Boolean>> vulnerables_part = new ArrayList<>(); // vulnerables - CPE node object
-                    ArrayList<ArrayList<String>> version_start_excludings_part = new ArrayList<>(); // version_start_excludings - CPE node object
-                    ArrayList<ArrayList<String>> version_end_excludings_part = new ArrayList<>(); // version_end_excludings - CPE node object
-                    ArrayList<ArrayList<String>> version_start_includings_part = new ArrayList<>(); // version_start_includings - CPE node object
-                    ArrayList<ArrayList<String>> version_end_includings_part = new ArrayList<>(); // version_end_includings - CPE node object
+                    ArrayList<ArrayList<CPEcomplexObj>> cpe_complex_objs_part = new ArrayList<>(); // complex CPE objects - CPE node object
                     ArrayList<String> operators_part = new ArrayList<>(); // operators - CPE node object
 
                     JSONObject node = nodes_iterator.next();
                     String first_op = (String) node.get("operator");
 
-                    if(node.get("negate") == null) operators_part.add("N"+first_op) ;
-                    else operators_part.add(first_op) ;
+                    if(node.get("negate") == null) operators_part.add(first_op) ;
+                    else operators_part.add("N"+first_op) ;
 
                     if (node.get("children") != null) { // More complex structure
                         JSONArray children = (JSONArray) node.get("children");
                         Iterator<JSONObject> children_iterator = children.iterator();
 
                         while (children_iterator.hasNext()) {
-                            ArrayList<CPEobject> cpe_matches_part_part = new ArrayList<>();
-                            ArrayList<Boolean> vulnerables_part_part = new ArrayList<>();
-                            ArrayList<String> version_start_excludings_part_part = new ArrayList<>();
-                            ArrayList<String> version_end_excludings_part_part = new ArrayList<>();
-                            ArrayList<String> version_start_includings_part_part = new ArrayList<>();
-                            ArrayList<String> version_end_includings_part_part = new ArrayList<>();
+                            ArrayList<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
                             JSONObject child = children_iterator.next();
-                            if (child.get("negate") == null) {
-                                String child_oper = (String) child.get("operator");
-                                operators_part.add(child_oper);
-                            } else {
-                                String child_oper = (String) child.get("operator");
-                                operators_part.add("N" + child_oper);
-                            }
+
+                            String child_oper = (String) child.get("operator");
+                            if (child.get("negate") == null) operators_part.add(child_oper) ;
+                            else operators_part.add("N" + child_oper) ;
+
                             JSONArray cpe_match = (JSONArray) child.get("cpe_match");
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
                             while (cpe_iterator.hasNext()) {
@@ -233,47 +221,24 @@ public class CVEobject {
                                 String version_end_excluding = (String) cpe_match_specific.get("versionEndExcluding");
                                 String version_start_including = (String) cpe_match_specific.get("versionStartIncluding");
                                 String version_end_including = (String) cpe_match_specific.get("versionEndIncluding");
-                                cpe_matches_part_part.add(CPEobject.cpeUriToObject(cpe23uri)); // create method from CPEobject class used
-                                vulnerables_part_part.add(vulnerable);
-                                version_start_excludings_part_part.add(version_start_excluding);
-                                version_end_excludings_part_part.add(version_end_excluding);
-                                version_start_includings_part_part.add(version_start_including);
-                                version_end_includings_part_part.add(version_end_including);
+                                CPEobject cpe_normal_obj = CPEcomplexObj.cpeUriToObject(cpe23uri); // create method from CPEobject class used - normal CPE object
+                                cpe_complex_objs_part_part.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
+                                        version_start_excluding, version_end_excluding, version_start_including, version_end_including)); // CPEcompexObj class used - more complex CPE object
+
                             }
-                            cpe_matches_part.add(cpe_matches_part_part);
-                            vulnerables_part.add(vulnerables_part_part);
-                            version_start_excludings_part.add(version_start_excludings_part_part);
-                            version_end_excludings_part.add(version_end_excludings_part_part);
-                            version_start_includings_part.add(version_start_includings_part_part);
-                            version_end_includings_part.add(version_end_includings_part_part);
+                            cpe_complex_objs_part.add(cpe_complex_objs_part_part);
                         }
-                        cpe_nodes_final.add(new CPEnodeObject(cpe_matches_part, vulnerables_part, version_start_excludings_part,
-                                version_end_excludings_part, version_start_includings_part, version_end_includings_part,
-                                operators_part)); // CPE node object added
+                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs_part, operators_part)); // CPE node object added
+
                     } else { // Less complex structure
                         JSONArray cpe_match = (JSONArray) node.get("cpe_match");
                         if (cpe_match == null) {
-                            ArrayList<CPEobject> cpe_matches_part_part = new ArrayList<>();
-                            ArrayList<Boolean> vulnerables_part_part = new ArrayList<>();
-                            ArrayList<String> version_start_excludings_part_part = new ArrayList<>();
-                            ArrayList<String> version_end_excludings_part_part = new ArrayList<>();
-                            ArrayList<String> version_start_includings_part_part = new ArrayList<>();
-                            ArrayList<String> version_end_includings_part_part = new ArrayList<>();
-                            cpe_matches_part.add(cpe_matches_part_part);
-                            vulnerables_part.add(vulnerables_part_part);
-                            version_start_excludings_part.add(version_start_excludings_part_part);
-                            version_end_excludings_part.add(version_end_excludings_part_part);
-                            version_start_includings_part.add(version_start_includings_part_part);
-                            version_end_includings_part.add(version_end_includings_part_part);
+                            ArrayList<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
+                            cpe_complex_objs_part.add(cpe_complex_objs_part_part);
                         } else {
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
                             while (cpe_iterator.hasNext()) {
-                                ArrayList<CPEobject> cpe_matches_part_part = new ArrayList<>();
-                                ArrayList<Boolean> vulnerables_part_part = new ArrayList<>();
-                                ArrayList<String> version_start_excludings_part_part = new ArrayList<>();
-                                ArrayList<String> version_end_excludings_part_part = new ArrayList<>();
-                                ArrayList<String> version_start_includings_part_part = new ArrayList<>();
-                                ArrayList<String> version_end_includings_part_part = new ArrayList<>();
+                                ArrayList<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
                                 JSONObject cpe_match_specific = cpe_iterator.next();
                                 String cpe23uri = (String) cpe_match_specific.get("cpe23Uri");
                                 boolean vulnerable = (boolean) cpe_match_specific.get("vulnerable");
@@ -281,23 +246,13 @@ public class CVEobject {
                                 String version_end_excluding = (String) cpe_match_specific.get("versionEndExcluding");
                                 String version_start_including = (String) cpe_match_specific.get("versionStartIncluding");
                                 String version_end_including = (String) cpe_match_specific.get("versionEndIncluding");
-                                cpe_matches_part_part.add(CPEobject.cpeUriToObject(cpe23uri)); // create method from CPEobject class used
-                                vulnerables_part_part.add(vulnerable);
-                                version_start_excludings_part_part.add(version_start_excluding);
-                                version_end_excludings_part_part.add(version_end_excluding);
-                                version_start_includings_part_part.add(version_start_including);
-                                version_end_includings_part_part.add(version_end_including);
-                                cpe_matches_part.add(cpe_matches_part_part);
-                                vulnerables_part.add(vulnerables_part_part);
-                                version_start_excludings_part.add(version_start_excludings_part_part);
-                                version_end_excludings_part.add(version_end_excludings_part_part);
-                                version_start_includings_part.add(version_start_includings_part_part);
-                                version_end_includings_part.add(version_end_includings_part_part);
+                                CPEobject cpe_normal_obj = CPEcomplexObj.cpeUriToObject(cpe23uri); // create method from CPEobject class used - normal CPE object
+                                cpe_complex_objs_part_part.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
+                                        version_start_excluding, version_end_excluding, version_start_including, version_end_including)); // CPEcompexObj class used - more complex CPE object
+                                cpe_complex_objs_part.add(cpe_complex_objs_part_part);
                             }
                         }
-                        cpe_nodes_final.add(new CPEnodeObject(cpe_matches_part, vulnerables_part, version_start_excludings_part,
-                                version_end_excludings_part, version_start_includings_part, version_end_includings_part,
-                                operators_part)); // CPE node object added
+                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs_part, operators_part)); // CPE node object added
                     }
                 }
 
@@ -488,11 +443,25 @@ public class CVEobject {
         return cve_objs;
     }
 
+    /**
+     * This method's purpose is to create CVE object from given parameters and return it
+     *
+     * @return CVE object
+     */
+    public static CVEobject getInstance(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
+                                        ArrayList<CWEobject> problem_type_data, ArrayList<ReferenceObject> references, ArrayList<String> descriptions,
+                                        String cve_data_version, ArrayList<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3,
+                                        double cvss_v2_base_score, double cvss_v3_base_score, Date published_date, Date last_modified_date) {
+
+        return new CVEobject(data_type, data_format, data_version, meta_data_id, meta_data_assigner, problem_type_data, references,
+                descriptions, cve_data_version, cpe_nodes, cvss_v2, cvss_v3, cvss_v2_base_score, cvss_v3_base_score, published_date, last_modified_date);
+    }
+
     @Override
     public String toString() {
         return "CVEobject{" +
-                "id=" + id +
-                ", data_type='" + data_type + '\'' +
+                //"id=" + id +
+                "data_type='" + data_type + '\'' +
                 ", data_format='" + data_format + '\'' +
                 ", data_version='" + data_version + '\'' +
                 ", meta_data_id='" + meta_data_id + '\'' +

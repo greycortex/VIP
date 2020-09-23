@@ -20,11 +20,11 @@ public class CVSS2object {
     protected String severity;
     protected double exploitability_score_v2;
     protected double impact_score_v2;
-    protected String ac_insuf_info; // boolean?
-    protected String obtain_all_privilege; // boolean?
-    protected String obtain_user_privilege; // boolean?
-    protected String obtain_other_privilege; // boolean?
-    protected String user_interaction_required; // boolean?
+    protected String ac_insuf_info;
+    protected String obtain_all_privilege;
+    protected String obtain_user_privilege;
+    protected String obtain_other_privilege;
+    protected String user_interaction_required;
 
     /**
      * Copies constructor

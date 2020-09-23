@@ -1,13 +1,14 @@
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
- * This class represents a CPE object (vendor, product, version, ...)
+ * This class represents a normal CPE object (vendor, product, version, ...)
  *
  * It can read from file, create objects representing vulnerabilities and insert them into the database including updates
  *
- * It also can create a CPE object from cpe23Uri String and return it
+ * It also can create a normal CPE object from cpe23Uri String and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -65,10 +66,10 @@ public class CPEobject {
     }
 
     /**
-     * This method's purpose is to take cpeUri line and create a sql-friendly CPE object
+     * This method's purpose is to take cpeUri line and create an sql-friendly normal CPE object
      *
-     * @param cpeUri line which is used to create a final CPE object
-     * @return an sql-friendly CPE object
+     * @param cpeUri line which is used to create a final normal CPE object
+     * @return an sql-friendly normal CPE object
      */
     public static CPEobject cpeUriToObject(String cpeUri) {
 
@@ -268,7 +269,7 @@ public class CPEobject {
                 // Controlling if the vendor String is sql-friendly
                 vendor = vendor.replaceAll("'", "''");
 
-                ResultSet result = stat.executeQuery("SELECT * FROM cpe_match_feed_objects WHERE vendor = '" + vendor + "'");
+                ResultSet result = stat.executeQuery("SELECT * FROM cpe WHERE vendor = '" + vendor + "'");
 
                 // Making vendor comparing-friendly
                 vendor = vendor.replaceAll("''", "'");
@@ -312,22 +313,6 @@ public class CPEobject {
                 ex.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        return "CPEobject{"
-                + "vendor='" + vendor + '\''
-                + ", product='" + product + '\''
-                + ", version='" + version + '\''
-                + ", update='" + update + '\''
-                + ", edition='" + edition + '\''
-                + ", language='" + language + '\''
-                + ", swEdition='" + swEdition + '\''
-                + ", targetSw='" + targetSw + '\''
-                + ", targetHw='" + targetHw + '\''
-                + ", other='" + other + '\''
-                + '}';
     }
 
     /**
@@ -445,7 +430,7 @@ public class CPEobject {
     public void intoDatabase() {
         try {
             // PreparedStatement is used to handle null values
-            PreparedStatement addstat = db.prepareStatement("INSERT INTO cpe_match_feed_objects (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
+            PreparedStatement addstat = db.prepareStatement("INSERT INTO cpe (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
                     + "VALUES ('" + this.vendor + "','" + this.product + "',?,?,?,?,?,?,?,?)");
 
             addstat.setString(1, this.version);
@@ -509,5 +494,32 @@ public class CPEobject {
         if (this.other == null) ;
         else this.other = this.other.replaceAll("'", "''");
 
+    }
+
+    /**
+     * This method's purpose is to create normal CPE object from given parameters and return it
+     *
+     * @return normal CPE object
+     */
+    public static CPEobject getInstance(String vendor, String product, String version, String update, String edition, String language,
+                                        String swEdition, String targetSw, String targetHw, String other) {
+
+        return new CPEobject(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
+    }
+
+    @Override
+    public String toString() {
+        return "CPEobject{"
+                + "vendor='" + vendor + '\''
+                + ", product='" + product + '\''
+                + ", version='" + version + '\''
+                + ", update='" + update + '\''
+                + ", edition='" + edition + '\''
+                + ", language='" + language + '\''
+                + ", swEdition='" + swEdition + '\''
+                + ", targetSw='" + targetSw + '\''
+                + ", targetHw='" + targetHw + '\''
+                + ", other='" + other + '\''
+                + '}';
     }
 }

@@ -9,36 +9,19 @@ import java.util.ArrayList;
  */
 public class CPEnodeObject {
 
-    protected ArrayList<ArrayList<CPEobject>> cpe_matches;
-    protected ArrayList<ArrayList<Boolean>> vulnerables;
-    protected ArrayList<ArrayList<String>> version_start_excludings;
-    protected ArrayList<ArrayList<String>> version_end_excludings;
-    protected ArrayList<ArrayList<String>> version_start_includings;
-    protected ArrayList<ArrayList<String>> version_end_includings;
+    protected ArrayList<ArrayList<CPEcomplexObj>> complex_cpe_objs;
     protected ArrayList<String> operators;
 
     /**
      * Copies constructor
      *
-     * @param cpe_matches              CPE objects from node
-     * @param vulnerables              vulnerability boolean values for each CPE object
-     * @param version_start_excludings version start excluding parameters
-     * @param version_end_excludings   version end excluding parameters
-     * @param version_start_includings version start including parameters
-     * @param version_end_includings   version end including parameters
+     * @param complex_cpe_objs         more complex CPE (CPEcomplexOjb) objects from node
      * @param operators                data about what operators are on which positions in CPE node
      */
-    public CPEnodeObject(ArrayList<ArrayList<CPEobject>> cpe_matches, ArrayList<ArrayList<Boolean>> vulnerables,
-                         ArrayList<ArrayList<String>> version_start_excludings, ArrayList<ArrayList<String>> version_end_excludings,
-                         ArrayList<ArrayList<String>> version_start_includings, ArrayList<ArrayList<String>> version_end_includings,
+    public CPEnodeObject(ArrayList<ArrayList<CPEcomplexObj>> complex_cpe_objs,
                          ArrayList<String> operators) {
 
-        this.cpe_matches = cpe_matches;
-        this.vulnerables = vulnerables;
-        this.version_start_excludings = version_start_excludings;
-        this.version_end_excludings = version_end_excludings;
-        this.version_start_includings = version_start_includings;
-        this.version_end_includings = version_end_includings;
+        this.complex_cpe_objs = complex_cpe_objs;
         this.operators = operators;
     }
 
@@ -47,24 +30,16 @@ public class CPEnodeObject {
      *
      * @return CPE node object
      */
-    public static CPEnodeObject getInstance(ArrayList<ArrayList<CPEobject>> cpe_matches, ArrayList<ArrayList<Boolean>> vulnerables,
-                                                 ArrayList<ArrayList<String>> version_start_excludings, ArrayList<ArrayList<String>> version_end_excludings,
-                                                 ArrayList<ArrayList<String>> version_start_includings, ArrayList<ArrayList<String>> version_end_includings,
+    public static CPEnodeObject getInstance(ArrayList<ArrayList<CPEcomplexObj>> complex_cpe_objs,
                                                  ArrayList<String> operators) {
 
-        return new CPEnodeObject(cpe_matches, vulnerables, version_start_excludings, version_end_excludings, version_start_includings, version_end_includings,
-                operators);
+        return new CPEnodeObject(complex_cpe_objs, operators);
     }
 
     @Override
     public String toString() {
         return "CPEnodeObject{" +
-                "cpe_matches=" + cpe_matches +
-                ", vulnerables=" + vulnerables +
-                ", version_start_excludings=" + version_start_excludings +
-                ", version_end_excludings=" + version_end_excludings +
-                ", version_start_includings=" + version_start_includings +
-                ", version_end_includings=" + version_end_includings +
+                "complex_cpe_objs=" + complex_cpe_objs +
                 ", operators=" + operators +
                 '}';
     }
