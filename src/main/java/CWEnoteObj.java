@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE note object (type attribute, content of the note)
- *
- //* It can create a CWE note object from given parameters and return it
+ * <p>
+ * //* It can create a CWE note object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -13,8 +13,8 @@ public class CWEnoteObj {
     /**
      * Copies constructor
      *
-     * @param type           type attribute
-     * @param note_content   note content
+     * @param type         type attribute
+     * @param note_content note content
      */
     public CWEnoteObj(String type, String note_content) {
 
@@ -28,7 +28,7 @@ public class CWEnoteObj {
      *
      * @return CWE note object
      */
-    public static CWEnoteObj getInstance(String type, String note_content){
+    public static CWEnoteObj getInstance(String type, String note_content) {
 
         return new CWEnoteObj(type, note_content);
     }

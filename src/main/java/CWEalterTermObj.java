@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE alternate term object (term attribute, description attribute)
- *
- //* It can create a CWE alternate term object from given parameters and return it
+ * <p>
+ * //* It can create a CWE alternate term object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -13,8 +13,8 @@ public class CWEalterTermObj {
     /**
      * Copies constructor
      *
-     * @param term          term attribute
-     * @param description   description attribute
+     * @param term        term attribute
+     * @param description description attribute
      */
     public CWEalterTermObj(String term, String description) {
 
@@ -28,7 +28,7 @@ public class CWEalterTermObj {
      *
      * @return CWE alternate term object
      */
-    public static CWEalterTermObj getInstance(String term, String description){
+    public static CWEalterTermObj getInstance(String term, String description) {
 
         return new CWEalterTermObj(term, description);
     }

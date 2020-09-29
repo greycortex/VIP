@@ -1,8 +1,8 @@
 /**
  * This class represents a CWE detection method object (method id attribute, method attribute, description attribute,
  * effectiveness attribute, effectiveness notes attribute)
- *
- //* It can create a CWE detection method object from given parameters and return it
+ * <p>
+ * //* It can create a CWE detection method object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -18,11 +18,11 @@ public class CWEdetMethObj {
     /**
      * Copies constructor
      *
-     * @param method_id            method id attribute
-     * @param method               method attribute
-     * @param description          description attribute
-     * @param effectiveness        effectiveness attribute
-     * @param effectiveness_notes  effectiveness notes attribute
+     * @param method_id           method id attribute
+     * @param method              method attribute
+     * @param description         description attribute
+     * @param effectiveness       effectiveness attribute
+     * @param effectiveness_notes effectiveness notes attribute
      */
     public CWEdetMethObj(String method_id, String method, String description, String effectiveness, String effectiveness_notes) {
 
@@ -39,7 +39,7 @@ public class CWEdetMethObj {
      *
      * @return CWE detection method object
      */
-    public static CWEdetMethObj getInstance(String method_id, String method, String description, String effectiveness, String effectiveness_notes){
+    public static CWEdetMethObj getInstance(String method_id, String method, String description, String effectiveness, String effectiveness_notes) {
 
         return new CWEdetMethObj(method_id, method, description, effectiveness, effectiveness_notes);
     }

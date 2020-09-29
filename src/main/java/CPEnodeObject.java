@@ -2,8 +2,8 @@ import java.util.ArrayList;
 
 /**
  * This class represents a CPE node object (cpe_matches, vulnerable attributes of specific CPE objects, ...)
- *
- //* It can create a CPE node object and return it
+ * <p>
+ * //* It can create a CPE node object and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -15,8 +15,8 @@ public class CPEnodeObject {
     /**
      * Copies constructor
      *
-     * @param complex_cpe_objs         more complex CPE (CPEcomplexOjb) objects from node
-     * @param operators                data about what operators are on which positions in CPE node
+     * @param complex_cpe_objs more complex CPE (CPEcomplexObj) objects from node
+     * @param operators        data about what operators are on which positions in CPE node
      */
     public CPEnodeObject(ArrayList<ArrayList<CPEcomplexObj>> complex_cpe_objs,
                          ArrayList<String> operators) {
@@ -31,7 +31,7 @@ public class CPEnodeObject {
      * @return CPE node object
      */
     public static CPEnodeObject getInstance(ArrayList<ArrayList<CPEcomplexObj>> complex_cpe_objs,
-                                                 ArrayList<String> operators) {
+                                            ArrayList<String> operators) {
 
         return new CPEnodeObject(complex_cpe_objs, operators);
     }

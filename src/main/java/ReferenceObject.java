@@ -2,8 +2,8 @@ import java.util.ArrayList;
 
 /**
  * This class represents a reference object which can be found in CVE object
- *
- //* Its purpose is to create reference objects which are then put into CVE java objects
+ * <p>
+ * //* Its purpose is to create reference objects which are then put into CVE objects
  *
  * @author Tomas Bozek (XarfNao)
  */

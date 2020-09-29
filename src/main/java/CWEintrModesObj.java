@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE introduction (from modes of introduction) object (phase attribute, note attribute)
- *
- //* It can create a CWE introduction object from given parameters and return it
+ * <p>
+ * //* It can create a CWE introduction object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -13,8 +13,8 @@ public class CWEintrModesObj {
     /**
      * Copies constructor
      *
-     * @param phase  phase attribute
-     * @param note   note attribute
+     * @param phase phase attribute
+     * @param note  note attribute
      */
     public CWEintrModesObj(String phase, String note) {
 
@@ -28,7 +28,7 @@ public class CWEintrModesObj {
      *
      * @return CWE introduction object
      */
-    public static CWEintrModesObj getInstance(String phase, String note){
+    public static CWEintrModesObj getInstance(String phase, String note) {
 
         return new CWEintrModesObj(phase, note);
     }

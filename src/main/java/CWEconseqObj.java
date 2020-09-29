@@ -2,8 +2,8 @@ import java.util.ArrayList;
 
 /**
  * This class represents a CWE consequence object (scope attributes, impact attributes, note attributes, likelihood attributes)
- *
- //* It can create a CWE consequence object from given parameters and return it
+ * <p>
+ * //* It can create a CWE consequence object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -17,13 +17,13 @@ public class CWEconseqObj {
     /**
      * Copies constructor
      *
-     * @param scopes        scope
-     * @param impacts       impact attributes
-     * @param notes         note attributes
-     * @param likelihoods   likelihood attributes
+     * @param scopes      scope
+     * @param impacts     impact attributes
+     * @param notes       note attributes
+     * @param likelihoods likelihood attributes
      */
     public CWEconseqObj(ArrayList<String> scopes, ArrayList<String> impacts, ArrayList<String> notes,
-                          ArrayList<String> likelihoods) {
+                        ArrayList<String> likelihoods) {
 
         this.scopes = scopes;
         this.impacts = impacts;
@@ -38,7 +38,7 @@ public class CWEconseqObj {
      * @return CWE consequence object
      */
     public static CWEconseqObj getInstance(ArrayList<String> scopes, ArrayList<String> impacts, ArrayList<String> notes,
-                                           ArrayList<String> likelihoods){
+                                           ArrayList<String> likelihoods) {
 
         return new CWEconseqObj(scopes, impacts, notes, likelihoods);
     }

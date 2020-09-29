@@ -10,9 +10,11 @@ import java.util.ArrayList;
 
 /**
  * This class represents a CWE object (CWE code (ID), name of weakness, abstraction attribute, structure attribute, ...)
- *
+ * <p>
  * It can create a CWE object from given CWE code (ID), it uses DOM XML parser to find other informations (attributes) according
  * to the specific CWE id and creates a CWE object containing all of them (CWE code (ID) and gotten informations (attributes))
+ * <p>
+ * It also can create a CWE object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -112,12 +114,12 @@ public class CWEobject {
 
     /**
      * This method's purpose is to create a CWE object from given ID, add more informations according to the input ID and return it
-     *
+     * <p>
      * It uses DOM XML parser
      * It takes input ID attribute, goes through file that contains latest list of CWE weaknesses,
      * finds the right CWE weakness, adds relating informations and then returns a CWE object with given ID
      * and found informations
-     *
+     * <p>
      * If it can't find any information by ID, it returns these attributes as null values
      *
      * @return CWE object (CWE code (ID), gotten informations (attributes))
@@ -364,7 +366,7 @@ public class CWEobject {
                                                     }
                                                 }
 
-                                                cwe_tax_maps.add(new CWEtaxMapObj(tax_name, tax_entry_name, tax_entry_id, tax_map_fit));
+                                                cwe_tax_maps.add(new CWEtaxMapObj(tax_name, tax_entry_name, tax_entry_id, tax_map_fit)); // creating taxonomy mapping object
                                             }
                                         }
 
@@ -574,12 +576,6 @@ public class CWEobject {
                                             }
                                         }
                                     }
-
-                                    // what about <content history> ???
-
-                                    // separately complete external references, views, categories
-
-                                    // what about CAPEC? - https://capec.mitre.org/data/xml/capec_latest.xml
                                 }
                             }
                         }

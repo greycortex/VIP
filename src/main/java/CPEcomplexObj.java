@@ -1,12 +1,12 @@
 /**
  * This class represents a complex CPE object (CPE object attributes plus vulnerable etc. from CVE feed JSON file)
- *
- * It extends CPEobject class - adds a few attributes so that it can
+ * <p>
+ * //* It extends CPEobject class - adds a few attributes so that it can contain additional attributes gotten from CVE feed JSON file
  *
  * @author Tomas Bozek (XarfNao)
  */
 
-public class CPEcomplexObj extends CPEobject{
+public class CPEcomplexObj extends CPEobject {
 
     protected boolean vulnerable;
     protected String version_start_excluding;
@@ -26,7 +26,7 @@ public class CPEcomplexObj extends CPEobject{
     public CPEcomplexObj(String vendor, String product, String version, String update,
                          String edition, String language, String swEdition, String targetSw,
                          String targetHw, String other, boolean vulnerable, String version_start_excluding,
-                         String version_end_excluding, String version_start_including, String version_end_including){
+                         String version_end_excluding, String version_start_including, String version_end_including) {
         super(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
 
         this.vulnerable = vulnerable;
@@ -43,7 +43,7 @@ public class CPEcomplexObj extends CPEobject{
      * @return more complex CPE object
      */
     public static CPEcomplexObj getInstanceFromCPE(CPEobject cpeUri, boolean vulnerable, String version_start_excluding,
-                       String version_end_excluding, String version_start_including, String version_end_including) {
+                                                   String version_end_excluding, String version_start_including, String version_end_including) {
 
         return new CPEcomplexObj(cpeUri.vendor, cpeUri.product, cpeUri.version, cpeUri.update, cpeUri.edition, cpeUri.language,
                 cpeUri.swEdition, cpeUri.targetSw, cpeUri.targetHw, cpeUri.other, vulnerable, version_start_excluding,

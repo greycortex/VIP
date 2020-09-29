@@ -5,9 +5,9 @@ import java.util.Date;
 
 /**
  * This class represents a normal CPE object (vendor, product, version, ...)
- *
+ * <p>
  * It can read from file, create objects representing vulnerabilities and insert them into the database including updates
- *
+ * <p>
  * It also can create a normal CPE object from cpe23Uri String and return it
  *
  * @author Tomas Bozek (XarfNao)
@@ -73,7 +73,7 @@ public class CPEobject {
      */
     public static CPEobject cpeUriToObject(String cpeUri) {
 
-        // This array is filled with parts of the cpeUri String (separates by ":")
+        // This Array is filled with parts of the cpeUri String (separates by ":")
         String[] splitstr = cpeUri.split(":");
 
         /**
@@ -82,14 +82,14 @@ public class CPEobject {
          */
         for (int i = 0; i < splitstr.length; i++) {
 
-            // This replaces all the "*" characters (which mean an empty parameter)
+            // This replaces all the "*" characters (which mean empty parameters)
             if (splitstr[i].equals("*") || splitstr[i].equals("*\",") || splitstr[i].equals("*\"")) {
                 splitstr[i] = null;
             }
 
             /**
              * This block of code replaces all SQL-not-friendly apostrophes with sql-friendly apostrophes,
-             * it also removes backslashes and exclamation marks in a weird places
+             * it also removes backslashes in weird places
              */
             if (splitstr[i] != null) {
                 splitstr[i] = splitstr[i].replaceAll("'", "''");
@@ -103,7 +103,7 @@ public class CPEobject {
             splitstr[12] = splitstr[12].replace("\"", "");
         }
 
-        // Finally creates a new CPE object using changed parts of the splitstr array
+        // Finally creates a new CPE object using changed parts of the splitstr Array
         return new CPEobject(splitstr[3], splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12]);
     }
 
@@ -139,13 +139,13 @@ public class CPEobject {
         ArrayList<CPEobject> obj_list = new ArrayList<>();
 
         // Taking the lines returned by the parserToLineArrayList() method
-        ArrayList<String> cpe23urilines = new ArrayList<>();
-        cpe23urilines = parserToLineArrayList();
+        ArrayList<String> cpe23uriliness = new ArrayList<>();
+        cpe23uriliness = parserToLineArrayList();
 
-        // We go line by line (object by object)
-        for (String line : cpe23urilines) {
+        // We go line by line (Object by Object)
+        for (String line : cpe23uriliness) {
 
-            // This array is filled with parts of the line (separates by ":")
+            // This Array is filled with parts of the line (separates by ":")
             String[] splitstr = line.split(":");
 
             /**
@@ -154,13 +154,13 @@ public class CPEobject {
              */
             for (int i = 0; i < splitstr.length; i++) {
 
-                // This replaces all the "*" characters (which mean an empty parameter)
+                // This replaces all the "*" characters (which mean empty parameters)
                 if (splitstr[i].equals("*") || splitstr[i].equals("*\",") || splitstr[i].equals("*\"")) {
                     splitstr[i] = null;
                 }
 
                 /**
-                 * This block of code replaces all the SQL-not-frinedly apostrophes with a sql-friendly apostrophes,
+                 * This block of code replaces all the SQL-not-friendly apostrophes with a sql-friendly apostrophes,
                  * it also removes backslashes in weird places
                  */
                 if (splitstr[i] != null) {
@@ -175,7 +175,7 @@ public class CPEobject {
                 splitstr[13] = splitstr[13].replace("\"", "");
             }
 
-            // Finally creates a new CPE object using changed parts of the splitstr array
+            // Finally creates a new CPE object using changed parts of the splitstr Array
             CPEobject obj = new CPEobject(splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]);
             obj_list.add(obj);
         }
@@ -185,7 +185,7 @@ public class CPEobject {
 
     /**
      * This method's purpose is to update the database full of CPE objects so that it can be up-to-date
-     *
+     * <p>
      * This method loads all the objects from the up-to-date file,
      * then it always loads all the objects with the same one vendor from the database (vendor by vendor)
      * and compares them to objects with the same vendor from the up-to-date file,
@@ -229,7 +229,6 @@ public class CPEobject {
         }
 
         // This for cycle is for the purpose to go through all the vendors that exist in the up-to-date file one by one
-
         for (String vendor : obj_vendors) {
             display++;
 
@@ -271,7 +270,7 @@ public class CPEobject {
 
                 ResultSet result = stat.executeQuery("SELECT * FROM cpe WHERE vendor = '" + vendor + "'");
 
-                // Making vendor comparing-friendly
+                // Making vendor String comparing-friendly
                 vendor = vendor.replaceAll("''", "'");
 
                 while (result.next()) {
@@ -426,7 +425,7 @@ public class CPEobject {
         return true;
     }
 
-    // Adding an object from input into database using PreparedStatement
+    // Adding an Object from input into database using PreparedStatement
     public void intoDatabase() {
         try {
             // PreparedStatement is used to handle null values

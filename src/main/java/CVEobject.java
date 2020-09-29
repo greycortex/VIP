@@ -12,9 +12,11 @@ import java.io.*;
 import java.sql.*;
 
 /**
- * This class represents a CVE object (cpe matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE values, ...)
- *
- * --- Description of the class ---
+ * This class represents a CVE object (cpe matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE attributes, ...)
+ * <p>
+ * //* Its can create and return all CVE objects from JSON file (input)
+ * <p>
+ * //* It also can create CVE object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -35,16 +37,16 @@ public class CVEobject {
     protected final String data_version;
     protected final String meta_data_id;
     protected final String meta_data_assigner;
-    protected final ArrayList<CWEobject> problem_type_data; // check
-    protected final ArrayList<ReferenceObject> references; // check
+    protected final ArrayList<CWEobject> problem_type_data;
+    protected final ArrayList<ReferenceObject> references;
     protected final ArrayList<String> descriptions;
     protected final String cve_data_version;
-    protected final ArrayList<CPEnodeObject> cpe_nodes; // check
-    protected final CVSS2object cvss_v2; // check
-    protected final CVSS3object cvss_v3; // check
-    protected final double cvss_v2_base_score; // check
-    protected final double cvss_v3_base_score; // check
-    protected final Date published_date; // new Timestamp(pd.getMilis) -> timestamp with time zone
+    protected final ArrayList<CPEnodeObject> cpe_nodes;
+    protected final CVSS2object cvss_v2;
+    protected final CVSS3object cvss_v3;
+    protected final double cvss_v2_base_score;
+    protected final double cvss_v3_base_score;
+    protected final Date published_date;
     protected final Date last_modified_date;
 
     /**
@@ -91,7 +93,7 @@ public class CVEobject {
     }
 
     /**
-     * This method's purpose is to create and return all CVE objects from .json file (input)
+     * This method's purpose is to create and return all CVE objects from JSON file (input)
      *
      * @param fileName path to the .json file with cve objects
      * @return all created CVE objects
@@ -101,7 +103,7 @@ public class CVEobject {
         // Empty ArrayList of CVE objects which will later on be filled and returned
         ArrayList<CVEobject> cve_objs = new ArrayList<>();
 
-        // Parsing .json file from input
+        // Parsing JSON file from input
         JSONParser parser = new JSONParser();
 
         try (Reader reader = new FileReader(fileName)) {
@@ -196,8 +198,8 @@ public class CVEobject {
                     JSONObject node = nodes_iterator.next();
                     String first_op = (String) node.get("operator");
 
-                    if(node.get("negate") == null) operators_part.add(first_op) ;
-                    else operators_part.add("N"+first_op) ;
+                    if (node.get("negate") == null) operators_part.add(first_op);
+                    else operators_part.add("N" + first_op);
 
                     if (node.get("children") != null) { // More complex structure
                         JSONArray children = (JSONArray) node.get("children");
@@ -208,8 +210,8 @@ public class CVEobject {
                             JSONObject child = children_iterator.next();
 
                             String child_oper = (String) child.get("operator");
-                            if (child.get("negate") == null) operators_part.add(child_oper) ;
-                            else operators_part.add("N" + child_oper) ;
+                            if (child.get("negate") == null) operators_part.add(child_oper);
+                            else operators_part.add("N" + child_oper);
 
                             JSONArray cpe_match = (JSONArray) child.get("cpe_match");
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();

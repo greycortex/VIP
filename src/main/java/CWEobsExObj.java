@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE observed example object (reference attribute, description attribute, link attribute)
- *
- //* It can create a CWE observed example object from given parameters and return it
+ * <p>
+ * //* It can create a CWE observed example object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -14,9 +14,9 @@ public class CWEobsExObj {
     /**
      * Copies constructor
      *
-     * @param reference    reference attribute
-     * @param description  description attribute
-     * @param link         link attribute
+     * @param reference   reference attribute
+     * @param description description attribute
+     * @param link        link attribute
      */
     public CWEobsExObj(String reference, String description, String link) {
 
@@ -25,12 +25,13 @@ public class CWEobsExObj {
         this.link = link;
 
     }
+
     /**
      * This method's purpose is to create a CWE observed example object from given parameters and return it
      *
      * @return CWE observed example object
      */
-    public static CWEobsExObj getInstance(String reference, String description, String link){
+    public static CWEobsExObj getInstance(String reference, String description, String link) {
 
         return new CWEobsExObj(reference, description, link);
     }

@@ -3,8 +3,8 @@ import java.util.ArrayList;
 /**
  * This class represents a CWE potential mitigation object (mitigation id attribute, phase attributes, strategy attribute, description attribute,
  * effectiveness attribute, effectiveness notes attribute)
- *
- //* It can create a CWE potential mitigation object from given parameters and return it
+ * <p>
+ * //* It can create a CWE potential mitigation object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -20,12 +20,12 @@ public class CWEpotMitObj {
     /**
      * Copies constructor
      *
-     * @param mitigation_id        mitigation id attribute
-     * @param phases               phase attributes
-     * @param strategy             strategy attribute
-     * @param description          description attribute
-     * @param effectiveness        effectiveness attribute
-     * @param effectiveness_notes  effectiveness notes attribute
+     * @param mitigation_id       mitigation id attribute
+     * @param phases              phase attributes
+     * @param strategy            strategy attribute
+     * @param description         description attribute
+     * @param effectiveness       effectiveness attribute
+     * @param effectiveness_notes effectiveness notes attribute
      */
     public CWEpotMitObj(String mitigation_id, ArrayList<String> phases, String strategy, String description,
                         String effectiveness, String effectiveness_notes) {
@@ -45,7 +45,7 @@ public class CWEpotMitObj {
      * @return CWE potential mitigation object
      */
     public static CWEpotMitObj getInstance(String mitigation_id, ArrayList<String> phases, String strategy, String description, String effectiveness,
-                                           String effectiveness_notes){
+                                           String effectiveness_notes) {
 
         return new CWEpotMitObj(mitigation_id, phases, strategy, description, effectiveness, effectiveness_notes);
     }

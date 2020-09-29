@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE taxonomy mapping object (name, entry name attribute, entry ID, mapping fit attribute)
- *
- //* It can create a CWE taxonomy mapping object from given parameters and return it
+ * <p>
+ * //* It can create a CWE taxonomy mapping object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -15,10 +15,10 @@ public class CWEtaxMapObj {
     /**
      * Copies constructor
      *
-     * @param name         name
-     * @param entry_name   entry name attribute
-     * @param entry_id     entry ID attribute
-     * @param mapping_fit  mapping fit attribute
+     * @param name        name
+     * @param entry_name  entry name attribute
+     * @param entry_id    entry ID attribute
+     * @param mapping_fit mapping fit attribute
      */
     public CWEtaxMapObj(String name, String entry_name, String entry_id, String mapping_fit) {
 
@@ -34,7 +34,7 @@ public class CWEtaxMapObj {
      *
      * @return CWE taxonomy mapping object
      */
-    public static CWEtaxMapObj getInstance(String name, String entry_name, String entry_id, String mapping_fit){
+    public static CWEtaxMapObj getInstance(String name, String entry_name, String entry_id, String mapping_fit) {
 
         return new CWEtaxMapObj(name, entry_name, entry_id, mapping_fit);
     }

@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE relation object (nature attribute, CWE code (ID) of related CWE, view_id attribute, ordinal attribute)
- *
- //* It can create a CWE relation object from given parameters and return it
+ * <p>
+ * //* It can create a CWE relation object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -15,10 +15,10 @@ public class CWErelationObj {
     /**
      * Copies constructor
      *
-     * @param nature          nature attribute
-     * @param related_cwe_id  CWE code (ID) of related CWE
-     * @param view_id         view_id attribute
-     * @param ordinal         ordinal attribute
+     * @param nature         nature attribute
+     * @param related_cwe_id CWE code (ID) of related CWE
+     * @param view_id        view_id attribute
+     * @param ordinal        ordinal attribute
      */
     public CWErelationObj(String nature, String related_cwe_id, String view_id, String ordinal) {
 
@@ -34,7 +34,7 @@ public class CWErelationObj {
      *
      * @return CWE relation object
      */
-    public static CWErelationObj getInstance(String nature, String related_cwe_id, String view_id, String ordinal){
+    public static CWErelationObj getInstance(String nature, String related_cwe_id, String view_id, String ordinal) {
 
         return new CWErelationObj(nature, related_cwe_id, view_id, ordinal);
     }
@@ -49,4 +49,3 @@ public class CWErelationObj {
                 '}';
     }
 }
-

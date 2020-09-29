@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE external reference reference object (ID attribute, section attribute)
- *
- //* It can create a CWE external reference reference object from given parameters and return it
+ * <p>
+ * //* It can create a CWE external reference reference object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -13,8 +13,8 @@ public class CWEextRefRefObj {
     /**
      * Copies constructor
      *
-     * @param ext_ref_id  external reference id
-     * @param section     section content
+     * @param ext_ref_id external reference id
+     * @param section    section content
      */
     public CWEextRefRefObj(String ext_ref_id, String section) {
 
@@ -28,7 +28,7 @@ public class CWEextRefRefObj {
      *
      * @return CWE external reference reference object
      */
-    public static CWEextRefRefObj getInstance(String ext_ref_id, String section){
+    public static CWEextRefRefObj getInstance(String ext_ref_id, String section) {
 
         return new CWEextRefRefObj(ext_ref_id, section);
     }

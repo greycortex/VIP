@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE weakness ordinality object (ordinality attribute, description attribute)
- *
- //* It can create a CWE weakness ordinality object from given parameters and return it
+ * <p>
+ * //* It can create a CWE weakness ordinality object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -13,8 +13,8 @@ public class CWEweakOrdObj {
     /**
      * Copies constructor
      *
-     * @param ordinality    ordinality attribute
-     * @param description   description attribute
+     * @param ordinality  ordinality attribute
+     * @param description description attribute
      */
     public CWEweakOrdObj(String ordinality, String description) {
 
@@ -28,7 +28,7 @@ public class CWEweakOrdObj {
      *
      * @return CWE weakness ordinality object
      */
-    public static CWEweakOrdObj getInstance(String ordinality, String description){
+    public static CWEweakOrdObj getInstance(String ordinality, String description) {
 
         return new CWEweakOrdObj(ordinality, description);
     }

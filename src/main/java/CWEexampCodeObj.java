@@ -1,7 +1,7 @@
 /**
  * This class represents a CWE demonstrative example - example code object (nature attribute, language attribute, content)
- *
- //* It can create a CWE demonstrative example - example code object from given parameters and return it
+ * <p>
+ * //* It can create a CWE demonstrative example - example code object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -14,9 +14,9 @@ public class CWEexampCodeObj {
     /**
      * Copies constructor
      *
-     * @param nature        nature attribute
-     * @param language      language attributes
-     * @param content       content
+     * @param nature   nature attribute
+     * @param language language attributes
+     * @param content  content
      */
     public CWEexampCodeObj(String nature, String language, String content) {
 
@@ -31,7 +31,7 @@ public class CWEexampCodeObj {
      *
      * @return CWE demonstrative example - example code object
      */
-    public static CWEexampCodeObj getInstance(String nature, String language, String content){
+    public static CWEexampCodeObj getInstance(String nature, String language, String content) {
 
         return new CWEexampCodeObj(nature, language, content);
     }
@@ -45,4 +45,3 @@ public class CWEexampCodeObj {
                 '}';
     }
 }
-
