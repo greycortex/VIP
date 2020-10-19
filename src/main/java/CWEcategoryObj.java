@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * <p>
  * //* It can create a CWE category object from given parameters and return it
  * <p>
- * It also can go through an XML file with CWE weaknesses, find category objects, parse them into
+ * It also can go through an XML file with CWE weaknesses or CAPEC objects, find category objects, parse them into
  * CWE category objects and return them
  *
  * @author Tomas Bozek (XarfNao)
@@ -61,23 +61,24 @@ public class CWEcategoryObj {
     }
 
     /**
-     * This method's purpose is to go through an XML file with CWE weaknesses, find category objects, parse them into
-     * CWE category objects and return them, deprecated ones not included
+     * This method's purpose is to go through an XML file with CWE weaknesses or CAPEC objects, find category objects,
+     * parse them into CWE category objects and return them, deprecated ones not included
      * <p>
      * It uses DOM XML parser
      * <p>
      * If it can't find any informations, it returns these attributes as null values
      *
+     * @param file path to an XML file which will be parsed from
      * @return CWE category objects
      */
-    public static ArrayList<CWEcategoryObj> CWEcategoryToArrayList() {
+    public static ArrayList<CWEcategoryObj> CWEcategoryToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         ArrayList<CWEcategoryObj> category_objs = new ArrayList<>(); // creating empty ArrayList for it to be filled with CWE category objects
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse(new FileInputStream("exclude/cwec_v4.2.xml")); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+            Document document = builder.parse(new FileInputStream(file));
             Element doc_element = document.getDocumentElement();
             NodeList nodes = doc_element.getChildNodes();
 
@@ -128,11 +129,20 @@ public class CWEcategoryObj {
 
                                         for (int g = 0; g < category_relation_nodes.getLength(); g++) {
                                             if (category_relation_nodes.item(g).getNodeName().equals("Has_Member")) {
+                                                String cat_capec_id = null;
+                                                String cat_cwe_id = null;
+                                                String cat_view_id = null;
                                                 NamedNodeMap cat_relation_attr = category_relation_nodes.item(g).getAttributes();
-                                                String cat_cwe_id = cat_relation_attr.getNamedItem("CWE_ID").getNodeValue(); // getting CWE ID attribute - relationship (member) object
-                                                String cat_view_id = cat_relation_attr.getNamedItem("View_ID").getNodeValue(); // getting view ID attribute - relationship (member) object
 
-                                                cat_category_relationships.add(new CWErelationshipObj(cat_cwe_id, cat_view_id)); // creating new relationship (member) object
+                                                if (file == "exclude/capec_latest.xml"){
+                                                    cat_capec_id = cat_relation_attr.getNamedItem("CAPEC_ID").getNodeValue(); // getting CAPEC ID attribute - relationship (member) object
+
+                                                } else if (file == "exclude/cwec_v4.2.xml"){
+                                                    cat_cwe_id = cat_relation_attr.getNamedItem("CWE_ID").getNodeValue(); // getting CWE ID attribute - relationship (member) object
+                                                    cat_view_id = cat_relation_attr.getNamedItem("View_ID").getNodeValue(); // getting view ID attribute - relationship (member) object
+                                                }
+
+                                                cat_category_relationships.add(new CWErelationshipObj(cat_cwe_id, cat_view_id, cat_capec_id)); // creating new relationship (member) object
                                             }
                                         }
 

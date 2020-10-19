@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * <p>
  * //* It can create a CWE view object from given parameters and return it
  * <p>
- * It also can go through an XML file with CWE weaknesses, find view objects, parse them into
+ * It also can go through an XML file with CWE weaknesses or CAPEC objects, find view objects, parse them into
  * CWE view objects and return them, deprecated ones not included
  *
  * @author Tomas Bozek (XarfNao)
@@ -67,23 +67,24 @@ public class CWEviewObj {
     }
 
     /**
-     * This method's purpose is to go through an XML file with CWE weaknesses, find view objects, parse them into
+     * This method's purpose is to go through an XML file with CWE weaknesses or CAPEC objects, find view objects, parse them into
      * CWE view objects and return them
      * <p>
      * It uses DOM XML parser
      * <p>
      * If it can't find any informations, it returns these attributes as null values
      *
+     * @param file path to an XML file which will be parsed from
      * @return CWE view objects
      */
-    public static ArrayList<CWEviewObj> CWEviewToArrayList() {
+    public static ArrayList<CWEviewObj> CWEviewToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         ArrayList<CWEviewObj> view_objs = new ArrayList<>(); // creating empty ArrayList for it to be filled with CWE view objects
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse(new FileInputStream("exclude/cwec_v4.2.xml")); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+            Document document = builder.parse(new FileInputStream(file));
             Element doc_element = document.getDocumentElement();
             NodeList nodes = doc_element.getChildNodes();
 
@@ -135,11 +136,20 @@ public class CWEviewObj {
 
                                         for (int g = 0; g < view_relation_nodes.getLength(); g++) {
                                             if (view_relation_nodes.item(g).getNodeName().equals("Has_Member")) {
+                                                String view_view_view_id = null;
+                                                String view_cwe_id = null;
+                                                String view_capec_id = null;
                                                 NamedNodeMap view_relation_attr = view_relation_nodes.item(g).getAttributes();
-                                                String view_cwe_id = view_relation_attr.getNamedItem("CWE_ID").getNodeValue(); // getting CWE ID attribute - relationship (member) object
-                                                String view_view_view_id = view_relation_attr.getNamedItem("View_ID").getNodeValue(); // getting view ID attribute - relationship (member) object
 
-                                                view_view_members.add(new CWErelationshipObj(view_cwe_id, view_view_view_id)); // creating new relationship (member) object
+                                                if (file == "exclude/capec_latest.xml"){
+                                                    view_capec_id = view_relation_attr.getNamedItem("CAPEC_ID").getNodeValue(); // getting CAPEC ID attribute - relationship (member) object
+
+                                                } else if (file == "exclude/cwec_v4.2.xml"){
+                                                    view_cwe_id = view_relation_attr.getNamedItem("CWE_ID").getNodeValue(); // getting CWE ID attribute - relationship (member) object
+                                                    view_view_view_id = view_relation_attr.getNamedItem("View_ID").getNodeValue(); // getting view ID attribute - relationship (member) object
+                                                }
+
+                                                view_view_members.add(new CWErelationshipObj(view_cwe_id, view_view_view_id, view_capec_id)); // creating new relationship (member) object
                                             }
                                         }
 

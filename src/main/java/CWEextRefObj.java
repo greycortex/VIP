@@ -20,7 +20,7 @@ import java.util.Date;
  * <p>
  * //* It can create a CWE external reference object from given parameters and return it
  * <p>
- * It also can go through file with CWE weaknesses, find external reference objects, parse them into
+ * It also can go through file with CWE weaknesses or CAPEC objects, find external reference objects, parse them into
  * CWE external reference objects and return them
  *
  * @author Tomas Bozek (XarfNao)
@@ -66,23 +66,24 @@ public class CWEextRefObj {
     }
 
     /**
-     * This method's purpose is to go through file with CWE weaknesses, find external reference objects, parse them into
-     * CWE external reference objects and return them
+     * This method's purpose is to go through file with CWE weaknesses or CAPEC objects, find external reference objects,
+     * parse them into CWE external reference objects and return them
      * <p>
      * It uses DOM XML parser
      * <p>
      * If it can't find any informations, it returns these attributes as null values
      *
+     * @param file path to an XML file which will be parsed from
      * @return CWE external reference objects
      */
-    public static ArrayList<CWEextRefObj> CWEextRefToArrayList() {
+    public static ArrayList<CWEextRefObj> CWEextRefToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         ArrayList<CWEextRefObj> ext_ref_objs = new ArrayList<>(); // creating empty ArrayList for it to be filled with CWE external reference objects
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse(new FileInputStream("exclude/cwec_v4.2.xml")); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+            Document document = builder.parse(new FileInputStream(file));
             Element doc_element = document.getDocumentElement();
             NodeList nodes = doc_element.getChildNodes();
 
