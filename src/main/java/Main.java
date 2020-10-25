@@ -7,6 +7,10 @@ public class Main {
         System.out.println("Welcome to the VIP application");
 
 
+        //CAPECobject.CAPECfileToArrayList();
+
+        System.out.println(CAPECobject.CAPECfileToArrayList());
+
         //CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2013.json"); // https://nvd.nist.gov/vuln/data-feeds
         //System.out.println(CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2013.json"));
         //System.out.println(CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2013.json").size());
