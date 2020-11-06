@@ -5,7 +5,6 @@
  *
  * @author Tomas Bozek (XarfNao)
  */
-
 public class CPEcomplexObj extends CPEobject {
 
     protected boolean vulnerable;
