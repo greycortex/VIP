@@ -4,7 +4,7 @@ GREYCORTEX Vulnerability Intelligence Platform
 ### About
 At the moment, this program's purpose is to work with CPE objects - vulnerabilities parsed from the NVD CPE Match Feed file.
 
-It can also parse CVE objects from CVE data feeds - [JSON files](https://nvd.nist.gov/vuln/data-feeds)
+It can also parse CVE objects from [CVE JSON data feeds](https://nvd.nist.gov/vuln/data-feeds)
 
 It can also completely (without content history) parse CWE objects - [XML file](https://cwe.mitre.org/data/xml/cwec_latest.xml.zip)
 
