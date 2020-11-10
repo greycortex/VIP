@@ -1,3 +1,9 @@
+import cvss.CVSS3object;
+import cvss.CVSS2object;
+import cpe.CPEcomplexObj;
+import cpe.CPEobject;
+import cpe.CPEnodeObject;
+import cwe.CWEobject;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

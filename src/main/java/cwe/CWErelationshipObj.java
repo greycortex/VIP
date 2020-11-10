@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE relationship (member) object (CWE ID attribute or CAPEC ID attribute, view ID attribute)
  * <p>

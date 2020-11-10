@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE introduction (from modes of introduction) object (phase attribute, note attribute)
  * <p>

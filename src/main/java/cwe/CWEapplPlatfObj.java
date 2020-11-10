@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE application platform object (type attribute, class attribute, name attribute, prevalence attribute)
  * <p>

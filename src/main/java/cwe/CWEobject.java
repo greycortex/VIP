@@ -1,3 +1,5 @@
+package cwe;
+
 import org.xml.sax.SAXException;
 import org.w3c.dom.*;
 

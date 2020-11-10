@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE observed example object (reference attribute, description attribute, link attribute)
  * <p>

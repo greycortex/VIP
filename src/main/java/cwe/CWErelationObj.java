@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE relation object (nature attribute, CWE code (ID) of related CWE, view_id attribute, ordinal attribute)
  * <p>

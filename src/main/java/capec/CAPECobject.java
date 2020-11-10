@@ -1,3 +1,10 @@
+package capec;
+
+import cwe.CWEalterTermObj;
+import cwe.CWEnoteObj;
+import cwe.CWEconseqObj;
+import cwe.CWEtaxMapObj;
+import cwe.CWEextRefRefObj;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;

@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE external reference reference object (ID attribute, section attribute)
  * <p>

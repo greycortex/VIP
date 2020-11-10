@@ -1,3 +1,5 @@
+package capec;
+
 /**
  * This class represents a CAPEC skill object (level attribute, skill info)
  * <p>

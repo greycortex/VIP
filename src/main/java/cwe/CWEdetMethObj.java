@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE detection method object (method id attribute, method attribute, description attribute,
  * effectiveness attribute, effectiveness notes attribute)

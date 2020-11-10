@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE note object (type attribute, content of the note)
  * <p>

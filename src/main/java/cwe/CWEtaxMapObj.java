@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE taxonomy mapping object (name, entry name attribute, entry ID, mapping fit attribute)
  * <p>

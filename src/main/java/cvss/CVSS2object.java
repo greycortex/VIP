@@ -1,3 +1,5 @@
+package cvss;
+
 /**
  * This class represents a CVSS v2 object (Base score metrics, ...)
  * <p>

@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE stakeholder object (type attribute, description attribute)
  * <p>

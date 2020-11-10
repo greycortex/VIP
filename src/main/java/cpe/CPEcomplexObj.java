@@ -1,3 +1,5 @@
+package cpe;
+
 /**
  * This class represents a complex CPE object (CPE object attributes plus vulnerable etc. from CVE feed JSON file)
  * <p>

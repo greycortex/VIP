@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE weakness ordinality object (ordinality attribute, description attribute)
  * <p>

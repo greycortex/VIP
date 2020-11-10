@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE demonstrative example - example code object (nature attribute, language attribute, content)
  * <p>

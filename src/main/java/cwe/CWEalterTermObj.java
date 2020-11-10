@@ -1,3 +1,5 @@
+package cwe;
+
 /**
  * This class represents a CWE alternate term object (term attribute, description attribute)
  * <p>
