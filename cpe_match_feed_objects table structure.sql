@@ -1,5 +1,5 @@
 --
--- Type: TABLE ; Name: cpe; Owner: postgres
+-- Type: TABLE ; Name: mitre.cpe; Owner: postgres
 --
 
 CREATE TABLE cpe (
@@ -52,14 +52,14 @@ ALTER MATERIALIZED VIEW products OWNER TO postgres;
 -- WHERE product ilike '%Windows%'
 
 -- SELECT *
---  FROM public.cpe t
+--  FROM public.mitre.cpe t
 -- WHERE product ilike '%Windows%'
 -- ORDER BY version;
 
 
 -- NEW INSERT (when needed an ID)
 -- WITH t AS (
---     INSERT INTO cpe (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other)
+--     INSERT INTO mitre.cpe (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other)
 --              VALUES ('GreyCortex', 'VIP', '0.0devel', null, null, null, null, null, null, null)
 --     RETURNING *
 -- )
