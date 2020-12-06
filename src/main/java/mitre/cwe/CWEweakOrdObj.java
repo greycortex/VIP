@@ -25,15 +25,15 @@ public class CWEweakOrdObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE weakness ordinality object from given parameters and return it
-     *
-     * @return CWE weakness ordinality object
-     */
-    public static CWEweakOrdObj getInstance(String ordinality, String description) {
+    ///**
+    // * This method's purpose is to create a CWE weakness ordinality object from given parameters and return it
+    // *
+    // * @return CWE weakness ordinality object
+    // */
+    //public static CWEweakOrdObj getInstance(String ordinality, String description) {
 
-        return new CWEweakOrdObj(ordinality, description);
-    }
+    //    return new CWEweakOrdObj(ordinality, description);
+    //}
 
     @Override
     public String toString() {

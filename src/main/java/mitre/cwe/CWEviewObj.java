@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a CWE view object (CWE view ID, name attribute, type attribute, status attribute,
@@ -32,10 +33,10 @@ public class CWEviewObj {
     protected String view_status;
     protected String view_objective;
     protected String view_filter;
-    protected ArrayList<CWErelationshipObj> view_members;
-    protected ArrayList<CWEnoteObj> view_notes;
-    protected ArrayList<CWEextRefRefObj> view_ext_refs;
-    protected ArrayList<CWEstakeholderObj> view_stakeholders;
+    protected List<CWErelationshipObj> view_members;
+    protected List<CWEnoteObj> view_notes;
+    protected List<CWEextRefRefObj> view_ext_refs;
+    protected List<CWEstakeholderObj> view_stakeholders;
 
     /**
      * Copies constructor
@@ -52,8 +53,8 @@ public class CWEviewObj {
      * @param view_stakeholders stakeholder objects
      */
     public CWEviewObj(String view_id, String view_name, String view_type, String view_status, String view_objective,
-                      String view_filter, ArrayList<CWErelationshipObj> view_members, ArrayList<CWEnoteObj> view_notes,
-                      ArrayList<CWEextRefRefObj> view_ext_refs, ArrayList<CWEstakeholderObj> view_stakeholders) {
+                      String view_filter, List<CWErelationshipObj> view_members, List<CWEnoteObj> view_notes,
+                      List<CWEextRefRefObj> view_ext_refs, List<CWEstakeholderObj> view_stakeholders) {
 
         this.view_id = view_id;
         this.view_name = view_name;
@@ -79,10 +80,10 @@ public class CWEviewObj {
      * @param file path to an XML file which will be parsed from
      * @return CWE view objects
      */
-    public static ArrayList<CWEviewObj> CWEviewToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
+    public static List<CWEviewObj> CWEviewToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-        ArrayList<CWEviewObj> view_objs = new ArrayList<>(); // creating empty ArrayList for it to be filled with CWE view objects
+        List<CWEviewObj> view_objs = new ArrayList<>(); // creating empty List for it to be filled with CWE view objects
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -111,10 +112,10 @@ public class CWEviewObj {
 
                                 String view_view_objective = null;
                                 String view_view_filter = null;
-                                ArrayList<CWErelationshipObj> view_view_members = new ArrayList<>();
-                                ArrayList<CWEnoteObj> view_view_notes = new ArrayList<>();
-                                ArrayList<CWEextRefRefObj> view_view_ext_refs = new ArrayList<>();
-                                ArrayList<CWEstakeholderObj> view_view_stakeholders = new ArrayList<>();
+                                List<CWErelationshipObj> view_view_members = new ArrayList<>();
+                                List<CWEnoteObj> view_view_notes = new ArrayList<>();
+                                List<CWEextRefRefObj> view_view_ext_refs = new ArrayList<>();
+                                List<CWEstakeholderObj> view_view_stakeholders = new ArrayList<>();
 
                                 for (int z = 0; z < view_specific_nodes.getLength(); z++) {
                                     if (view_specific_nodes.item(z).getNodeName().equals("Objective")) {
@@ -216,21 +217,21 @@ public class CWEviewObj {
             ex.printStackTrace();
         }
 
-        return view_objs; // returns ArrayList filled with CWE view objects
+        return view_objs; // returns List filled with CWE view objects
     }
 
-    /**
-     * This method's purpose is to create a CWE view object from given parameters and return it
-     *
-     * @return CWE view object
-     */
-    public static CWEviewObj getInstance(String view_id, String view_name, String view_type, String view_status, String view_objective,
-                                         String view_filter, ArrayList<CWErelationshipObj> view_members, ArrayList<CWEnoteObj> view_notes,
-                                         ArrayList<CWEextRefRefObj> view_ext_refs, ArrayList<CWEstakeholderObj> view_stakeholders) {
+    ///**
+    // * This method's purpose is to create a CWE view object from given parameters and return it
+    // *
+    // * @return CWE view object
+    // */
+    //public static CWEviewObj getInstance(String view_id, String view_name, String view_type, String view_status, String view_objective,
+    //                                     String view_filter, List<CWErelationshipObj> view_members, List<CWEnoteObj> view_notes,
+    //                                     List<CWEextRefRefObj> view_ext_refs, List<CWEstakeholderObj> view_stakeholders) {
 
-        return new CWEviewObj(view_id, view_name, view_type, view_status, view_objective, view_filter, view_members, view_notes,
-                view_ext_refs, view_stakeholders);
-    }
+    //    return new CWEviewObj(view_id, view_name, view_type, view_status, view_objective, view_filter, view_members, view_notes,
+    //            view_ext_refs, view_stakeholders);
+    //}
 
     @Override
     public String toString() {

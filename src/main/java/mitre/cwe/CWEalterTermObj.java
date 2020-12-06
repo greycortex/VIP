@@ -25,15 +25,15 @@ public class CWEalterTermObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE alternate term object from given parameters and return it
-     *
-     * @return CWE alternate term object
-     */
-    public static CWEalterTermObj getInstance(String term, String description) {
+    ///**
+    // * This method's purpose is to create a CWE alternate term object from given parameters and return it
+    // *
+    // * @return CWE alternate term object
+    // */
+    //public static CWEalterTermObj getInstance(String term, String description) {
 
-        return new CWEalterTermObj(term, description);
-    }
+    //    return new CWEalterTermObj(term, description);
+    //}
 
     @Override
     public String toString() {

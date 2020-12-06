@@ -36,15 +36,15 @@ public class CWEdetMethObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE detection method object from given parameters and return it
-     *
-     * @return CWE detection method object
-     */
-    public static CWEdetMethObj getInstance(String method_id, String method, String description, String effectiveness, String effectiveness_notes) {
+    ///**
+    // * This method's purpose is to create a CWE detection method object from given parameters and return it
+    // *
+    // * @return CWE detection method object
+    // */
+    //public static CWEdetMethObj getInstance(String method_id, String method, String description, String effectiveness, String effectiveness_notes) {
 
-        return new CWEdetMethObj(method_id, method, description, effectiveness, effectiveness_notes);
-    }
+    //    return new CWEdetMethObj(method_id, method, description, effectiveness, effectiveness_notes);
+    //}
 
     @Override
     public String toString() {

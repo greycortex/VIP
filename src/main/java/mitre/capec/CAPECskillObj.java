@@ -25,15 +25,15 @@ public class CAPECskillObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CAPEC skill object from given parameters and return it
-     *
-     * @return CAPEC skill object
-     */
-    public static CAPECskillObj getInstance(String level, String content) {
+    ///**
+    // * This method's purpose is to create a CAPEC skill object from given parameters and return it
+    // *
+    // * @return CAPEC skill object
+    // */
+    //public static CAPECskillObj getInstance(String level, String content) {
 
-        return new CAPECskillObj(level, content);
-    }
+    //    return new CAPECskillObj(level, content);
+    //}
 
     @Override
     public String toString() {

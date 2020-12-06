@@ -1,6 +1,6 @@
 package mitre.cwe;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a CWE demonstrative example object (nature attribute, language attribute, content)
@@ -12,9 +12,9 @@ import java.util.ArrayList;
 public class CWEdemExObj {
 
     protected String intro_text;
-    protected ArrayList<CWEexampCodeObj> dem_ex_ex_codes;
-    protected ArrayList<String> dem_ex_body_texts;
-    protected ArrayList<CWEextRefRefObj> dem_ex_ext_ref_refs;
+    protected List<CWEexampCodeObj> dem_ex_ex_codes;
+    protected List<String> dem_ex_body_texts;
+    protected List<CWEextRefRefObj> dem_ex_ext_ref_refs;
 
     /**
      * Copies constructor
@@ -24,8 +24,8 @@ public class CWEdemExObj {
      * @param dem_ex_body_texts   body text attributes
      * @param dem_ex_ext_ref_refs external reference reference objects
      */
-    public CWEdemExObj(String intro_text, ArrayList<CWEexampCodeObj> dem_ex_ex_codes, ArrayList<String> dem_ex_body_texts,
-                       ArrayList<CWEextRefRefObj> dem_ex_ext_ref_refs) {
+    public CWEdemExObj(String intro_text, List<CWEexampCodeObj> dem_ex_ex_codes, List<String> dem_ex_body_texts,
+                       List<CWEextRefRefObj> dem_ex_ext_ref_refs) {
 
         this.intro_text = intro_text;
         this.dem_ex_ex_codes = dem_ex_ex_codes;
@@ -34,16 +34,16 @@ public class CWEdemExObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE demonstrative example object from given parameters and return it
-     *
-     * @return CWE demonstrative example object
-     */
-    public static CWEdemExObj getInstance(String intro_text, ArrayList<CWEexampCodeObj> dem_ex_ex_codes, ArrayList<String> dem_ex_body_texts,
-                                          ArrayList<CWEextRefRefObj> dem_ex_ext_ref_refs) {
+    ///**
+    // * This method's purpose is to create a CWE demonstrative example object from given parameters and return it
+    // *
+    // * @return CWE demonstrative example object
+    // */
+    //public static CWEdemExObj getInstance(String intro_text, List<CWEexampCodeObj> dem_ex_ex_codes, List<String> dem_ex_body_texts,
+    //                                      List<CWEextRefRefObj> dem_ex_ext_ref_refs) {
 
-        return new CWEdemExObj(intro_text, dem_ex_ex_codes, dem_ex_body_texts, dem_ex_ext_ref_refs);
-    }
+    //    return new CWEdemExObj(intro_text, dem_ex_ex_codes, dem_ex_body_texts, dem_ex_ext_ref_refs);
+    //}
 
     @Override
     public String toString() {

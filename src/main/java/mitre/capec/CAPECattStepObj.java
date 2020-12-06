@@ -1,6 +1,6 @@
 package mitre.capec;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents an attack step object (step attribute, phase attribute, description attribute, technique attributes)
@@ -14,7 +14,7 @@ public class CAPECattStepObj {
     protected String step;
     protected String phase;
     protected String description;
-    protected ArrayList<String> techniques;
+    protected List<String> techniques;
 
     /**
      * Copies constructor
@@ -24,7 +24,7 @@ public class CAPECattStepObj {
      * @param description  description attribute
      * @param techniques   technique attributes
      */
-    public CAPECattStepObj(String step, String phase, String description, ArrayList<String> techniques){
+    public CAPECattStepObj(String step, String phase, String description, List<String> techniques){
 
         this.step = step;
         this.phase = phase;
@@ -33,15 +33,15 @@ public class CAPECattStepObj {
 
     }
 
-    /**
-     * This method's purpose is to create an attack step object from given parameters and return it
-     *
-     * @return attack step object
-     */
-    public static CAPECattStepObj getInstance(String step, String phase, String description, ArrayList<String> techniques) {
+    ///**
+    // * This method's purpose is to create an attack step object from given parameters and return it
+    // *
+    // * @return attack step object
+    // */
+    //public static CAPECattStepObj getInstance(String step, String phase, String description, List<String> techniques) {
 
-        return new CAPECattStepObj(step, phase, description, techniques);
-    }
+    //    return new CAPECattStepObj(step, phase, description, techniques);
+    //}
 
     @Override
     public String toString() {

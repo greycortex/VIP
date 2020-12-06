@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * This class represents a CWE external reference object (reference ID attribute, author attributes, )
@@ -35,7 +36,7 @@ public class CWEextRefObj {
     protected String publication;
     protected String publisher;
     protected String edition;
-    protected ArrayList<String> authors;
+    protected List<String> authors;
     protected Date publication_date;
     protected Date url_date;
 
@@ -53,7 +54,7 @@ public class CWEextRefObj {
      * @param url_date         URL date attribute
      */
     public CWEextRefObj(String reference_id, String title, String url, String publication, String publisher, String edition,
-                        ArrayList<String> authors, Date publication_date, Date url_date) {
+                        List<String> authors, Date publication_date, Date url_date) {
 
         this.reference_id = reference_id;
         this.title = title;
@@ -78,10 +79,10 @@ public class CWEextRefObj {
      * @param file path to an XML file which will be parsed from
      * @return CWE external reference objects
      */
-    public static ArrayList<CWEextRefObj> CWEextRefToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
+    public static List<CWEextRefObj> CWEextRefToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-        ArrayList<CWEextRefObj> ext_ref_objs = new ArrayList<>(); // creating empty ArrayList for it to be filled with CWE external reference objects
+        List<CWEextRefObj> ext_ref_objs = new ArrayList<>(); // creating empty List for it to be filled with CWE external reference objects
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -105,7 +106,7 @@ public class CWEextRefObj {
                             String ext_ref_publ_day = null;
                             String ext_ref_publ_month = null;
                             String ext_ref_publ_year = null;
-                            ArrayList<String> ext_ref_authors = new ArrayList<>();
+                            List<String> ext_ref_authors = new ArrayList<>();
                             String ext_ref_publication = null;
                             String ext_ref_publisher = null;
                             String ext_ref_edition = null;
@@ -171,7 +172,7 @@ public class CWEextRefObj {
 
                             ext_ref_objs.add(new CWEextRefObj(ext_ref_id, ext_ref_title, ext_ref_url, ext_ref_publication,
                                     ext_ref_publisher, ext_ref_edition, ext_ref_authors, ext_ref_publ_date,
-                                    ext_ref_url_date)); // creating CWE external reference object and adding it into later returned ArrayList
+                                    ext_ref_url_date)); // creating CWE external reference object and adding it into later returned List
                         }
                     }
                 }
@@ -180,19 +181,19 @@ public class CWEextRefObj {
             ex.printStackTrace();
         }
 
-        return ext_ref_objs; // returning ArrayList full of CWE external reference objects
+        return ext_ref_objs; // returning List full of CWE external reference objects
     }
 
-    /**
-     * This method's purpose is to create a CWE external reference object from given parameters and return it
-     *
-     * @return CWE external reference object
-     */
-    public static CWEextRefObj getInstance(String reference_id, String title, String url, String publication, String publisher, String edition,
-                                           ArrayList<String> authors, Date publication_date, Date url_date) {
+    ///**
+    // * This method's purpose is to create a CWE external reference object from given parameters and return it
+    // *
+    // * @return CWE external reference object
+    // */
+    //public static CWEextRefObj getInstance(String reference_id, String title, String url, String publication, String publisher, String edition,
+    //                                       List<String> authors, Date publication_date, Date url_date) {
 
-        return new CWEextRefObj(reference_id, title, url, publication, publisher, edition, authors, publication_date, url_date);
-    }
+    //    return new CWEextRefObj(reference_id, title, url, publication, publisher, edition, authors, publication_date, url_date);
+    //}
 
     @Override
     public String toString() {

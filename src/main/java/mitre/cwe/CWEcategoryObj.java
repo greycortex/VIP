@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a CWE category object (CWE category id, category name attribute, category status attribute,
@@ -30,10 +31,10 @@ public class CWEcategoryObj {
     protected String category_name;
     protected String category_status;
     protected String category_summary;
-    protected ArrayList<CWEnoteObj> category_notes;
-    protected ArrayList<CWErelationshipObj> category_relationships;
-    protected ArrayList<CWEextRefRefObj> category_ext_ref_refs;
-    protected ArrayList<CWEtaxMapObj> category_tax_maps;
+    protected List<CWEnoteObj> category_notes;
+    protected List<CWErelationshipObj> category_relationships;
+    protected List<CWEextRefRefObj> category_ext_ref_refs;
+    protected List<CWEtaxMapObj> category_tax_maps;
 
     /**
      * Copies constructor
@@ -48,8 +49,8 @@ public class CWEcategoryObj {
      * @param category_tax_maps      taxonomy mapping objects
      */
     public CWEcategoryObj(String category_id, String category_name, String category_status, String category_summary,
-                          ArrayList<CWEnoteObj> category_notes, ArrayList<CWErelationshipObj> category_relationships,
-                          ArrayList<CWEextRefRefObj> category_ext_ref_refs, ArrayList<CWEtaxMapObj> category_tax_maps) {
+                          List<CWEnoteObj> category_notes, List<CWErelationshipObj> category_relationships,
+                          List<CWEextRefRefObj> category_ext_ref_refs, List<CWEtaxMapObj> category_tax_maps) {
 
         this.category_id = category_id;
         this.category_name = category_name;
@@ -73,10 +74,10 @@ public class CWEcategoryObj {
      * @param file path to an XML file which will be parsed from
      * @return CWE category objects
      */
-    public static ArrayList<CWEcategoryObj> CWEcategoryToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
+    public static List<CWEcategoryObj> CWEcategoryToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-        ArrayList<CWEcategoryObj> category_objs = new ArrayList<>(); // creating empty ArrayList for it to be filled with CWE category objects
+        List<CWEcategoryObj> category_objs = new ArrayList<>(); // creating empty List for it to be filled with CWE category objects
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -102,10 +103,10 @@ public class CWEcategoryObj {
                                 String cat_category_name = category_attr.getNamedItem("Name").getNodeValue(); // getting name attribute
 
                                 String cat_category_summary = null;
-                                ArrayList<CWEnoteObj> cat_category_notes = new ArrayList<>();
-                                ArrayList<CWErelationshipObj> cat_category_relationships = new ArrayList<>();
-                                ArrayList<CWEextRefRefObj> cat_category_ext_ref_refs = new ArrayList<>();
-                                ArrayList<CWEtaxMapObj> cat_category_tax_maps = new ArrayList<>();
+                                List<CWEnoteObj> cat_category_notes = new ArrayList<>();
+                                List<CWErelationshipObj> cat_category_relationships = new ArrayList<>();
+                                List<CWEextRefRefObj> cat_category_ext_ref_refs = new ArrayList<>();
+                                List<CWEtaxMapObj> cat_category_tax_maps = new ArrayList<>();
 
                                 NodeList category_specific_nodes = categories_nodes.item(y).getChildNodes();
 
@@ -209,21 +210,21 @@ public class CWEcategoryObj {
             ex.printStackTrace();
         }
 
-        return category_objs; // returns ArrayList filled with CWE category objects
+        return category_objs; // returns List filled with CWE category objects
     }
 
-    /**
-     * This method's purpose is to create a CWE category object from given parameters and return it
-     *
-     * @return CWE category object
-     */
-    public static CWEcategoryObj getInstance(String category_id, String category_name, String category_status, String category_summary,
-                                             ArrayList<CWEnoteObj> category_notes, ArrayList<CWErelationshipObj> category_relationships,
-                                             ArrayList<CWEextRefRefObj> category_ext_ref_refs, ArrayList<CWEtaxMapObj> category_tax_maps) {
+    ///**
+    // * This method's purpose is to create a CWE category object from given parameters and return it
+    // *
+    // * @return CWE category object
+    // */
+    //public static CWEcategoryObj getInstance(String category_id, String category_name, String category_status, String category_summary,
+    //                                         List<CWEnoteObj> category_notes, List<CWErelationshipObj> category_relationships,
+    //                                         List<CWEextRefRefObj> category_ext_ref_refs, List<CWEtaxMapObj> category_tax_maps) {
 
-        return new CWEcategoryObj(category_id, category_name, category_status, category_summary, category_notes, category_relationships,
-                category_ext_ref_refs, category_tax_maps);
-    }
+    //    return new CWEcategoryObj(category_id, category_name, category_status, category_summary, category_notes, category_relationships,
+    //            category_ext_ref_refs, category_tax_maps);
+    //}
 
     @Override
     public String toString() {

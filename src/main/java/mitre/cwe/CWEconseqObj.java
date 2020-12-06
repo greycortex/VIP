@@ -1,6 +1,6 @@
 package mitre.cwe;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a CWE consequence object (scope attributes, impact attributes, note attributes, likelihood attributes)
@@ -11,10 +11,10 @@ import java.util.ArrayList;
  */
 public class CWEconseqObj {
 
-    protected ArrayList<String> scopes;
-    protected ArrayList<String> impacts;
-    protected ArrayList<String> notes;
-    protected ArrayList<String> likelihoods;
+    protected List<String> scopes;
+    protected List<String> impacts;
+    protected List<String> notes;
+    protected List<String> likelihoods;
 
     /**
      * Copies constructor
@@ -24,8 +24,8 @@ public class CWEconseqObj {
      * @param notes       note attributes
      * @param likelihoods likelihood attributes
      */
-    public CWEconseqObj(ArrayList<String> scopes, ArrayList<String> impacts, ArrayList<String> notes,
-                        ArrayList<String> likelihoods) {
+    public CWEconseqObj(List<String> scopes, List<String> impacts, List<String> notes,
+                        List<String> likelihoods) {
 
         this.scopes = scopes;
         this.impacts = impacts;
@@ -34,16 +34,16 @@ public class CWEconseqObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE consequence object from given parameters and return it
-     *
-     * @return CWE consequence object
-     */
-    public static CWEconseqObj getInstance(ArrayList<String> scopes, ArrayList<String> impacts, ArrayList<String> notes,
-                                           ArrayList<String> likelihoods) {
+    ///**
+    // * This method's purpose is to create a CWE consequence object from given parameters and return it
+    // *
+    // * @return CWE consequence object
+    // */
+    //public static CWEconseqObj getInstance(List<String> scopes, List<String> impacts, List<String> notes,
+    //                                       List<String> likelihoods) {
 
-        return new CWEconseqObj(scopes, impacts, notes, likelihoods);
-    }
+    //    return new CWEconseqObj(scopes, impacts, notes, likelihoods);
+    //}
 
     @Override
     public String toString() {

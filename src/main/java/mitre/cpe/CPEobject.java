@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * This class represents a normal CPE object (vendor, product, version, ...)
  * <p>
- * It can read from file, create objects representing vulnerabilities and insert them into the database including updates
+ * It can read from file, create objects representing CPE objects and insert them into the database including updates
  * <p>
  * It also can create a normal CPE object from cpe23Uri String and return it
  *
@@ -49,7 +49,38 @@ public class CPEobject {
      * @param targetHw  target hardware attribute
      * @param other     other attribute
      */
+    public CPEobject(String vendor, String product, String version, String update, String edition, String language,
+                     String swEdition, String targetSw, String targetHw, String other) { // not dumb constructor
 
+        this.id = null;
+        this.vendor = vendor;
+        this.product = product;
+        this.version = version;
+        this.update = update;
+        this.edition = edition;
+        this.language = language;
+        this.swEdition = swEdition;
+        this.targetSw = targetSw;
+        this.targetHw = targetHw;
+        this.other = other;
+
+    }
+
+    // Constructor for specific input - String Array - useful later on
+    public CPEobject(String[] splitstr) {
+
+        this.id = null;
+        this.vendor = splitstr[3];
+        this.product = splitstr[4];
+        this.version = splitstr[5];
+        this.update = splitstr[6];
+        this.edition = splitstr[7];
+        this.language = splitstr[8];
+        this.swEdition = splitstr[9];
+        this.targetSw = splitstr[10];
+        this.targetHw = splitstr[11];
+        this.other = splitstr[12];
+    }
 
     /**
      * This method's purpose is to take cpeUri line and create an sql-friendly normal CPE object
@@ -93,31 +124,16 @@ public class CPEobject {
         return new CPEobject(splitstr);
     }
 
-    public CPEobject(String[] splitstr) {
-
-        this.id = null;
-        this.vendor = splitstr[3];
-        this.product = splitstr[4];
-        this.version = splitstr[5];
-        this.update = splitstr[6];
-        this.edition = splitstr[7];
-        this.language = splitstr[8];
-        this.swEdition = splitstr[9];
-        this.targetSw = splitstr[10];
-        this.targetHw = splitstr[11];
-        this.other = splitstr[12];
-    }
-
     /**
-     * @return ArrayList that contains parsed lines (Strings) from the CPE file
+     * @return List that contains parsed lines (Strings) from the CPE feed file
      * @throws IOException
      */
-    public static ArrayList<String> parserToLineArrayList() {
+    public static List<String> parserToLineArrayList() {
 
-        // ArrayList which will contain parsed lines from the CPE file
-        ArrayList<String> cpe23urilines = new ArrayList<>();
+        // List which will contain parsed lines from the CPE file
+        List<String> cpe23urilines = new ArrayList<>();
 
-        // This block of code goes through the selected file line by line and add the lines that contain "cpe23uri" to the cpe23urilines ArrayList
+        // This block of code goes through the selected file line by line and add the lines that contain "cpe23uri" to the cpe23urilines List
         try (BufferedReader br = new BufferedReader(new FileReader("exclude/nvdcpematch-1.0.json"))) {
             for (String line; (line = br.readLine()) != null; ) {
                 if (line.contains("cpe23Uri")) {
@@ -132,15 +148,15 @@ public class CPEobject {
     }
 
     /**
-     * @return ArrayList that contains CPE objects made from the cpe23uri lines ArrayList returned by the parserToLineArrayList() method
+     * @return List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
      */
-    public static ArrayList<CPEobject> stringArrayListToObjectArraylist() {
+    public static List<CPEobject> stringArrayListToObjectArraylist() {
 
-        // Defining the object ArrayList
-        ArrayList<CPEobject> obj_list = new ArrayList<>();
+        // Defining the object List
+        List<CPEobject> obj_list = new ArrayList<>();
 
         // Taking the lines returned by the parserToLineArrayList() method
-        ArrayList<String> cpe23uriliness = new ArrayList<>();
+        List<String> cpe23uriliness = new ArrayList<>();
         cpe23uriliness = parserToLineArrayList();
 
         // We go line by line (Object by Object)
@@ -176,8 +192,11 @@ public class CPEobject {
                 splitstr[13] = splitstr[13].replace("\"", "");
             }
 
+            // Creating final String Array which will be used for creation of a new CPE object
+            String[] finalSplitstr = {splitstr[1], splitstr[2], splitstr[3], splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]};
+
             // Finally creates a new CPE object using changed parts of the splitstr Array
-            CPEobject obj = new CPEobject(splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]);
+            CPEobject obj = new CPEobject(finalSplitstr);
             obj_list.add(obj);
         }
 
@@ -199,13 +218,13 @@ public class CPEobject {
     public static void comparingForUpdate() {
 
         // list of objects from up-to-date file
-        ArrayList<CPEobject> compared_objects = stringArrayListToObjectArraylist();
+        List<CPEobject> compared_objects = stringArrayListToObjectArraylist();
 
-        // ArrayList which will contain all the vendors that exist in the up-to-date file
-        ArrayList<String> obj_vendors = new ArrayList<>();
+        // List which will contain all the vendors that exist in the up-to-date file
+        List<String> obj_vendors = new ArrayList<>();
 
         // DB connection
-        ArrayList<String> url_conn = new ArrayList<>();
+        List<String> url_conn = new ArrayList<>();
 
         // Count of vendors gone through from the last print of a CPE object
         int display = 0;
@@ -219,7 +238,7 @@ public class CPEobject {
             e.printStackTrace();
         }
 
-        // This for cycle fills the obj_vendor ArrayList with all vendors that exist in the up-to-date file
+        // This for cycle fills the obj_vendor List with all vendors that exist in the up-to-date file
         for (CPEobject obj : compared_objects) {
 
             // Replaces double apostrophes with single apostrophe so that there is no problem with comparing later on
@@ -236,12 +255,12 @@ public class CPEobject {
             try {
 
                 // list of CPE objects from DB with the specific vendor
-                ArrayList<CPEobject> objects_to_compare = new ArrayList<>();
+                List<CPEobject> objects_to_compare = new ArrayList<>();
                 // list of CPE objects from up-to-date file with the specific vendor
-                ArrayList<CPEobject> compared_objects_vendor = new ArrayList<>();
+                List<CPEobject> compared_objects_vendor = new ArrayList<>();
 
                 /**
-                 * This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the
+                 * This for cycle fills the List compared_objects_vendor with all CPE objects that have the
                  * current specific vendor from the up-to-date file
                  */
                 for (CPEobject obj : compared_objects) {
@@ -261,7 +280,7 @@ public class CPEobject {
                 db = DriverManager.getConnection(url_conn.get(0));
 
                 /**
-                 * This for cycle fills the ArrayList compared_objects_vendor with all CPE objects that have the
+                 * This for cycle fills the List compared_objects_vendor with all CPE objects that have the
                  * current specific vendor from the database
                  */
                 Statement stat = db.createStatement();
@@ -496,16 +515,16 @@ public class CPEobject {
 
     }
 
-    /**
-     * This method's purpose is to create normal CPE object from given parameters and return it
-     *
-     * @return normal CPE object
-     */
-    public static CPEobject getInstance(String vendor, String product, String version, String update, String edition, String language,
-                                        String swEdition, String targetSw, String targetHw, String other) {
+    ///**
+    // * This method's purpose is to create normal CPE object from given parameters and return it
+    // *
+    // * @return normal CPE object
+    // */
+    //public static CPEobject getInstance(String vendor, String product, String version, String update, String edition, String language,
+    //                                    String swEdition, String targetSw, String targetHw, String other) {
 
-        return new CPEobject(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
-    }
+    //    return new CPEobject(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
+    //}
 
     @Override
     public String toString() {

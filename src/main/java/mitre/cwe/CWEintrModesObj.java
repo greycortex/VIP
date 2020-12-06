@@ -25,15 +25,15 @@ public class CWEintrModesObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE introduction object from given parameters and return it
-     *
-     * @return CWE introduction object
-     */
-    public static CWEintrModesObj getInstance(String phase, String note) {
+    ///**
+    // * This method's purpose is to create a CWE introduction object from given parameters and return it
+    // *
+    // * @return CWE introduction object
+    // */
+    //public static CWEintrModesObj getInstance(String phase, String note) {
 
-        return new CWEintrModesObj(phase, note);
-    }
+    //    return new CWEintrModesObj(phase, note);
+    //}
 
     @Override
     public String toString() {

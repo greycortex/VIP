@@ -25,15 +25,15 @@ public class CWEstakeholderObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE stakeholder object from given parameters and return it
-     *
-     * @return CWE stakeholder object
-     */
-    public static CWEstakeholderObj getInstance(String type, String description) {
+    ///**
+    // * This method's purpose is to create a CWE stakeholder object from given parameters and return it
+    // *
+    // * @return CWE stakeholder object
+    // */
+    //public static CWEstakeholderObj getInstance(String type, String description) {
 
-        return new CWEstakeholderObj(type, description);
-    }
+    //    return new CWEstakeholderObj(type, description);
+    //}
 
     @Override
     public String toString() {

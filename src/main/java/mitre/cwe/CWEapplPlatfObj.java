@@ -31,15 +31,15 @@ public class CWEapplPlatfObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE application platform object from given parameters and return it
-     *
-     * @return CWE application platform object
-     */
-    public static CWEapplPlatfObj getInstance(String type, String platform_class, String name, String prevalence) {
+    ///**
+    // * This method's purpose is to create a CWE application platform object from given parameters and return it
+    // *
+    // * @return CWE application platform object
+    // */
+    //public static CWEapplPlatfObj getInstance(String type, String platform_class, String name, String prevalence) {
 
-        return new CWEapplPlatfObj(type, platform_class, name, prevalence);
-    }
+    //    return new CWEapplPlatfObj(type, platform_class, name, prevalence);
+    //}
 
     @Override
     public String toString() {

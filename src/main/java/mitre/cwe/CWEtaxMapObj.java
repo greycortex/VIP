@@ -31,15 +31,15 @@ public class CWEtaxMapObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE taxonomy mapping object from given parameters and return it
-     *
-     * @return CWE taxonomy mapping object
-     */
-    public static CWEtaxMapObj getInstance(String name, String entry_name, String entry_id, String mapping_fit) {
+    ///**
+    // * This method's purpose is to create a CWE taxonomy mapping object from given parameters and return it
+    // *
+    // * @return CWE taxonomy mapping object
+    // */
+    //public static CWEtaxMapObj getInstance(String name, String entry_name, String entry_id, String mapping_fit) {
 
-        return new CWEtaxMapObj(name, entry_name, entry_id, mapping_fit);
-    }
+    //    return new CWEtaxMapObj(name, entry_name, entry_id, mapping_fit);
+    //}
 
     @Override
     public String toString() {

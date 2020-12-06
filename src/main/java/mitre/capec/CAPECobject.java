@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a CAPEC attack pattern object (CAPEC ID, name, abstraction attribute, status, ...)
@@ -38,20 +39,20 @@ public class CAPECobject {
     protected String description;
     protected String attack_likelihood;
     protected String typical_severity;
-    protected ArrayList<String> rel_cwe_ids;
-    protected ArrayList<String> mitigations;
-    protected ArrayList<String> prerequisites;
-    protected ArrayList<String> examples;
-    protected ArrayList<String> resources;
-    protected ArrayList<String> indicators;
-    protected ArrayList<CWEnoteObj> notes;
-    protected ArrayList<CWEtaxMapObj> tax_maps;
-    protected ArrayList<CWEalterTermObj> alter_terms;
-    protected ArrayList<CWEextRefRefObj> ext_ref_refs;
-    protected ArrayList<CWEconseqObj> consequences;
-    protected ArrayList<CAPECrelationObj> related_patterns;
-    protected ArrayList<CAPECattStepObj> attack_steps;
-    protected ArrayList<CAPECskillObj> skills_required;
+    protected List<String> rel_cwe_ids;
+    protected List<String> mitigations;
+    protected List<String> prerequisites;
+    protected List<String> examples;
+    protected List<String> resources;
+    protected List<String> indicators;
+    protected List<CWEnoteObj> notes;
+    protected List<CWEtaxMapObj> tax_maps;
+    protected List<CWEalterTermObj> alter_terms;
+    protected List<CWEextRefRefObj> ext_ref_refs;
+    protected List<CWEconseqObj> consequences;
+    protected List<CAPECrelationObj> related_patterns;
+    protected List<CAPECattStepObj> attack_steps;
+    protected List<CAPECskillObj> skills_required;
 
     /**
      * Copies constructor
@@ -79,12 +80,12 @@ public class CAPECobject {
      * @param skills_required         skills required attribute of a specific CAPEC object - skill objects
      */
     public CAPECobject(String capec_id, String capec_name, String capec_abstraction, String capec_status, String description,
-                       String attack_likelihood, String typical_severity, ArrayList<String> rel_cwe_ids, ArrayList<String> mitigations,
-                       ArrayList<CWEnoteObj> notes, ArrayList<CWEtaxMapObj> tax_maps, ArrayList<CWEalterTermObj> alter_terms,
-                       ArrayList<CWEextRefRefObj> ext_ref_refs, ArrayList<CWEconseqObj> consequences,
-                       ArrayList<CAPECattStepObj> attack_steps, ArrayList<CAPECrelationObj> related_patterns,
-                       ArrayList<String> prerequisites, ArrayList<CAPECskillObj> skills_required, ArrayList<String> examples,
-                       ArrayList<String> resources, ArrayList<String> indicators){
+                       String attack_likelihood, String typical_severity, List<String> rel_cwe_ids, List<String> mitigations,
+                       List<CWEnoteObj> notes, List<CWEtaxMapObj> tax_maps, List<CWEalterTermObj> alter_terms,
+                       List<CWEextRefRefObj> ext_ref_refs, List<CWEconseqObj> consequences,
+                       List<CAPECattStepObj> attack_steps, List<CAPECrelationObj> related_patterns,
+                       List<String> prerequisites, List<CAPECskillObj> skills_required, List<String> examples,
+                       List<String> resources, List<String> indicators){
 
         this.capec_id = capec_id;
         this.capec_name = capec_name;
@@ -111,20 +112,20 @@ public class CAPECobject {
     }
 
     /**
-     * This method's purpose is to parse and create an ArrayList of CAPEC attack pattern objects from given XML file
+     * This method's purpose is to parse and create a List of CAPEC attack pattern objects from given XML file
      * which contains them
      * <p>
      * It uses DOM XML parser
      * <p>
      * It goes through file that contains latest list of CAPEC attack patterns,
-     * parses them and returns them in an ArrayList
+     * parses them and returns them in a List
      *
-     * @return ArrayList of CAPEC attack pattern objects from given XML file
+     * @return List of CAPEC attack pattern objects from given XML file
      */
-    public static ArrayList<CAPECobject> CAPECfileToArrayList(){
+    public static List<CAPECobject> CAPECfileToArrayList(){
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-        ArrayList<CAPECobject> capec_objs = new ArrayList<>(); // empty ArrayList which will be filled with CAPEC attack pattern objects later on
+        List<CAPECobject> capec_objs = new ArrayList<>(); // empty List which will be filled with CAPEC attack pattern objects later on
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -141,20 +142,20 @@ public class CAPECobject {
                             String pattern_description = null; // description
                             String pattern_attack_likelihood = null; // likelihood of attack attribute
                             String pattern_typical_severity = null; // typical severity attribute
-                            ArrayList<String> pattern_rel_cwe_ids = new ArrayList<>(); // relating CWE IDs
-                            ArrayList<String> pattern_mitigs = new ArrayList<>(); // mitigation attributes
-                            ArrayList<String> pattern_prerequisites = new ArrayList<>(); // prerequisite attributes
-                            ArrayList<String> pattern_examples = new ArrayList<>(); // example attributes
-                            ArrayList<String> pattern_resources = new ArrayList<>(); // resource attributes
-                            ArrayList<String> pattern_indicators = new ArrayList<>(); // indicator attributes
-                            ArrayList<CWEnoteObj> pattern_notes = new ArrayList<>(); // note objects
-                            ArrayList<CWEtaxMapObj> pattern_tax_maps = new ArrayList<>(); // taxonomy mapping objects
-                            ArrayList<CWEalterTermObj> pattern_alter_terms = new ArrayList<>(); // alternate term objects
-                            ArrayList<CWEextRefRefObj> pattern_ext_ref_refs = new ArrayList<>(); // external reference reference objects
-                            ArrayList<CWEconseqObj> pattern_consequences = new ArrayList<>(); // consequence objects
-                            ArrayList<CAPECrelationObj> pattern_rel_patterns = new ArrayList<>(); // related attack patterns
-                            ArrayList<CAPECattStepObj> pattern_attack_steps = new ArrayList<>(); // attack step objects - execution flow
-                            ArrayList<CAPECskillObj> pattern_skills_required = new ArrayList<>(); // skills required - CAPEC skill objects
+                            List<String> pattern_rel_cwe_ids = new ArrayList<>(); // relating CWE IDs
+                            List<String> pattern_mitigs = new ArrayList<>(); // mitigation attributes
+                            List<String> pattern_prerequisites = new ArrayList<>(); // prerequisite attributes
+                            List<String> pattern_examples = new ArrayList<>(); // example attributes
+                            List<String> pattern_resources = new ArrayList<>(); // resource attributes
+                            List<String> pattern_indicators = new ArrayList<>(); // indicator attributes
+                            List<CWEnoteObj> pattern_notes = new ArrayList<>(); // note objects
+                            List<CWEtaxMapObj> pattern_tax_maps = new ArrayList<>(); // taxonomy mapping objects
+                            List<CWEalterTermObj> pattern_alter_terms = new ArrayList<>(); // alternate term objects
+                            List<CWEextRefRefObj> pattern_ext_ref_refs = new ArrayList<>(); // external reference reference objects
+                            List<CWEconseqObj> pattern_consequences = new ArrayList<>(); // consequence objects
+                            List<CAPECrelationObj> pattern_rel_patterns = new ArrayList<>(); // related attack patterns
+                            List<CAPECattStepObj> pattern_attack_steps = new ArrayList<>(); // attack step objects - execution flow
+                            List<CAPECskillObj> pattern_skills_required = new ArrayList<>(); // skills required - CAPEC skill objects
 
                             NamedNodeMap attr = nodes_att_patterns.item(z).getAttributes();
                             String pattern_id = attr.getNamedItem("ID").getNodeValue(); // getting ID attribute
@@ -249,10 +250,10 @@ public class CAPECobject {
 
                                     for (int j = 0; j < conseq_nodes.getLength(); j++) {
                                         if (conseq_nodes.item(j).getNodeName().equals("Consequence")) {
-                                            ArrayList<String> conseq_scopes = new ArrayList<>();
-                                            ArrayList<String> conseq_impacts = new ArrayList<>();
-                                            ArrayList<String> conseq_notes = new ArrayList<>();
-                                            ArrayList<String> conseq_likelihoods = new ArrayList<>();
+                                            List<String> conseq_scopes = new ArrayList<>();
+                                            List<String> conseq_impacts = new ArrayList<>();
+                                            List<String> conseq_notes = new ArrayList<>();
+                                            List<String> conseq_likelihoods = new ArrayList<>();
 
                                             NodeList conseq_specific_nodes = conseq_nodes.item(j).getChildNodes();
                                             for (int o = 0; o < conseq_specific_nodes.getLength(); o++) {
@@ -308,7 +309,7 @@ public class CAPECobject {
                                             String rel_pattern_id = pattern_rel_pattern_attr.getNamedItem("CAPEC_ID").getNodeValue(); // getting related attack pattern (CAPEC) ID
                                             String rel_pattern_nature = pattern_rel_pattern_attr.getNamedItem("Nature").getNodeValue(); // getting nature attribute
 
-                                            ArrayList<String> exclude_ids = new ArrayList<>();
+                                            List<String> exclude_ids = new ArrayList<>();
                                             NodeList rel_pattern_pattern_nodes = rel_pattern_nodes.item(m).getChildNodes();
                                             for (int n = 0; n < rel_pattern_pattern_nodes.getLength(); n++) {
                                                 if (rel_pattern_pattern_nodes.item(n).getNodeName().equals("Exclude_Related")){
@@ -328,7 +329,7 @@ public class CAPECobject {
                                         if (exec_flow_nodes.item(v).getNodeName().equals("Attack_Step")) {
                                             NodeList exec_flow_spec_at_step = exec_flow_nodes.item(v).getChildNodes();
 
-                                            ArrayList<String> att_step_techs = new ArrayList<>();
+                                            List<String> att_step_techs = new ArrayList<>();
                                             String att_step_spec = null;
                                             String att_phase_spec = null;
                                             String att_descr_spec = null;
@@ -417,27 +418,27 @@ public class CAPECobject {
             ex.printStackTrace();
         }
 
-        return capec_objs; // returning ArrayList filled with CAPEC attack pattern objects
+        return capec_objs; // returning List filled with CAPEC attack pattern objects
     }
 
-    /**
-     * This method's purpose is to create a CAPEC attack pattern object from given parameters and return it
-     *
-     * @return CAPEC attack pattern object
-     */
-    public static CAPECobject getInstance(String capec_id, String capec_name, String capec_abstraction, String capec_status, String description,
-                                          String attack_likelihood, String typical_severity, ArrayList<String> rel_cwe_ids,
-                                          ArrayList<String> mitigations, ArrayList<CWEnoteObj> notes, ArrayList<CWEtaxMapObj> tax_maps,
-                                          ArrayList<CWEalterTermObj> alter_terms, ArrayList<CWEextRefRefObj> ext_ref_refs,
-                                          ArrayList<CWEconseqObj> consequences, ArrayList<CAPECattStepObj> attack_steps,
-                                          ArrayList<CAPECrelationObj> related_patterns, ArrayList<String> prerequisites,
-                                          ArrayList<CAPECskillObj> skills_required, ArrayList<String> examples,
-                                          ArrayList<String> resources, ArrayList<String> indicators) {
+    ///**
+    // * This method's purpose is to create a CAPEC attack pattern object from given parameters and return it
+    // *
+    // * @return CAPEC attack pattern object
+    // */
+    //public static CAPECobject getInstance(String capec_id, String capec_name, String capec_abstraction, String capec_status, String description,
+    //                                      String attack_likelihood, String typical_severity, List<String> rel_cwe_ids,
+    //                                      List<String> mitigations, List<CWEnoteObj> notes, List<CWEtaxMapObj> tax_maps,
+    //                                      List<CWEalterTermObj> alter_terms, List<CWEextRefRefObj> ext_ref_refs,
+    //                                      List<CWEconseqObj> consequences, List<CAPECattStepObj> attack_steps,
+    //                                      List<CAPECrelationObj> related_patterns, List<String> prerequisites,
+    //                                      List<CAPECskillObj> skills_required, List<String> examples,
+    //                                      List<String> resources, List<String> indicators) {
 
-        return new CAPECobject(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood,
-                               typical_severity, rel_cwe_ids, mitigations, notes, tax_maps, alter_terms, ext_ref_refs, consequences,
-                               attack_steps, related_patterns, prerequisites, skills_required, examples, resources, indicators);
-    }
+    //    return new CAPECobject(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood,
+    //                           typical_severity, rel_cwe_ids, mitigations, notes, tax_maps, alter_terms, ext_ref_refs, consequences,
+    //                           attack_steps, related_patterns, prerequisites, skills_required, examples, resources, indicators);
+    //}
 
     @Override
     public String toString() {

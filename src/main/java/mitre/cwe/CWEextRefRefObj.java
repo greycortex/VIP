@@ -25,15 +25,15 @@ public class CWEextRefRefObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE external reference reference object from given parameters and return it
-     *
-     * @return CWE external reference reference object
-     */
-    public static CWEextRefRefObj getInstance(String ext_ref_id, String section) {
+    ///**
+    // * This method's purpose is to create a CWE external reference reference object from given parameters and return it
+    // *
+    // * @return CWE external reference reference object
+    // */
+    //public static CWEextRefRefObj getInstance(String ext_ref_id, String section) {
 
-        return new CWEextRefRefObj(ext_ref_id, section);
-    }
+    //    return new CWEextRefRefObj(ext_ref_id, section);
+    //}
 
     @Override
     public String toString() {

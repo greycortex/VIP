@@ -18,9 +18,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.io.*;
 import java.sql.*;
+import java.util.List;
 
 /**
- * This class represents a CVE object (mitre.cpe matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE attributes, ...)
+ * This class represents a CVE object (CPE matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE attributes, ...)
  * <p>
  * //* Its can create and return all CVE objects from JSON file (input)
  * <p>
@@ -45,11 +46,11 @@ public class CVEobject {
     protected final String data_version;
     protected final String meta_data_id;
     protected final String meta_data_assigner;
-    protected final ArrayList<CWEobject> problem_type_data;
-    protected final ArrayList<ReferenceObject> references;
-    protected final ArrayList<String> descriptions;
+    protected final List<CWEobject> problem_type_data;
+    protected final List<ReferenceObject> references;
+    protected final List<String> descriptions;
     protected final String cve_data_version;
-    protected final ArrayList<CPEnodeObject> cpe_nodes;
+    protected final List<CPEnodeObject> cpe_nodes;
     protected final CVSS2object cvss_v2;
     protected final CVSS3object cvss_v3;
     protected final double cvss_v2_base_score;
@@ -67,7 +68,7 @@ public class CVEobject {
      * @param problem_type_data  problem type data values (CWE objects)
      * @param references         reference objects - references
      * @param descriptions       descriptions
-     * @param cve_data_version   mitre.cve data version
+     * @param cve_data_version   CVE data version
      * @param cpe_nodes          nodes containing CPE objects, operators relating to them, vulnerable parameter etc...
      * @param cvss_v2            CVSS V2 object with base metric v2 parameters
      * @param cvss_v3            CVSS V3 object with base metric v3 parameters
@@ -77,8 +78,8 @@ public class CVEobject {
      * @param last_modified_date last modified date value
      */
     public CVEobject(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
-                     ArrayList<CWEobject> problem_type_data, ArrayList<ReferenceObject> references, ArrayList<String> descriptions,
-                     String cve_data_version, ArrayList<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3,
+                     List<CWEobject> problem_type_data, List<ReferenceObject> references, List<String> descriptions,
+                     String cve_data_version, List<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3,
                      double cvss_v2_base_score, double cvss_v3_base_score, Date published_date, Date last_modified_date) {
 
         //this.id = null;
@@ -103,13 +104,13 @@ public class CVEobject {
     /**
      * This method's purpose is to create and return all CVE objects from JSON file (input)
      *
-     * @param fileName path to the .json file with mitre.cve objects
+     * @param fileName path to the .json file with CVE objects
      * @return all created CVE objects
      */
-    public static ArrayList<CVEobject> CVEjsonToObjects(String fileName) { // https://nvd.nist.gov/vuln/data-feeds
+    public static List<CVEobject> CVEjsonToObjects(String fileName) { // https://nvd.nist.gov/vuln/data-feeds
 
-        // Empty ArrayList of CVE objects which will later on be filled and returned
-        ArrayList<CVEobject> cve_objs = new ArrayList<>();
+        // Empty List of CVE objects which will later on be filled and returned
+        List<CVEobject> cve_objs = new ArrayList<>();
 
         // Parsing JSON file from input
         JSONParser parser = new JSONParser();
@@ -147,7 +148,7 @@ public class CVEobject {
                 JSONObject problemtype = (JSONObject) cve.get("problemtype");
                 JSONArray problemtype_data = (JSONArray) problemtype.get("problemtype_data");
                 Iterator<JSONObject> problem_iterator = problemtype_data.iterator();
-                ArrayList<CWEobject> problem_type_data_final = new ArrayList<>(); // problem_type_data
+                List<CWEobject> problem_type_data_final = new ArrayList<>(); // problem_type_data
                 while (problem_iterator.hasNext()) {
                     JSONArray description = (JSONArray) problem_iterator.next().get("description");
                     Iterator<JSONObject> description_iterator = description.iterator();
@@ -163,7 +164,7 @@ public class CVEobject {
                 JSONObject references = (JSONObject) cve.get("references");
                 JSONArray reference_data = (JSONArray) references.get("reference_data");
                 Iterator<JSONObject> reference_iterator = reference_data.iterator();
-                ArrayList<ReferenceObject> references_final = new ArrayList<>(); // references
+                List<ReferenceObject> references_final = new ArrayList<>(); // references
                 while (reference_iterator.hasNext()) {
                     JSONObject reference = reference_iterator.next();
                     String url = (String) reference.get("url");
@@ -171,7 +172,7 @@ public class CVEobject {
                     String name = (String) reference.get("name");
                     JSONArray tags = (JSONArray) reference.get("tags");
                     Iterator<String> ref_tags_iterator = tags.iterator();
-                    ArrayList<String> tags_final = new ArrayList<>();
+                    List<String> tags_final = new ArrayList<>();
                     while (ref_tags_iterator.hasNext()) {
                         tags_final.add(ref_tags_iterator.next());
                     }
@@ -182,7 +183,7 @@ public class CVEobject {
                 JSONObject decription_obj = (JSONObject) cve.get("description");
                 JSONArray description_data = (JSONArray) decription_obj.get("description_data");
                 Iterator<JSONObject> description_obj_iterator = description_data.iterator();
-                ArrayList<String> descriptions_final = new ArrayList<>(); // descriptions
+                List<String> descriptions_final = new ArrayList<>(); // descriptions
                 while (description_obj_iterator.hasNext()) {
                     String description_value = (String) description_obj_iterator.next().get("value");
                     descriptions_final.add(description_value);
@@ -197,11 +198,11 @@ public class CVEobject {
 
                 JSONArray nodes = (JSONArray) configurations.get("nodes");
                 Iterator<JSONObject> nodes_iterator = nodes.iterator();
-                ArrayList<CPEnodeObject> cpe_nodes_final = new ArrayList<>(); // cpe_nodes
+                List<CPEnodeObject> cpe_nodes_final = new ArrayList<>(); // cpe_nodes
 
                 while (nodes_iterator.hasNext()) {
-                    ArrayList<ArrayList<CPEcomplexObj>> cpe_complex_objs_part = new ArrayList<>(); // complex CPE objects - CPE node object
-                    ArrayList<String> operators_part = new ArrayList<>(); // operators - CPE node object
+                    List<List<CPEcomplexObj>> cpe_complex_objs_part = new ArrayList<>(); // complex CPE objects - CPE node object
+                    List<String> operators_part = new ArrayList<>(); // operators - CPE node object
 
                     JSONObject node = nodes_iterator.next();
                     String first_op = (String) node.get("operator");
@@ -214,7 +215,7 @@ public class CVEobject {
                         Iterator<JSONObject> children_iterator = children.iterator();
 
                         while (children_iterator.hasNext()) {
-                            ArrayList<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
+                            List<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
                             JSONObject child = children_iterator.next();
 
                             String child_oper = (String) child.get("operator");
@@ -243,12 +244,12 @@ public class CVEobject {
                     } else { // Less complex structure
                         JSONArray cpe_match = (JSONArray) node.get("cpe_match");
                         if (cpe_match == null) {
-                            ArrayList<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
+                            List<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
                             cpe_complex_objs_part.add(cpe_complex_objs_part_part);
                         } else {
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
                             while (cpe_iterator.hasNext()) {
-                                ArrayList<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
+                                List<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
                                 JSONObject cpe_match_specific = cpe_iterator.next();
                                 String cpe23uri = (String) cpe_match_specific.get("cpe23Uri");
                                 boolean vulnerable = (boolean) cpe_match_specific.get("vulnerable");
@@ -266,7 +267,7 @@ public class CVEobject {
                     }
                 }
 
-                // Getting impact json object
+                // Getting impact JSON object
                 JSONObject impact = (JSONObject) cve_item.get("impact");
 
                 // Getting CVSS v3 (base metric v3) object
@@ -453,19 +454,19 @@ public class CVEobject {
         return cve_objs;
     }
 
-    /**
-     * This method's purpose is to create CVE object from given parameters and return it
-     *
-     * @return CVE object
-     */
-    public static CVEobject getInstance(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
-                                        ArrayList<CWEobject> problem_type_data, ArrayList<ReferenceObject> references, ArrayList<String> descriptions,
-                                        String cve_data_version, ArrayList<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3,
-                                        double cvss_v2_base_score, double cvss_v3_base_score, Date published_date, Date last_modified_date) {
+    ///**
+    // * This method's purpose is to create CVE object from given parameters and return it
+    // *
+    // * @return CVE object
+    // */
+    //public static CVEobject getInstance(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
+    //                                    List<CWEobject> problem_type_data, List<ReferenceObject> references, List<String> descriptions,
+    //                                    String cve_data_version, List<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3,
+    //                                    double cvss_v2_base_score, double cvss_v3_base_score, Date published_date, Date last_modified_date) {
 
-        return new CVEobject(data_type, data_format, data_version, meta_data_id, meta_data_assigner, problem_type_data, references,
-                descriptions, cve_data_version, cpe_nodes, cvss_v2, cvss_v3, cvss_v2_base_score, cvss_v3_base_score, published_date, last_modified_date);
-    }
+    //    return new CVEobject(data_type, data_format, data_version, meta_data_id, meta_data_assigner, problem_type_data, references,
+    //            descriptions, cve_data_version, cpe_nodes, cvss_v2, cvss_v3, cvss_v2_base_score, cvss_v3_base_score, published_date, last_modified_date);
+    //}
 
     @Override
     public String toString() {

@@ -25,15 +25,15 @@ public class CWEnoteObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE note object from given parameters and return it
-     *
-     * @return CWE note object
-     */
-    public static CWEnoteObj getInstance(String type, String note_content) {
+    ///**
+    // * This method's purpose is to create a CWE note object from given parameters and return it
+    // *
+    // * @return CWE note object
+    // */
+    //public static CWEnoteObj getInstance(String type, String note_content) {
 
-        return new CWEnoteObj(type, note_content);
-    }
+    //    return new CWEnoteObj(type, note_content);
+    //}
 
     @Override
     public String toString() {

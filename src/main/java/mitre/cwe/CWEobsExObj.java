@@ -28,15 +28,15 @@ public class CWEobsExObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE observed example object from given parameters and return it
-     *
-     * @return CWE observed example object
-     */
-    public static CWEobsExObj getInstance(String reference, String description, String link) {
+    ///**
+    // * This method's purpose is to create a CWE observed example object from given parameters and return it
+    // *
+    // * @return CWE observed example object
+    // */
+    //public static CWEobsExObj getInstance(String reference, String description, String link) {
 
-        return new CWEobsExObj(reference, description, link);
-    }
+    //    return new CWEobsExObj(reference, description, link);
+    //}
 
     @Override
     public String toString() {

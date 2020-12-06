@@ -1,6 +1,6 @@
 package mitre.cwe;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a CWE potential mitigation object (mitigation id attribute, phase attributes, strategy attribute, description attribute,
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class CWEpotMitObj {
 
     protected String mitigation_id;
-    protected ArrayList<String> phases;
+    protected List<String> phases;
     protected String strategy;
     protected String description;
     protected String effectiveness;
@@ -29,7 +29,7 @@ public class CWEpotMitObj {
      * @param effectiveness       effectiveness attribute
      * @param effectiveness_notes effectiveness notes attribute
      */
-    public CWEpotMitObj(String mitigation_id, ArrayList<String> phases, String strategy, String description,
+    public CWEpotMitObj(String mitigation_id, List<String> phases, String strategy, String description,
                         String effectiveness, String effectiveness_notes) {
 
         this.mitigation_id = mitigation_id;
@@ -41,16 +41,16 @@ public class CWEpotMitObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE potential mitigation object from given parameters and return it
-     *
-     * @return CWE potential mitigation object
-     */
-    public static CWEpotMitObj getInstance(String mitigation_id, ArrayList<String> phases, String strategy, String description, String effectiveness,
-                                           String effectiveness_notes) {
+    ///**
+    // * This method's purpose is to create a CWE potential mitigation object from given parameters and return it
+    // *
+    // * @return CWE potential mitigation object
+    // */
+    //public static CWEpotMitObj getInstance(String mitigation_id, List<String> phases, String strategy, String description, String effectiveness,
+    //                                       String effectiveness_notes) {
 
-        return new CWEpotMitObj(mitigation_id, phases, strategy, description, effectiveness, effectiveness_notes);
-    }
+    //    return new CWEpotMitObj(mitigation_id, phases, strategy, description, effectiveness, effectiveness_notes);
+    //}
 
     @Override
     public String toString() {

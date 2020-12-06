@@ -1,6 +1,6 @@
 package mitre.cpe;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a CPE node object (cpe_matches, vulnerable attributes of specific CPE objects, ...)
@@ -11,8 +11,8 @@ import java.util.ArrayList;
  */
 public class CPEnodeObject {
 
-    protected ArrayList<ArrayList<CPEcomplexObj>> complex_cpe_objs;
-    protected ArrayList<String> operators;
+    protected List<List<CPEcomplexObj>> complex_cpe_objs;
+    protected List<String> operators;
 
     /**
      * Copies constructor
@@ -20,23 +20,23 @@ public class CPEnodeObject {
      * @param complex_cpe_objs more complex CPE (CPEcomplexObj) objects from node
      * @param operators        data about what operators are on which positions in CPE node
      */
-    public CPEnodeObject(ArrayList<ArrayList<CPEcomplexObj>> complex_cpe_objs,
-                         ArrayList<String> operators) {
+    public CPEnodeObject(List<List<CPEcomplexObj>> complex_cpe_objs,
+                         List<String> operators) {
 
         this.complex_cpe_objs = complex_cpe_objs;
         this.operators = operators;
     }
 
-    /**
-     * This method's purpose is to create a CPE node object from given parameters and return it
-     *
-     * @return CPE node object
-     */
-    public static CPEnodeObject getInstance(ArrayList<ArrayList<CPEcomplexObj>> complex_cpe_objs,
-                                            ArrayList<String> operators) {
+    ///**
+    // * This method's purpose is to create a CPE node object from given parameters and return it
+    // *
+    // * @return CPE node object
+    // */
+    //public static CPEnodeObject getInstance(List<List<CPEcomplexObj>> complex_cpe_objs,
+    //                                        List<String> operators) {
 
-        return new CPEnodeObject(complex_cpe_objs, operators);
-    }
+    //    return new CPEnodeObject(complex_cpe_objs, operators);
+    //}
 
     @Override
     public String toString() {

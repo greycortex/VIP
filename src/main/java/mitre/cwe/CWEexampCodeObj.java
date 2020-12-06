@@ -28,15 +28,15 @@ public class CWEexampCodeObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE demonstrative example - example code object from given parameters and return it
-     *
-     * @return CWE demonstrative example - example code object
-     */
-    public static CWEexampCodeObj getInstance(String nature, String language, String content) {
+    ///**
+    // * This method's purpose is to create a CWE demonstrative example - example code object from given parameters and return it
+    // *
+    // * @return CWE demonstrative example - example code object
+    // */
+    //public static CWEexampCodeObj getInstance(String nature, String language, String content) {
 
-        return new CWEexampCodeObj(nature, language, content);
-    }
+    //    return new CWEexampCodeObj(nature, language, content);
+    //}
 
     @Override
     public String toString() {

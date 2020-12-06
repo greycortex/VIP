@@ -28,15 +28,15 @@ public class CWErelationshipObj {
 
     }
 
-    /**
-     * This method's purpose is to create a CWE relationship (member) object from given parameters and return it
-     *
-     * @return CWE relationship (member) object
-     */
-    public static CWErelationshipObj getInstance(String cwe_id, String view_id, String capec_id) {
+    ///**
+    // * This method's purpose is to create a CWE relationship (member) object from given parameters and return it
+    // *
+    // * @return CWE relationship (member) object
+    // */
+    //public static CWErelationshipObj getInstance(String cwe_id, String view_id, String capec_id) {
 
-        return new CWErelationshipObj(cwe_id, view_id, capec_id);
-    }
+    //    return new CWErelationshipObj(cwe_id, view_id, capec_id);
+    //}
 
     @Override
     public String toString() {

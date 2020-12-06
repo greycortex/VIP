@@ -63,20 +63,20 @@ public class CVSS3object {
         this.impact_score_v3 = impact_score_v3;
     }
 
-    /**
-     * This method's purpose is to create a CVSS v3 (base metric v3) object from given parameters and return it
-     *
-     * @return CVSS v3 (base metric v3) object
-     */
-    public static CVSS3object getInstance(String version, String vector_string, String attack_vector, String attack_complexity, String privileges_required,
-                                          String user_interaction, String scope, String confidentiality_impact, String integrity_impact,
-                                          String availability_impact, double base_score_v3, String base_severity_v3, double exploitability_score_v3,
-                                          double impact_score_v3) {
+    ///**
+    // * This method's purpose is to create a CVSS v3 (base metric v3) object from given parameters and return it
+    // *
+    // * @return CVSS v3 (base metric v3) object
+    // */
+    //public static CVSS3object getInstance(String version, String vector_string, String attack_vector, String attack_complexity, String privileges_required,
+    //                                      String user_interaction, String scope, String confidentiality_impact, String integrity_impact,
+    //                                      String availability_impact, double base_score_v3, String base_severity_v3, double exploitability_score_v3,
+    //                                      double impact_score_v3) {
 
-        return new CVSS3object(version, vector_string, attack_vector, attack_complexity, privileges_required, user_interaction, scope,
-                confidentiality_impact, integrity_impact, availability_impact, base_score_v3, base_severity_v3, exploitability_score_v3,
-                impact_score_v3);
-    }
+    //    return new CVSS3object(version, vector_string, attack_vector, attack_complexity, privileges_required, user_interaction, scope,
+    //            confidentiality_impact, integrity_impact, availability_impact, base_score_v3, base_severity_v3, exploitability_score_v3,
+    //            impact_score_v3);
+    //}
 
     @Override
     public String toString() {
