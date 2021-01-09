@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class CWEobject {
 
-    protected String id_code;
+    protected String code_id;
     protected String name;
     protected String abstraction;
     protected String structure;
@@ -53,7 +53,7 @@ public class CWEobject {
     /**
      * Copies constructor
      *
-     * @param id_code             CWE code (ID) of a specific CWE
+     * @param code_id             CWE code (ID) of a specific CWE
      * @param name                name of a specific weakness (CWE)
      * @param abstraction         information about abstraction of a specific CWE
      * @param structure           information about structure of a specific CWE
@@ -79,7 +79,7 @@ public class CWEobject {
      * @param affected_resources  affected resource attributes
      * @param functional_areas    funtional area attributes
      */
-    public CWEobject(String id_code, String name, String abstraction, String structure, String status, String description,
+    public CWEobject(String code_id, String name, String abstraction, String structure, String status, String description,
                      String ext_description, String exploit_likelihood, List<CWErelationObj> relations, List<CWEapplPlatfObj> appl_platform_objs,
                      List<String> bg_details, List<CWEnoteObj> notes, List<CWEintrModesObj> intr_modes,
                      List<CWEconseqObj> consequences, List<CWEalterTermObj> alter_terms, List<CWEextRefRefObj> ext_ref_refs,
@@ -87,7 +87,7 @@ public class CWEobject {
                      List<CWEdemExObj> dem_examples, List<CWEobsExObj> obs_examples, List<CWEdetMethObj> det_meths,
                      List<String> rel_attack_patterns, List<String> affected_resources, List<String> functional_areas) {
 
-        this.id_code = id_code;
+        this.code_id = code_id;
         this.name = name;
         this.abstraction = abstraction;
         this.structure = structure;
@@ -127,7 +127,7 @@ public class CWEobject {
      *
      * @return CWE object (CWE code (ID), gotten informations (attributes))
      */
-    public static CWEobject createCWEobj(String id_code) {
+    public static CWEobject createCWEobj(String code_id) {
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         String cwe_name = null; // name
@@ -169,7 +169,7 @@ public class CWEobject {
                             NamedNodeMap attr = nodes_weaknesses.item(z).getAttributes();
                             String id_from_file = attr.getNamedItem("ID").getNodeValue();
 
-                            if (id_from_file.equals(id_code)) {
+                            if (id_from_file.equals(code_id)) {
                                 cwe_name = attr.getNamedItem("Name").getNodeValue(); // getting name attribute
                                 cwe_abstraction = attr.getNamedItem("Abstraction").getNodeValue(); // getting abstraction attribute
                                 cwe_structure = attr.getNamedItem("Structure").getNodeValue(); // getting structure attribute
@@ -589,7 +589,7 @@ public class CWEobject {
             ex.printStackTrace();
         }
 
-        return new CWEobject(id_code, cwe_name, cwe_abstraction, cwe_structure, cwe_status, cwe_description, cwe_ext_description,
+        return new CWEobject(code_id, cwe_name, cwe_abstraction, cwe_structure, cwe_status, cwe_description, cwe_ext_description,
                 cwe_exploit_likelihood, cwe_relations, cwe_appl_platform_objs, cwe_bg_details, cwe_notes, cwe_intr_modes,
                 cwe_consequences, cwe_alter_terms, cwe_ext_ref_refs, cwe_tax_maps, cwe_pot_mits, cwe_weak_ords,
                 cwe_dem_examples, cwe_obs_examples, cwe_det_meths, cwe_rel_attack_patterns, cwe_affected_resources,
@@ -601,7 +601,7 @@ public class CWEobject {
     // *
     // * @return CWE object
     // */
-    //public static CWEobject getInstance(String id_code, String name, String abstraction, String structure, String status, String description,
+    //public static CWEobject getInstance(String code_id, String name, String abstraction, String structure, String status, String description,
     //                                    String ext_description, String exploit_likelihood, List<CWErelationObj> relations, List<CWEapplPlatfObj> appl_platform_objs,
     //                                    List<String> bg_details, List<CWEnoteObj> notes, List<CWEintrModesObj> intr_modes,
     //                                    List<CWEconseqObj> consequences, List<CWEalterTermObj> alter_terms, List<CWEextRefRefObj> ext_ref_refs,
@@ -609,7 +609,7 @@ public class CWEobject {
     //                                    List<CWEdemExObj> dem_examples, List<CWEobsExObj> obs_examples, List<CWEdetMethObj> det_meths,
     //                                    List<String> rel_attack_patterns, List<String> affected_resources, List<String> functional_areas) {
 
-    //    return new CWEobject(id_code, name, abstraction, structure, status, description, ext_description, exploit_likelihood,
+    //    return new CWEobject(code_id, name, abstraction, structure, status, description, ext_description, exploit_likelihood,
     //            relations, appl_platform_objs, bg_details, notes, intr_modes, consequences, alter_terms, ext_ref_refs, tax_maps,
     //            pot_mits, weak_ords, dem_examples, obs_examples, det_meths, rel_attack_patterns, affected_resources, functional_areas);
     //}
@@ -617,7 +617,7 @@ public class CWEobject {
     @Override
     public String toString() {
         return "CWEobject{" +
-                "id_code='" + id_code + '\'' +
+                "code_id='" + code_id + '\'' +
                 ", name='" + name + '\'' +
                 ", abstraction='" + abstraction + '\'' +
                 ", structure='" + structure + '\'' +
