@@ -6,7 +6,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Welcome to the VIP application");
 
-        //mitre.cpe.CPEobject.comparingForUpdate();
+        //mitre.cpe.CPEobject.putIntoDatabase();
 
         //mitre.capec.CAPECobject.CAPECfileToArrayList(); // https://capec.mitre.org/data/xml/capec_latest.xml
         //System.out.println(mitre.capec.CAPECobject.CAPECfileToArrayList()); // https://capec.mitre.org/data/xml/capec_latest.xml

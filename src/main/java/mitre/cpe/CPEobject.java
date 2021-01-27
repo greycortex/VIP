@@ -1,7 +1,16 @@
 package mitre.cpe;
 
+import javax.persistence.*;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.ServiceRegistryBuilder;
+
 import java.io.*;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,21 +23,28 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
+
+@Entity
+@Table(name="cpeobject")
+// @Cacheable
+// @Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
 public class CPEobject {
 
-    /**
-     * DB Connection
-     */
-    private static Connection db;
+    public CPEobject(){ } // default constructor
 
     /**
      * Automatic ID
      */
-    private final Long id;
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    protected Long id;
 
     protected String vendor;
     protected String product;
     protected String version;
+
+    @Column(name="`Update`")
     protected String update;
     protected String edition;
     protected String language;
@@ -50,7 +66,7 @@ public class CPEobject {
      * @param other     other attribute
      */
     public CPEobject(String vendor, String product, String version, String update, String edition, String language,
-                     String swEdition, String targetSw, String targetHw, String other) { // not dumb constructor
+                     String swEdition, String targetSw, String targetHw, String other) { // not a dumb constructor
 
         this.id = null;
         this.vendor = vendor;
@@ -63,7 +79,6 @@ public class CPEobject {
         this.targetSw = targetSw;
         this.targetHw = targetHw;
         this.other = other;
-
     }
 
     // Constructor for specific input - String Array - useful later on
@@ -82,6 +97,7 @@ public class CPEobject {
         this.other = splitstr[12];
     }
 
+
     /**
      * This method's purpose is to take cpeUri line and create an sql-friendly normal CPE object
      *
@@ -89,7 +105,6 @@ public class CPEobject {
      * @return an sql-friendly normal CPE object
      */
     public static CPEobject cpeUriToObject(String cpeUri) {
-
         // This Array is filled with parts of the cpeUri String (separates by ":")
         String[] splitstr = cpeUri.split(":");
 
@@ -98,7 +113,6 @@ public class CPEobject {
          * more database and search friendly and have a better form in general
          */
         for (int i = 0; i < splitstr.length; i++) {
-
             // This replaces all the "*" characters (which mean empty parameters)
             if (splitstr[i].equals("*") || splitstr[i].equals("*\",") || splitstr[i].equals("*\"")) {
                 splitstr[i] = null;
@@ -109,7 +123,8 @@ public class CPEobject {
              * it also removes backslashes in weird places
              */
             if (splitstr[i] != null) {
-                splitstr[i] = splitstr[i].replaceAll("'", "''");
+
+            //    splitstr[i] = splitstr[i].replaceAll("'", "''"); ---
                 splitstr[i] = splitstr[i].replaceAll("\\\\", "");
             }
         }
@@ -124,12 +139,12 @@ public class CPEobject {
         return new CPEobject(splitstr);
     }
 
+
     /**
      * @return List that contains parsed lines (Strings) from the CPE feed file
      * @throws IOException
      */
     public static List<String> parserToLineArrayList() {
-
         // List which will contain parsed lines from the CPE file
         List<String> cpe23urilines = new ArrayList<>();
 
@@ -144,20 +159,20 @@ public class CPEobject {
             e.printStackTrace();
         }
 
+        // Returns List that contains parsed lines (Strings) from the CPE feed file
         return cpe23urilines;
     }
+
 
     /**
      * @return List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
      */
     public static List<CPEobject> stringArrayListToObjectArraylist() {
-
         // Defining the object List
         List<CPEobject> obj_list = new ArrayList<>();
 
         // Taking the lines returned by the parserToLineArrayList() method
-        List<String> cpe23uriliness = new ArrayList<>();
-        cpe23uriliness = parserToLineArrayList();
+        List<String> cpe23uriliness = parserToLineArrayList();
 
         // We go line by line (Object by Object)
         for (String line : cpe23uriliness) {
@@ -170,7 +185,6 @@ public class CPEobject {
              * more database and search friendly and have a better form in general
              */
             for (int i = 0; i < splitstr.length; i++) {
-
                 // This replaces all the "*" characters (which mean empty parameters)
                 if (splitstr[i].equals("*") || splitstr[i].equals("*\",") || splitstr[i].equals("*\"")) {
                     splitstr[i] = null;
@@ -181,7 +195,8 @@ public class CPEobject {
                  * it also removes backslashes in weird places
                  */
                 if (splitstr[i] != null) {
-                    splitstr[i] = splitstr[i].replace("'", "''");
+
+                //    splitstr[i] = splitstr[i].replace("'", "''"); ---
                     splitstr[i] = splitstr[i].replace("\\\\", "");
                 }
             }
@@ -200,22 +215,19 @@ public class CPEobject {
             obj_list.add(obj);
         }
 
+        // Returns List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
         return obj_list;
     }
+
 
     /**
      * This method's purpose is to update the database full of CPE objects so that it can be up-to-date
      * <p>
-     * This method loads all the objects from the up-to-date file,
-     * then it always loads all the objects with the same one vendor from the database (vendor by vendor)
-     * and compares them to objects with the same vendor from the up-to-date file,
-     * then it adds all non-duplicate objects into the database
+     * This method loads all the objects from the up-to-date file and puts them into database or it updates the database
      *
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws IOException
      */
-    public static void comparingForUpdate() {
+    public static void putIntoDatabase() {
+        System.out.println("Actualization of database started - basic CPEs");
 
         // list of objects from up-to-date file
         List<CPEobject> compared_objects = stringArrayListToObjectArraylist();
@@ -223,116 +235,106 @@ public class CPEobject {
         // List which will contain all the vendors that exist in the up-to-date file
         List<String> obj_vendors = new ArrayList<>();
 
-        // DB connection
-        List<String> url_conn = new ArrayList<>();
-
         // Count of vendors gone through from the last print of a CPE object
         int display = 0;
 
-        // This block of code takes the connection url from the separate file and puts it into the url_conn's 0th index
-        try (BufferedReader br = new BufferedReader(new FileReader("exclude/dbconnection.txt"))) {
-            for (String line; (line = br.readLine()) != null; ) {
-                url_conn.add(line);
+        // Creating connection and session
+        Configuration con = new Configuration().configure().addAnnotatedClass(CPEobject.class);
+        ServiceRegistry reg = new ServiceRegistryBuilder().applySettings(con.getProperties()).buildServiceRegistry();
+        SessionFactory sf = con.buildSessionFactory(reg);
+        Session session = sf.openSession();
+
+        // If the cpeobject table is empty, the method doesn't compare
+        Query q = session.createQuery("from CPEobject");
+        q.setMaxResults(10);
+        if (q.list().isEmpty()){
+            // Beginning transaction
+            Transaction txv = session.beginTransaction();
+            System.out.println("Table empty, comparing not included");
+            for (CPEobject obj : compared_objects){
+                session.save(obj);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            // Ending transaction and session
+            txv.commit();
+            session.close();
         }
+        // If the cpeobject table isn't empty, the method does compare
+        else{
+            System.out.println("Table not empty, comparing included");
+            // Ending session
+            session.close();
+            // Beginning session
+            Session sessionc = sf.openSession();
+            // This for cycle fills the obj_vendor List with all vendors that exist in the up-to-date file
+            for (CPEobject obj : compared_objects) {
+                if (!(obj_vendors.contains(obj.vendor))) obj_vendors.add(obj.vendor);
+            }
+            // This for cycle is for the purpose to go through all the vendors that exist in the up-to-date file one by one
+            for (String vendor : obj_vendors) {
+                display++;
+                try {
+                    // list of CPE objects from up-to-date file with the specific vendor
+                    List<CPEobject> compared_objects_vendor = new ArrayList<>();
 
-        // This for cycle fills the obj_vendor List with all vendors that exist in the up-to-date file
-        for (CPEobject obj : compared_objects) {
+                    /**
+                     * This for cycle fills the List compared_objects_vendor with all CPE objects that have the
+                     * current specific vendor from the up-to-date file
+                     */
+                    for (CPEobject obj : compared_objects) {
+                        if (obj.vendor.equals(vendor)) compared_objects_vendor.add(obj);
+                    }
 
-            // Replaces double apostrophes with single apostrophe so that there is no problem with comparing later on
-            obj.controlApostrophes();
+                    // Print one of many CPE objects
+                    if (display == 500) {
+                        System.out.println(compared_objects_vendor.get(0));
+                        display = 0;
+                        // Ending session
+                        sessionc.close();
+                        // Beginning session
+                        sessionc = sf.openSession();
+                    }
+                    // Beginning transaction
+                    Transaction txv = sessionc.beginTransaction();
 
-            if (obj_vendors.contains(obj.vendor)) ;
-            else obj_vendors.add(obj.vendor);
-        }
+                    // Controlling if the vendor String is sql-friendly
+                    vendor = vendor.replaceAll("'", "''");
 
-        // This for cycle is for the purpose to go through all the vendors that exist in the up-to-date file one by one
-        for (String vendor : obj_vendors) {
-            display++;
+                    // Getting CPE objects with current specific vendor from the database
+                    Query qv = sessionc.createQuery("from CPEobject where vendor = '" + vendor + "'");
 
-            try {
+                    // list of CPE objects from DB with the specific vendor
+                    List<CPEobject> objects_to_compare = (List<CPEobject>) qv.list();
 
-                // list of CPE objects from DB with the specific vendor
-                List<CPEobject> objects_to_compare = new ArrayList<>();
-                // list of CPE objects from up-to-date file with the specific vendor
-                List<CPEobject> compared_objects_vendor = new ArrayList<>();
-
-                /**
-                 * This for cycle fills the List compared_objects_vendor with all CPE objects that have the
-                 * current specific vendor from the up-to-date file
-                 */
-                for (CPEobject obj : compared_objects) {
-                    if (obj.vendor.equals(vendor)) compared_objects_vendor.add(obj);
-
-                }
-
-                // Print one of many CPE objects
-                if (display == 50) {
-                    System.out.println(compared_objects_vendor.get(0));
-                    display = 0;
-                }
-
-                Class.forName("org.postgresql.Driver");
-
-                // Connection to the database
-                db = DriverManager.getConnection(url_conn.get(0));
-
-                /**
-                 * This for cycle fills the List compared_objects_vendor with all CPE objects that have the
-                 * current specific vendor from the database
-                 */
-                Statement stat = db.createStatement();
-
-                // Controlling if the vendor String is sql-friendly
-                vendor = vendor.replaceAll("'", "''");
-
-                ResultSet result = stat.executeQuery("SELECT * FROM cpe WHERE vendor = '" + vendor + "'");
-
-                // Making vendor String comparing-friendly
-                vendor = vendor.replaceAll("''", "'");
-
-                while (result.next()) {
-                    CPEobject obj_to_compare = new CPEobject(result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getString(6), result.getString(7), result.getString(8), result.getString(9), result.getString(10), result.getString(11));
-                    obj_to_compare.controlApostrophes();
-                    objects_to_compare.add(obj_to_compare);
-                }
-
-                /**
-                 * This block of code compares all objects with the current specific vendor from the up-to-date file with
-                 * all objects with the current specific vendor from the database.
-                 * It uses the compare() method which can be seen at the bottom of this class.
-                 */
-                boolean duplicity;
-                for (CPEobject new_obj : compared_objects_vendor) {
-                    duplicity = false;
-                    for (CPEobject old_obj : objects_to_compare) {
-                        if (new_obj.compare(old_obj)) {
-                            duplicity = true;
-                            break;
+                    /**
+                     * This block of code compares all objects with the current specific vendor from the up-to-date file with
+                     * all objects with the current specific vendor from the database.
+                     * It uses the compare() method which can be seen at the bottom of this class.
+                     */
+                    boolean duplicity;
+                    for (CPEobject new_obj : compared_objects_vendor) {
+                        duplicity = false;
+                        for (CPEobject old_obj : objects_to_compare) {
+                            if (new_obj.compare(old_obj)) {
+                                duplicity = true;
+                                break;
+                            }
+                        }
+                        // If the object isn't in the database (its new), its added into the database
+                        if (!(duplicity)) {
+                            sessionc.save(new_obj);
                         }
                     }
-
-                    // If the object isn't in the database (its new), its added into the database
-                    if (!duplicity) {
-
-                        // Replacing single apostrophes with dual apostrophes so that the CPE object can be sql-friendly
-                        new_obj.sqlFriendlyApost();
-
-                        new_obj.intoDatabase();
-
-                    }
+                    // Ending transaction
+                    txv.commit();
+                } catch (Exception ex){
+                    ex.printStackTrace();
                 }
-
-                // Closing connection to the database
-                db.close();
-
-            } catch (SQLException | ClassNotFoundException ex) {
-                ex.printStackTrace();
             }
+            // If the session is opened at the end, it will be closed
+            if (sessionc.isOpen()) sessionc.close();
         }
     }
+
 
     /**
      * Compares to input_obj
@@ -341,19 +343,16 @@ public class CPEobject {
      * @return If the CPE objects are the same or not (true or false)
      */
     public boolean compare(CPEobject input_obj) {
-
         // Comparing vendor parameter of compared objects
         if (this.vendor.compareTo(input_obj.vendor) == 0) ;
         else {
             return false;
         }
-
         // Comparing product parameter of compared objects
         if (this.product.compareTo(input_obj.product) == 0) ;
         else {
             return false;
         }
-
         // Comparing version parameter of compared objects
         if (this.version == null || input_obj.version == null) {
             if (this.version == null && input_obj.version == null) ;
@@ -364,7 +363,6 @@ public class CPEobject {
         else {
             return false;
         }
-
         // Comparing update parameter of compared objects
         if (this.update == null || input_obj.update == null) {
             if (this.update == null && input_obj.update == null) ;
@@ -375,7 +373,6 @@ public class CPEobject {
         else {
             return false;
         }
-
         // Comparing edition parameter of compared objects
         if (this.edition == null || input_obj.edition == null) {
             if (this.edition == null && input_obj.edition == null) ;
@@ -386,7 +383,6 @@ public class CPEobject {
         else {
             return false;
         }
-
         // Comparing language parameter of compared objects
         if (this.language == null || input_obj.language == null) {
             if (this.language == null && input_obj.language == null) ;
@@ -397,7 +393,6 @@ public class CPEobject {
         else {
             return false;
         }
-
         // Comparing swEdition parameter of compared objects
         if (this.swEdition == null || input_obj.swEdition == null) {
             if (this.swEdition == null && input_obj.swEdition == null) ;
@@ -408,7 +403,6 @@ public class CPEobject {
         else {
             return false;
         }
-
         // Comparing targetSw parameter of compared objects
         if (this.targetSw == null || input_obj.targetSw == null) {
             if (this.targetSw == null && input_obj.targetSw == null) ;
@@ -419,7 +413,6 @@ public class CPEobject {
         else {
             return false;
         }
-
         // Comparing targetHw parameter of compared objects
         if (this.targetHw == null || input_obj.targetHw == null) {
             if (this.targetHw == null && input_obj.targetHw == null) ;
@@ -430,7 +423,6 @@ public class CPEobject {
         else {
             return false;
         }
-
         // Comparing other parameter of compared objects
         if (this.other == null || input_obj.other == null) {
             if (this.other == null && input_obj.other == null) ;
@@ -445,86 +437,6 @@ public class CPEobject {
         return true;
     }
 
-    // Adding an Object from input into database using PreparedStatement
-    public void intoDatabase() {
-        try {
-            // PreparedStatement is used to handle null values
-            PreparedStatement addstat = db.prepareStatement("INSERT INTO cpe (vendor, product, version, update, edition, language, swedition, targetsw, targethw, other) "
-                    + "VALUES ('" + this.vendor + "','" + this.product + "',?,?,?,?,?,?,?,?)");
-
-            addstat.setString(1, this.version);
-            addstat.setString(2, this.update);
-            addstat.setString(3, this.edition);
-            addstat.setString(4, this.language);
-            addstat.setString(5, this.swEdition);
-            addstat.setString(6, this.targetSw);
-            addstat.setString(7, this.targetHw);
-            addstat.setString(8, this.other);
-            addstat.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Replaces double apostrophes with single apostrophe so that there is no problem with comparing later on
-    public void controlApostrophes() {
-
-        this.vendor = this.vendor.replaceAll("''", "'");
-        this.product = this.product.replaceAll("''", "'");
-        if (this.version == null) ;
-        else this.version = this.version.replaceAll("''", "'");
-        if (this.update == null) ;
-        else this.update = this.update.replaceAll("''", "'");
-        if (this.edition == null) ;
-        else this.edition = this.edition.replaceAll("''", "'");
-        if (this.language == null) ;
-        else this.language = this.language.replaceAll("''", "'");
-        if (this.swEdition == null) ;
-        else this.swEdition = this.swEdition.replaceAll("''", "'");
-        if (this.targetSw == null) ;
-        else this.targetSw = this.targetSw.replaceAll("''", "'");
-        if (this.targetHw == null) ;
-        else this.targetHw = this.targetHw.replaceAll("''", "'");
-        if (this.other == null) ;
-        else this.other = this.other.replaceAll("''", "'");
-
-    }
-
-    // Replaces single apostrophe with double apostrophes so that parameters can be sql-friendly
-    public void sqlFriendlyApost() {
-
-        this.vendor = this.vendor.replaceAll("'", "''");
-        this.product = this.product.replaceAll("'", "''");
-        if (this.version == null) ;
-        else this.version = this.version.replaceAll("'", "''");
-        if (this.update == null) ;
-        else this.update = this.update.replaceAll("'", "''");
-        if (this.edition == null) ;
-        else this.edition = this.edition.replaceAll("'", "''");
-        if (this.language == null) ;
-        else this.language = this.language.replaceAll("'", "''");
-        if (this.swEdition == null) ;
-        else this.swEdition = this.swEdition.replaceAll("'", "''");
-        if (this.targetSw == null) ;
-        else this.targetSw = this.targetSw.replaceAll("'", "''");
-        if (this.targetHw == null) ;
-        else this.targetHw = this.targetHw.replaceAll("'", "''");
-        if (this.other == null) ;
-        else this.other = this.other.replaceAll("'", "''");
-
-    }
-
-    ///**
-    // * This method's purpose is to create normal CPE object from given parameters and return it
-    // *
-    // * @return normal CPE object
-    // */
-    //public static CPEobject getInstance(String vendor, String product, String version, String update, String edition, String language,
-    //                                    String swEdition, String targetSw, String targetHw, String other) {
-
-    //    return new CPEobject(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
-    //}
 
     @Override
     public String toString() {
