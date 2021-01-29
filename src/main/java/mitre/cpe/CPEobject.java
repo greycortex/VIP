@@ -331,7 +331,7 @@ public class CPEobject {
                 }
             }
             // If the session is opened at the end, it will be closed
-            if (sessionc.isOpen()) sessionc.close();
+            if (sessionc.isOpen()) sessionc.close() ;
         }
     }
 
