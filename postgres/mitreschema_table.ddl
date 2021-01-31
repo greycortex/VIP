@@ -1,5 +1,5 @@
 CREATE TABLE CVEobject (
-  Meta_data_id       varchar(63) NOT NULL, 
+  Meta_data_id       varchar(63) NOT NULL,
   CVSS3objectID      int8 NOT NULL, 
   CVSS2objectID      int8 NOT NULL, 
   Data_type          varchar(255) NOT NULL, 
@@ -253,8 +253,7 @@ CREATE TABLE CPEobject (
   Version_end_excluding   varchar(255), 
   Version_start_including varchar(255), 
   Version_end_including   varchar(255), 
-  Discriminator           varchar(255),
-  timestamp timestamptz NOT NULL DEFAULT now());
+  Discriminator           varchar(255));
 CREATE TABLE CPEnodeObject_CPEobject (
   CPEobjectID     int8 NOT NULL, 
   CPEnodeObjectID int8 NOT NULL);

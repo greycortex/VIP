@@ -11,8 +11,7 @@ import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.ServiceRegistryBuilder;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class represents a normal CPE object (vendor, product, version, ...)
@@ -97,7 +96,6 @@ public class CPEobject {
         this.other = splitstr[12];
     }
 
-
     /**
      * This method's purpose is to take cpeUri line and create an sql-friendly normal CPE object
      *
@@ -139,12 +137,12 @@ public class CPEobject {
         return new CPEobject(splitstr);
     }
 
-
     /**
      * @return List that contains parsed lines (Strings) from the CPE feed file
      * @throws IOException
      */
     public static List<String> parserToLineArrayList() {
+        System.out.println("Parsing of CPE objects started");
         // List which will contain parsed lines from the CPE file
         List<String> cpe23urilines = new ArrayList<>();
 
@@ -162,7 +160,6 @@ public class CPEobject {
         // Returns List that contains parsed lines (Strings) from the CPE feed file
         return cpe23urilines;
     }
-
 
     /**
      * @return List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
@@ -214,11 +211,25 @@ public class CPEobject {
             CPEobject obj = new CPEobject(finalSplitstr);
             obj_list.add(obj);
         }
-
         // Returns List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
+        System.out.println("Parsing of CPE objects done");
         return obj_list;
     }
 
+    // This method's purpose is to remove duplicates from the List returned by the stringArrayListToObjectArraylist() method
+    public static List<CPEobject> removeDuplicates() {
+        // Takes all objects returned by the stringArrayListToObjectArraylist() method
+        List<CPEobject> all_objs = stringArrayListToObjectArraylist();
+
+        System.out.println("Duplicates of CPE objects removal started, current object count: "+all_objs.size());
+
+        // Removing duplicates by creating a LinkedHashSet
+        ArrayList<CPEobject> return_objs = new ArrayList<CPEobject>(new LinkedHashSet<CPEobject>(all_objs));
+
+        System.out.println("Duplicates of CPE objects removal done, current object count: "+return_objs.size());
+        // Returns List of CPE objects from the up-to-date file without duplicates
+        return return_objs;
+    }
 
     /**
      * This method's purpose is to update the database full of CPE objects so that it can be up-to-date
@@ -227,15 +238,18 @@ public class CPEobject {
      *
      */
     public static void putIntoDatabase() {
-        System.out.println("Actualization of database started - basic CPEs");
-
         // list of objects from up-to-date file
-        List<CPEobject> compared_objects = stringArrayListToObjectArraylist();
+        List<CPEobject> compared_objects = removeDuplicates();
+
+        // Measuring, how long it will take to update the table in database
+        long start_time = System.currentTimeMillis();
+
+        System.out.println("Actualization of basic CPE objects in database started");
 
         // List which will contain all the vendors that exist in the up-to-date file
         List<String> obj_vendors = new ArrayList<>();
 
-        // Count of vendors gone through from the last print of a CPE object
+        // Count of vendors gone through from the last print of a CPE object and from the last refresh of the session
         int display = 0;
 
         // Creating connection and session
@@ -250,7 +264,7 @@ public class CPEobject {
         if (q.list().isEmpty()){
             // Beginning transaction
             Transaction txv = session.beginTransaction();
-            System.out.println("Table empty, comparing not included");
+            System.out.println("Database table empty, comparing not included");
             for (CPEobject obj : compared_objects){
                 session.save(obj);
             }
@@ -260,7 +274,7 @@ public class CPEobject {
         }
         // If the cpeobject table isn't empty, the method does compare
         else{
-            System.out.println("Table not empty, comparing included");
+            System.out.println("Database table not empty, comparing included");
             // Ending session
             session.close();
             // Beginning session
@@ -303,7 +317,7 @@ public class CPEobject {
                     Query qv = sessionc.createQuery("from CPEobject where vendor = '" + vendor + "'");
 
                     // list of CPE objects from DB with the specific vendor
-                    List<CPEobject> objects_to_compare = (List<CPEobject>) qv.list();
+                    List<CPEobject> objects_to_compare = (List<CPEobject>) qv.list(); // Default constructor calling
 
                     /**
                      * This block of code compares all objects with the current specific vendor from the up-to-date file with
@@ -314,7 +328,7 @@ public class CPEobject {
                     for (CPEobject new_obj : compared_objects_vendor) {
                         duplicity = false;
                         for (CPEobject old_obj : objects_to_compare) {
-                            if (new_obj.compare(old_obj)) {
+                            if (new_obj.equals(old_obj)) {
                                 duplicity = true;
                                 break;
                             }
@@ -331,112 +345,76 @@ public class CPEobject {
                 }
             }
             // If the session is opened at the end, it will be closed
-            if (sessionc.isOpen()) sessionc.close() ;
+            if (sessionc.isOpen()) sessionc.close();
         }
+        if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Actualization of basic CPE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
+        else System.out.println("Actualization of basic CPE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
     }
-
 
     /**
      * Compares to input_obj
      *
-     * @param input_obj Object that is compared with
+     * @param obj Object that is compared with
      * @return If the CPE objects are the same or not (true or false)
      */
-    public boolean compare(CPEobject input_obj) {
+    @Override
+    public boolean equals(Object obj) {
+        // Controlling if the object is CPEobject
+        if (!(obj instanceof CPEobject)) return false;
+        CPEobject input_obj = (CPEobject) obj;
         // Comparing vendor parameter of compared objects
-        if (this.vendor.compareTo(input_obj.vendor) == 0) ;
-        else {
-            return false;
-        }
+        if (!(this.vendor.compareTo(input_obj.vendor) == 0)) return false;
+
         // Comparing product parameter of compared objects
-        if (this.product.compareTo(input_obj.product) == 0) ;
-        else {
-            return false;
-        }
+        if (!(this.product.compareTo(input_obj.product) == 0)) return false;
+
         // Comparing version parameter of compared objects
         if (this.version == null || input_obj.version == null) {
-            if (this.version == null && input_obj.version == null) ;
-            else {
-                return false;
-            }
-        } else if (this.version.compareTo(input_obj.version) == 0) ;
-        else {
-            return false;
-        }
+            if (!(this.version == null && input_obj.version == null)) return false;
+        } else if (!(this.version.compareTo(input_obj.version) == 0)) return false;
+
         // Comparing update parameter of compared objects
         if (this.update == null || input_obj.update == null) {
-            if (this.update == null && input_obj.update == null) ;
-            else {
-                return false;
-            }
-        } else if (this.update.compareTo(input_obj.update) == 0) ;
-        else {
-            return false;
-        }
+            if (!(this.update == null && input_obj.update == null)) return false;
+        } else if (!(this.update.compareTo(input_obj.update) == 0)) return false;
+
         // Comparing edition parameter of compared objects
         if (this.edition == null || input_obj.edition == null) {
-            if (this.edition == null && input_obj.edition == null) ;
-            else {
-                return false;
-            }
-        } else if (this.edition.compareTo(input_obj.edition) == 0) ;
-        else {
-            return false;
-        }
+            if (!(this.edition == null && input_obj.edition == null)) return false;
+        } else if (!(this.edition.compareTo(input_obj.edition) == 0)) return false;
+
         // Comparing language parameter of compared objects
         if (this.language == null || input_obj.language == null) {
-            if (this.language == null && input_obj.language == null) ;
-            else {
-                return false;
-            }
-        } else if (this.language.compareTo(input_obj.language) == 0) ;
-        else {
-            return false;
-        }
+            if (!(this.language == null && input_obj.language == null)) return false;
+        } else if (!(this.language.compareTo(input_obj.language) == 0)) return false;
+
         // Comparing swEdition parameter of compared objects
         if (this.swEdition == null || input_obj.swEdition == null) {
-            if (this.swEdition == null && input_obj.swEdition == null) ;
-            else {
-                return false;
-            }
-        } else if (this.swEdition.compareTo(input_obj.swEdition) == 0) ;
-        else {
-            return false;
-        }
+            if (!(this.swEdition == null && input_obj.swEdition == null)) return false;
+        } else if (!(this.swEdition.compareTo(input_obj.swEdition) == 0)) return false;
+
         // Comparing targetSw parameter of compared objects
         if (this.targetSw == null || input_obj.targetSw == null) {
-            if (this.targetSw == null && input_obj.targetSw == null) ;
-            else {
-                return false;
-            }
-        } else if (this.targetSw.compareTo(input_obj.targetSw) == 0) ;
-        else {
-            return false;
-        }
+            if (!(this.targetSw == null && input_obj.targetSw == null)) return false;
+        } else if (!(this.targetSw.compareTo(input_obj.targetSw) == 0)) return false;
+
         // Comparing targetHw parameter of compared objects
         if (this.targetHw == null || input_obj.targetHw == null) {
-            if (this.targetHw == null && input_obj.targetHw == null) ;
-            else {
-                return false;
-            }
-        } else if (this.targetHw.compareTo(input_obj.targetHw) == 0) ;
-        else {
-            return false;
-        }
+            if (!(this.targetHw == null && input_obj.targetHw == null)) return false;
+        } else if (!(this.targetHw.compareTo(input_obj.targetHw) == 0)) return false;
+
         // Comparing other parameter of compared objects
         if (this.other == null || input_obj.other == null) {
-            if (this.other == null && input_obj.other == null) ;
-            else {
-                return false;
-            }
-        } else if (this.other.compareTo(input_obj.other) == 0) ;
-        else {
-            return false;
-        }
+            if (!(this.other == null && input_obj.other == null)) return false;
+        } else if (!(this.other.compareTo(input_obj.other) == 0)) return false;
 
         return true;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
+    }
 
     @Override
     public String toString() {
