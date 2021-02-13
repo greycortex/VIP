@@ -25,6 +25,7 @@ import java.util.*;
 
 @Entity
 @Table(name="cpeobject")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 // @Cacheable
 // @Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
 public class CPEobject {
@@ -51,6 +52,9 @@ public class CPEobject {
     protected String targetSw;
     protected String targetHw;
     protected String other;
+
+    @ManyToMany(mappedBy = "complex_cpe_objs")
+    protected List<CPEnodeObject> cpe_node_objs;
 
     /**
      * @param vendor    vendor attribute
@@ -322,7 +326,7 @@ public class CPEobject {
                     /**
                      * This block of code compares all objects with the current specific vendor from the up-to-date file with
                      * all objects with the current specific vendor from the database.
-                     * It uses the compare() method which can be seen at the bottom of this class.
+                     * It uses the equals() method which can be seen overridden at the bottom of this class.
                      */
                     boolean duplicity;
                     for (CPEobject new_obj : compared_objects_vendor) {

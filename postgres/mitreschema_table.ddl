@@ -235,7 +235,8 @@ CREATE TABLE CPEnodeObject (
   ID                    BIGSERIAL NOT NULL, 
   CVEobjectMeta_data_id varchar(63) NOT NULL, 
   Complex_cpe_objs      int8[] NOT NULL,
-  Operators             varchar(63)[] NOT NULL);
+  Operators             varchar(63)[] NOT NULL,
+  counts                int4[] NOT NULL);
 CREATE TABLE CPEobject (
   ID                      BIGSERIAL NOT NULL, 
   Vendor                  varchar(255) NOT NULL, 

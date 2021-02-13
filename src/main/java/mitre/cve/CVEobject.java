@@ -6,11 +6,19 @@ import mitre.cpe.CPEcomplexObj;
 import mitre.cpe.CPEobject;
 import mitre.cpe.CPEnodeObject;
 import mitre.cwe.CWEobject;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.ServiceRegistryBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.persistence.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
@@ -29,29 +37,30 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity
+@Table(name="cveobject")
 public class CVEobject {
 
-    /**
-     * DB connection
-     */
-    private static Connection db;
-
-    ///**
-    //* Automatic ID
-    //*/
-    //private final Long id;
-
+    @Id
+    @Column(unique = true)
+    protected final String meta_data_id;
     protected final String data_type;
     protected final String data_format;
     protected final String data_version;
-    protected final String meta_data_id;
     protected final String meta_data_assigner;
-    protected final List<CWEobject> problem_type_data;
+    //@OneToMany(mappedBy = "") // --
+    //protected final List<CWEobject> problem_type_data; // --
+    @OneToMany(mappedBy = "cve_obj") // ---
     protected final List<ReferenceObject> references;
+    @Column(length = 2047)
+    @ElementCollection(targetClass = String.class)
     protected final List<String> descriptions;
     protected final String cve_data_version;
+    @OneToMany(mappedBy = "cve_obj") // ---
     protected final List<CPEnodeObject> cpe_nodes;
+    @OneToOne
     protected final CVSS2object cvss_v2;
+    @OneToOne
     protected final CVSS3object cvss_v3;
     protected final double cvss_v2_base_score;
     protected final double cvss_v3_base_score;
@@ -65,7 +74,7 @@ public class CVEobject {
      * @param data_version       data version parameter
      * @param meta_data_id       CVE meta data - ID parameter
      * @param meta_data_assigner CVE meta data - ASSIGNER parameter
-     * @param problem_type_data  problem type data values (CWE objects)
+     //* @param problem_type_data  problem type data values (CWE objects)
      * @param references         reference objects - references
      * @param descriptions       descriptions
      * @param cve_data_version   CVE data version
@@ -77,18 +86,18 @@ public class CVEobject {
      * @param published_date     published date value
      * @param last_modified_date last modified date value
      */
+    // List<CWEobject> problem_type_data,
     public CVEobject(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
-                     List<CWEobject> problem_type_data, List<ReferenceObject> references, List<String> descriptions,
-                     String cve_data_version, List<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3,
-                     double cvss_v2_base_score, double cvss_v3_base_score, Date published_date, Date last_modified_date) {
+                     List<ReferenceObject> references, List<String> descriptions, String cve_data_version, List<CPEnodeObject> cpe_nodes,
+                     CVSS2object cvss_v2, CVSS3object cvss_v3, double cvss_v2_base_score, double cvss_v3_base_score, Date published_date,
+                     Date last_modified_date) {
 
-        //this.id = null;
         this.data_type = data_type;
         this.data_format = data_format;
         this.data_version = data_version;
         this.meta_data_id = meta_data_id;
         this.meta_data_assigner = meta_data_assigner;
-        this.problem_type_data = problem_type_data;
+    //    this.problem_type_data = problem_type_data;
         this.references = references;
         this.descriptions = descriptions;
         this.cve_data_version = cve_data_version;
@@ -145,20 +154,20 @@ public class CVEobject {
                 String meta_data_assigner_final = (String) meta_data.get("ASSIGNER"); // meta_data_assigner
 
                 // Getting CWE objects
-                JSONObject problemtype = (JSONObject) cve.get("problemtype");
-                JSONArray problemtype_data = (JSONArray) problemtype.get("problemtype_data");
-                Iterator<JSONObject> problem_iterator = problemtype_data.iterator();
-                List<CWEobject> problem_type_data_final = new ArrayList<>(); // problem_type_data
-                while (problem_iterator.hasNext()) {
-                    JSONArray description = (JSONArray) problem_iterator.next().get("description");
-                    Iterator<JSONObject> description_iterator = description.iterator();
-                    while (description_iterator.hasNext()) {
-                        String value = (String) description_iterator.next().get("value");
-                        String[] splitcwe = value.split("-");
-                        value = splitcwe[1];
-                        problem_type_data_final.add(CWEobject.createCWEobj(value)); // create method from CWEobject class used
-                    }
-                }
+                //JSONObject problemtype = (JSONObject) cve.get("problemtype");
+                //JSONArray problemtype_data = (JSONArray) problemtype.get("problemtype_data");
+                //Iterator<JSONObject> problem_iterator = problemtype_data.iterator();
+                //List<CWEobject> problem_type_data_final = new ArrayList<>(); // problem_type_data
+                //while (problem_iterator.hasNext()) {
+                //    JSONArray description = (JSONArray) problem_iterator.next().get("description");
+                //    Iterator<JSONObject> description_iterator = description.iterator();
+                //    while (description_iterator.hasNext()) {
+                //        String value = (String) description_iterator.next().get("value");
+                //        String[] splitcwe = value.split("-");
+                //        value = splitcwe[1];
+                //        problem_type_data_final.add(CWEobject.createCWEobj(value)); // create method from CWEobject class used
+                //    }
+                //}
 
                 // Getting reference objects
                 JSONObject references = (JSONObject) cve.get("references");
@@ -201,8 +210,9 @@ public class CVEobject {
                 List<CPEnodeObject> cpe_nodes_final = new ArrayList<>(); // cpe_nodes
 
                 while (nodes_iterator.hasNext()) {
-                    List<List<CPEcomplexObj>> cpe_complex_objs_part = new ArrayList<>(); // complex CPE objects - CPE node object
+                    List<CPEcomplexObj> cpe_complex_objs_part = new ArrayList<>(); // complex CPE objects - CPE node object
                     List<String> operators_part = new ArrayList<>(); // operators - CPE node object
+                    List<Integer> counts_part = new ArrayList<>(); // counts of CPE objects under specific operators - CPE node object
 
                     JSONObject node = nodes_iterator.next();
                     String first_op = (String) node.get("operator");
@@ -211,20 +221,22 @@ public class CVEobject {
                     else operators_part.add("N" + first_op);
 
                     if (node.get("children") != null) { // More complex structure
+                        counts_part.add(0);
                         JSONArray children = (JSONArray) node.get("children");
                         Iterator<JSONObject> children_iterator = children.iterator();
 
                         while (children_iterator.hasNext()) {
-                            List<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
                             JSONObject child = children_iterator.next();
 
                             String child_oper = (String) child.get("operator");
                             if (child.get("negate") == null) operators_part.add(child_oper);
                             else operators_part.add("N" + child_oper);
+                            Integer count = 0; // counting how many CPE objects are under one operator so that we can recostruct the structure later on
 
                             JSONArray cpe_match = (JSONArray) child.get("cpe_match");
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
                             while (cpe_iterator.hasNext()) {
+                                count++;
                                 JSONObject cpe_match_specific = cpe_iterator.next();
                                 String cpe23uri = (String) cpe_match_specific.get("cpe23Uri");
                                 boolean vulnerable = (boolean) cpe_match_specific.get("vulnerable");
@@ -233,23 +245,23 @@ public class CVEobject {
                                 String version_start_including = (String) cpe_match_specific.get("versionStartIncluding");
                                 String version_end_including = (String) cpe_match_specific.get("versionEndIncluding");
                                 CPEobject cpe_normal_obj = CPEcomplexObj.cpeUriToObject(cpe23uri); // create method from CPEobject class used - normal CPE object
-                                cpe_complex_objs_part_part.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
+                                cpe_complex_objs_part.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
                                         version_start_excluding, version_end_excluding, version_start_including, version_end_including)); // CPEcompexObj class used - more complex CPE object
 
                             }
-                            cpe_complex_objs_part.add(cpe_complex_objs_part_part);
+                            counts_part.add(count); // count of CPE objects under one operator added
                         }
-                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs_part, operators_part)); // CPE node object added
+                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs_part, operators_part, counts_part)); // CPE node object added
 
                     } else { // Less complex structure
                         JSONArray cpe_match = (JSONArray) node.get("cpe_match");
                         if (cpe_match == null) {
-                            List<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
-                            cpe_complex_objs_part.add(cpe_complex_objs_part_part);
+                            counts_part.add(0);
                         } else {
+                            Integer count = 0; // counting how many CPE objects are under one operator so that we can recostruct the structure later on
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
                             while (cpe_iterator.hasNext()) {
-                                List<CPEcomplexObj> cpe_complex_objs_part_part = new ArrayList<>();
+                                count++;
                                 JSONObject cpe_match_specific = cpe_iterator.next();
                                 String cpe23uri = (String) cpe_match_specific.get("cpe23Uri");
                                 boolean vulnerable = (boolean) cpe_match_specific.get("vulnerable");
@@ -258,12 +270,12 @@ public class CVEobject {
                                 String version_start_including = (String) cpe_match_specific.get("versionStartIncluding");
                                 String version_end_including = (String) cpe_match_specific.get("versionEndIncluding");
                                 CPEobject cpe_normal_obj = CPEcomplexObj.cpeUriToObject(cpe23uri); // create method from CPEobject class used - normal CPE object
-                                cpe_complex_objs_part_part.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
+                                cpe_complex_objs_part.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
                                         version_start_excluding, version_end_excluding, version_start_including, version_end_including)); // CPEcompexObj class used - more complex CPE object
-                                cpe_complex_objs_part.add(cpe_complex_objs_part_part);
                             }
+                            counts_part.add(count); // count of CPE objects under one operator added
                         }
-                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs_part, operators_part)); // CPE node object added
+                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs_part, operators_part, counts_part)); // CPE node object added
                     }
                 }
 
@@ -441,8 +453,9 @@ public class CVEobject {
                 Date last_modified_date_final = dateformat.parse(last_modified_date_final_string); // last_modified_date
 
                 // Creating CVE object and adding it into the returning arraylist
+                //  problem_type_data_final -- CWE objects
                 cve_objs.add(new CVEobject(data_type_final, data_format_final, data_version_final, meta_data_id_final,
-                        meta_data_assigner_final, problem_type_data_final, references_final, descriptions_final,
+                        meta_data_assigner_final, references_final, descriptions_final,
                         cve_data_version_final, cpe_nodes_final, cvss_v2_final, cvss_v3_final, base_score_v2_final,
                         base_score_v3_final, published_date_final, last_modified_date_final));
             }
@@ -452,6 +465,116 @@ public class CVEobject {
 
         // Returning all created CVE objects
         return cve_objs;
+    }
+
+    /**
+     * This method's purpose is to put all given CVE objects into database or to update them
+     *
+     * @param fileName path to the .json file with CVE objects
+     */
+    public static void putIntoDatabase (String fileName) {
+
+        List<CVEobject> cve_objs = CVEjsonToObjects(fileName); // Taking objects returned by the CVEjsonToObjects() method
+
+        // Measuring, how long it will take to update the table in database
+        long start_time = System.currentTimeMillis();
+
+        System.out.println("Actualization of CVE objects in database started");
+
+        // Creating connection and session
+        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
+        ServiceRegistry reg = new ServiceRegistryBuilder().applySettings(con.getProperties()).buildServiceRegistry();
+        SessionFactory sf = con.buildSessionFactory(reg);
+        Session session = sf.openSession();
+
+        // If the cveobject table is empty, the method doesn't compare
+        Query q = session.createQuery("select meta_data_id from CVEobject");
+        // List which will contain ids of all CVE objects that are in the database before the actualization
+        List<String> meta_data_ids_from_db = (List<String>) q.list();
+        if (q.list().isEmpty()){
+            // Beginning transaction
+            Transaction txv = session.beginTransaction();
+            System.out.println("Database table empty, comparing not included");
+            for (CVEobject obj : cve_objs){
+                if (!(obj.cvss_v2 == null)) session.save(obj.cvss_v2);
+                if (!(obj.cvss_v3 == null)) session.save(obj.cvss_v3);
+                session.save(obj);
+                for (CPEnodeObject node_obj : obj.cpe_nodes){
+                    if (!(node_obj == null)) {
+                        for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
+                            if (!(cpe_obj == null)) session.save(cpe_obj); // Data redundance?
+                        }
+                        session.save(node_obj);
+                    }
+                }
+                for (ReferenceObject ref_obj : obj.references) if (!(ref_obj == null)) session.save(ref_obj);
+            }
+            // Ending transaction and session
+            txv.commit();
+            session.close();
+        }
+        // If the cveobject table isn't empty, the method does compare
+        else {
+                System.out.println("Database table not empty, comparing included");
+                // Ending session
+                session.close();
+                // Beginning session
+                Session sessionc = sf.openSession();
+                // Beginning transaction
+                Transaction txv = sessionc.beginTransaction();
+            try {
+                int display = 0;
+                boolean duplicity;
+                for (CVEobject new_obj : cve_objs){
+                    display++;
+                    if (display % 300 == 0) {
+                        System.out.println(new_obj);
+                        // Ending session
+                        sessionc.close();
+                        // Beginning session
+                        sessionc = sf.openSession();
+                    }
+                    duplicity = false;
+                    for (String db_id : meta_data_ids_from_db){
+                        if (new_obj.meta_data_id.equals(db_id)) {
+                            duplicity = true;
+                            break;
+                        }
+                    }
+                    // If the object isn't in the database (its new), its added into the database
+                    if (!(duplicity)) {
+                        if (!(new_obj.cvss_v2 == null)) sessionc.save(new_obj.cvss_v2);
+                        if (!(new_obj.cvss_v3 == null)) sessionc.save(new_obj.cvss_v3);
+                        sessionc.save(new_obj);
+                        for (CPEnodeObject node_obj : new_obj.cpe_nodes){
+                            if (!(node_obj == null)) {
+                                for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
+                                    if (!(cpe_obj == null)) sessionc.save(cpe_obj); // Data redundance?
+                                }
+                                sessionc.save(node_obj);
+                            }
+                        }
+                        for (ReferenceObject ref_obj : new_obj.references) if (!(ref_obj == null)) sessionc.save(ref_obj);
+                    }
+                    if (display % 50 == 0) {
+                        // Ending transaction
+                        txv.commit();
+                        // Beginning transaction
+                        txv = sessionc.beginTransaction();
+                    }
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            // Ending transaction
+            txv.commit();
+            // If the session is opened at the end, it will be closed
+            if (sessionc.isOpen()) sessionc.close();
+        }
+        System.out.println("Actualization of CVE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
+
     }
 
     ///**
@@ -471,13 +594,12 @@ public class CVEobject {
     @Override
     public String toString() {
         return "CVEobject{" +
-                //"id=" + id +
                 "data_type='" + data_type + '\'' +
                 ", data_format='" + data_format + '\'' +
                 ", data_version='" + data_version + '\'' +
                 ", meta_data_id='" + meta_data_id + '\'' +
                 ", meta_data_assigner='" + meta_data_assigner + '\'' +
-                ", problem_type_data=" + problem_type_data +
+                //", problem_type_data=" + problem_type_data +
                 ", references=" + references +
                 ", descriptions=" + descriptions +
                 ", cve_data_version='" + cve_data_version + '\'' +

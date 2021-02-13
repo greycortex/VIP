@@ -6,12 +6,13 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Welcome to the VIP application");
 
-        mitre.cpe.CPEobject.putIntoDatabase();
+        //mitre.cpe.CPEobject.putIntoDatabase();
 
         //mitre.capec.CAPECobject.CAPECfileToArrayList(); // https://capec.mitre.org/data/xml/capec_latest.xml
         //System.out.println(mitre.capec.CAPECobject.CAPECfileToArrayList()); // https://capec.mitre.org/data/xml/capec_latest.xml
 
-        //mitre.cve.CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2015.json"); // https://nvd.nist.gov/vuln/data-feeds + https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+        mitre.cve.CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2003.json"); // https://nvd.nist.gov/vuln/data-feeds + https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+
         //System.out.println(mitre.cve.CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2015.json"));
         //System.out.println(mitre.cve.CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2015.json").size());
 

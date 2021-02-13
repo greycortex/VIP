@@ -1,5 +1,7 @@
 package mitre.cpe;
 
+import javax.persistence.*;
+
 /**
  * This class represents a complex CPE object (CPE object attributes plus vulnerable etc. from CVE data feed JSON file)
  * <p>
@@ -7,7 +9,10 @@ package mitre.cpe;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity
 public class CPEcomplexObj extends CPEobject {
+
+    public CPEcomplexObj(){ } // default constructor
 
     protected boolean vulnerable;
     protected String version_start_excluding;

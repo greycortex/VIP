@@ -1,44 +1,44 @@
 --
--- Type: TABLE ; Name: mitre.cpe; Owner: postgres
+-- Type: TABLE ; Name: mitre.cpeobject; Owner: postgres
 --
 
-CREATE TABLE cpe (
-    id integer NOT NULL,
-    vendor character varying NOT NULL,
-    product character varying NOT NULL,
-    version character varying,
-    "update" character varying,
-    edition character varying,
-    language character varying,
-    swedition character varying,
-    targetsw character varying,
-    targethw character varying,
-    other character varying,
-    timestamp timestamptz NOT NULL DEFAULT now()
-);
+--CREATE TABLE cpeobject (
+--    id integer NOT NULL,
+--    vendor character varying NOT NULL,
+--    product character varying NOT NULL,
+--    version character varying,
+--    "update" character varying,
+--    edition character varying,
+--    language character varying,
+--    swedition character varying,
+--    targetsw character varying,
+--    targethw character varying,
+--    other character varying,
+--    timestamp timestamptz NOT NULL DEFAULT now()
+--);
 
-CREATE SEQUENCE cpe_id_seq;
+--CREATE SEQUENCE cpe_id_seq;
 
-ALTER TABLE public.cpe ALTER id SET DEFAULT nextval('cpe_id_seq'::regclass);
+ALTER TABLE public.cpeobjectLTER id SET DEFAULT nextval('cpe_id_seq'::regclass);
 
-ALTER TABLE cpe ADD CONSTRAINT cpe_pkey
+ALTER TABLE cpeobject ADD CONSTRAINT cpeobject_pkey
   PRIMARY KEY (id);
   
-CREATE INDEX cpe_vendor_product_idx ON public.cpe
+CREATE INDEX cpe_vendor_product_idx ON public.cpeobject
   USING btree (vendor, product);
 
-ALTER TABLE cpe OWNER TO postgres;
+ALTER TABLE cpeobject OWNER TO postgres;
 
 
 --
 -- Type: MATERIALIZED VIEW ; Name: products; Owner: postgres
 --
 CREATE MATERIALIZED VIEW products AS
- SELECT cpe.vendor,
-    cpe.product,
+ SELECT cpeobject.vendor,
+    cpeobject.product,
     count(*) AS versions
-   FROM cpe
-  GROUP BY cpe.vendor, cpe.product;
+   FROM cpeobject
+  GROUP BY cpeobject.vendor, cpeobject.product;
 
 
 ALTER MATERIALIZED VIEW products OWNER TO postgres;

@@ -1,5 +1,6 @@
 package mitre.cve;
 
+import javax.persistence.*;
 import java.util.List;
 
 /**
@@ -9,12 +10,29 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity
+@Table(name="referenceobject")
 public class ReferenceObject {
 
+    public ReferenceObject(){ } // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    protected Long id;
+    @Column(length = 2047)
     protected String url;
+    @Column(length = 2047)
     protected String name;
     protected String refsource;
+    @ElementCollection(targetClass = String.class)
     protected List<String> tags;
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "cve_meta_data_id") // ---
+    protected CVEobject cve_obj;
 
     /**
      * Copies constructor

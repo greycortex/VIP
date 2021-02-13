@@ -1,5 +1,9 @@
 package mitre.cvss;
 
+import mitre.cve.CVEobject;
+
+import javax.persistence.*;
+
 /**
  * This class represents a CVSS v3 object (Base score metrics, ...)
  * <p>
@@ -7,8 +11,19 @@ package mitre.cvss;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity
+@Table(name="cvss3object")
 public class CVSS3object {
 
+    public CVSS3object(){ } // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    protected Long id;
     protected String version;
     protected String vector_string;
     protected String attack_vector;
@@ -23,6 +38,8 @@ public class CVSS3object {
     protected String base_severity_v3;
     protected double exploitability_score_v3;
     protected double impact_score_v3;
+    @OneToOne(mappedBy = "cvss_v3")
+    protected CVEobject cve_obj;
 
     /**
      * Copies constructor

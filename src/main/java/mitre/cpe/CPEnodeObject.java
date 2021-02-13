@@ -1,5 +1,8 @@
 package mitre.cpe;
 
+import mitre.cve.CVEobject;
+
+import javax.persistence.*;
 import java.util.List;
 
 /**
@@ -9,22 +12,44 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity
+@Table(name="cpenodeobject")
 public class CPEnodeObject {
 
-    protected List<List<CPEcomplexObj>> complex_cpe_objs;
+    public CPEnodeObject(){ } // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    protected Long id;
+    @ManyToMany
+    public List<CPEcomplexObj> complex_cpe_objs;
+    @Column
+    @ElementCollection(targetClass = String.class)
     protected List<String> operators;
+    @Column
+    @ElementCollection(targetClass = Integer.class)
+    protected List<Integer> counts;
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "cve_meta_data_id") // ---
+    protected CVEobject cve_obj;
 
     /**
      * Copies constructor
      *
      * @param complex_cpe_objs more complex CPE (CPEcomplexObj) objects from node
      * @param operators        data about what operators are on which positions in CPE node
+     * @param counts           counts of CPE objects under one operator
      */
-    public CPEnodeObject(List<List<CPEcomplexObj>> complex_cpe_objs,
-                         List<String> operators) {
+    public CPEnodeObject(List<CPEcomplexObj> complex_cpe_objs,
+                         List<String> operators, List<Integer> counts) {
 
         this.complex_cpe_objs = complex_cpe_objs;
         this.operators = operators;
+        this.counts = counts;
     }
 
     ///**
@@ -32,10 +57,10 @@ public class CPEnodeObject {
     // *
     // * @return CPE node object
     // */
-    //public static CPEnodeObject getInstance(List<List<CPEcomplexObj>> complex_cpe_objs,
-    //                                        List<String> operators) {
+    //public static CPEnodeObject getInstance(List<CPEcomplexObj> complex_cpe_objs,
+    //                                        List<String> operators, List<Integer> counts) {
 
-    //    return new CPEnodeObject(complex_cpe_objs, operators);
+    //    return new CPEnodeObject(complex_cpe_objs, operators, counts);
     //}
 
     @Override
@@ -43,6 +68,7 @@ public class CPEnodeObject {
         return "CPEnodeObject{" +
                 "complex_cpe_objs=" + complex_cpe_objs +
                 ", operators=" + operators +
+                ", counts=" + counts +
                 '}';
     }
 }
