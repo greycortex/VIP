@@ -506,10 +506,16 @@ public class CVEobject {
                         for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
                             if (!(cpe_obj == null)) session.save(cpe_obj); // Data redundance?
                         }
+                        node_obj.cve_obj = obj;
                         session.save(node_obj);
                     }
                 }
-                for (ReferenceObject ref_obj : obj.references) if (!(ref_obj == null)) session.save(ref_obj);
+                for (ReferenceObject ref_obj : obj.references){
+                    if (!(ref_obj == null)) {
+                        ref_obj.cve_obj = obj;
+                        session.save(ref_obj);
+                    }
+                }
             }
             // Ending transaction and session
             txv.commit();
@@ -551,12 +557,18 @@ public class CVEobject {
                         for (CPEnodeObject node_obj : new_obj.cpe_nodes){
                             if (!(node_obj == null)) {
                                 for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
-                                    if (!(cpe_obj == null)) sessionc.save(cpe_obj); // Data redundance?
+                                    if (!(cpe_obj == null)) sessionc.save(cpe_obj); // Possible data redundance!
                                 }
+                                node_obj.cve_obj = new_obj;
                                 sessionc.save(node_obj);
                             }
                         }
-                        for (ReferenceObject ref_obj : new_obj.references) if (!(ref_obj == null)) sessionc.save(ref_obj);
+                        for (ReferenceObject ref_obj : new_obj.references){
+                            if (!(ref_obj == null)) {
+                                ref_obj.cve_obj = new_obj;
+                                sessionc.save(ref_obj);
+                            }
+                        }
                     }
                     if (display % 50 == 0) {
                         // Ending transaction

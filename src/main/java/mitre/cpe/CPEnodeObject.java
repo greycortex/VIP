@@ -34,8 +34,8 @@ public class CPEnodeObject {
     @ElementCollection(targetClass = Integer.class)
     protected List<Integer> counts;
     @ManyToOne
-    @JoinColumn(nullable = false, name = "cve_meta_data_id") // ---
-    protected CVEobject cve_obj;
+    @JoinColumn(nullable = false) // ---
+    public CVEobject cve_obj;
 
     /**
      * Copies constructor
