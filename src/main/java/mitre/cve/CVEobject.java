@@ -50,13 +50,13 @@ public class CVEobject {
     protected final String meta_data_assigner;
     //@OneToMany(mappedBy = "") // --
     //protected final List<CWEobject> problem_type_data; // --
-    @OneToMany(mappedBy = "cve_obj") // ---
+    @OneToMany(mappedBy = "cve_obj")
     protected final List<ReferenceObject> references;
     @Column(length = 2047)
     @ElementCollection(targetClass = String.class)
     protected final List<String> descriptions;
     protected final String cve_data_version;
-    @OneToMany(mappedBy = "cve_obj") // ---
+    @OneToMany(mappedBy = "cve_obj")
     protected final List<CPEnodeObject> cpe_nodes;
     @OneToOne
     protected final CVSS2object cvss_v2;
@@ -468,13 +468,14 @@ public class CVEobject {
     }
 
     /**
-     * This method's purpose is to put all given CVE objects into database or to update them
+     * This method's purpose is to put all given CVE objects into database or to update them - easy thanks to meta_data_id attribute
      *
      * @param fileName path to the .json file with CVE objects
      */
     public static void putIntoDatabase (String fileName) {
 
-        List<CVEobject> cve_objs = CVEjsonToObjects(fileName); // Taking objects returned by the CVEjsonToObjects() method
+        // Taking objects returned by the CVEjsonToObjects() method
+        List<CVEobject> cve_objs = CVEjsonToObjects(fileName);
 
         // Measuring, how long it will take to update the table in database
         long start_time = System.currentTimeMillis();
@@ -497,6 +498,7 @@ public class CVEobject {
             // Beginning transaction
             Transaction txv = session.beginTransaction();
             System.out.println("Database table empty, comparing not included");
+            // Putting CVE object and all the objects connected to CVE into database
             for (CVEobject obj : cve_objs){
                 if (!(obj.cvss_v2 == null)) session.save(obj.cvss_v2);
                 if (!(obj.cvss_v3 == null)) session.save(obj.cvss_v3);
@@ -504,7 +506,7 @@ public class CVEobject {
                 for (CPEnodeObject node_obj : obj.cpe_nodes){
                     if (!(node_obj == null)) {
                         for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
-                            if (!(cpe_obj == null)) session.save(cpe_obj); // Data redundance?
+                            if (!(cpe_obj == null)) session.save(cpe_obj); // Possible data redundance!
                         }
                         node_obj.cve_obj = obj;
                         session.save(node_obj);
@@ -536,13 +538,16 @@ public class CVEobject {
                 for (CVEobject new_obj : cve_objs){
                     display++;
                     if (display % 300 == 0) {
+                        // Displaying one object from many
                         System.out.println(new_obj);
+                        // Ensuring optimalization
                         // Ending session
                         sessionc.close();
                         // Beginning session
                         sessionc = sf.openSession();
                     }
                     duplicity = false;
+                    // Controlling if the object is in the database
                     for (String db_id : meta_data_ids_from_db){
                         if (new_obj.meta_data_id.equals(db_id)) {
                             duplicity = true;
@@ -551,6 +556,7 @@ public class CVEobject {
                     }
                     // If the object isn't in the database (its new), its added into the database
                     if (!(duplicity)) {
+                        // Putting CVE object and all the objects connected to CVE into database
                         if (!(new_obj.cvss_v2 == null)) sessionc.save(new_obj.cvss_v2);
                         if (!(new_obj.cvss_v3 == null)) sessionc.save(new_obj.cvss_v3);
                         sessionc.save(new_obj);
@@ -570,6 +576,7 @@ public class CVEobject {
                             }
                         }
                     }
+                    // Ensuring optimalization
                     if (display % 50 == 0) {
                         // Ending transaction
                         txv.commit();

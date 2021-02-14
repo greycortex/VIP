@@ -31,7 +31,7 @@ public class ReferenceObject {
     @ElementCollection(targetClass = String.class)
     protected List<String> tags;
     @ManyToOne
-    @JoinColumn(nullable = false) // ---
+    @JoinColumn(nullable = false)
     public CVEobject cve_obj;
 
     /**

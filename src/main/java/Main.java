@@ -11,7 +11,8 @@ public class Main {
         //mitre.capec.CAPECobject.CAPECfileToArrayList(); // https://capec.mitre.org/data/xml/capec_latest.xml
         //System.out.println(mitre.capec.CAPECobject.CAPECfileToArrayList()); // https://capec.mitre.org/data/xml/capec_latest.xml
 
-        mitre.cve.CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2003.json"); // https://nvd.nist.gov/vuln/data-feeds + https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+        //mitre.cve.CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2003.json"); // https://nvd.nist.gov/vuln/data-feeds + https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+        //mitre.cve.CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2013.json");
 
         //System.out.println(mitre.cve.CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2015.json"));
         //System.out.println(mitre.cve.CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2015.json").size());

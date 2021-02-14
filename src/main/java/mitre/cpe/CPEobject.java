@@ -2,6 +2,10 @@ package mitre.cpe;
 
 import javax.persistence.*;
 
+import mitre.cve.CVEobject;
+import mitre.cve.ReferenceObject;
+import mitre.cvss.CVSS2object;
+import mitre.cvss.CVSS3object;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -145,7 +149,7 @@ public class CPEobject {
      * @return List that contains parsed lines (Strings) from the CPE feed file
      * @throws IOException
      */
-    public static List<String> parserToLineArrayList() {
+    public static List<String> parserToLineArrayList() { // -- TODO: remake into JSON parser so that it includes CPEcomplexObjs
         System.out.println("Parsing of CPE objects started");
         // List which will contain parsed lines from the CPE file
         List<String> cpe23urilines = new ArrayList<>();
@@ -168,7 +172,7 @@ public class CPEobject {
     /**
      * @return List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
      */
-    public static List<CPEobject> stringArrayListToObjectArraylist() {
+    public static List<CPEobject> stringArrayListToObjectArraylist() { // -- TODO: remake into JSON parser so that it includes CPEcomplexObjs
         // Defining the object List
         List<CPEobject> obj_list = new ArrayList<>();
 
@@ -257,7 +261,10 @@ public class CPEobject {
         int display = 0;
 
         // Creating connection and session
-        Configuration con = new Configuration().configure().addAnnotatedClass(CPEobject.class);
+        // Creating connection and session
+        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
         ServiceRegistry reg = new ServiceRegistryBuilder().applySettings(con.getProperties()).buildServiceRegistry();
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();

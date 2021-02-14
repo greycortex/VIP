@@ -34,7 +34,7 @@ public class CPEnodeObject {
     @ElementCollection(targetClass = Integer.class)
     protected List<Integer> counts;
     @ManyToOne
-    @JoinColumn(nullable = false) // ---
+    @JoinColumn(nullable = false)
     public CVEobject cve_obj;
 
     /**
