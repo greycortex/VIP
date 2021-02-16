@@ -6,12 +6,13 @@ import java.util.List;
 /**
  * This class represents a reference object which can be found in CVE object
  * <p>
- * //* Its purpose is to create reference objects which are then put into CVE objects
+ *  Its purpose is to create reference objects which are then put into CVE objects
+ *  It can also be put into database including updates (Via CVEobject.putIntoDatabase() method)
  *
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="referenceobject")
+@Table(name="reference")
 public class ReferenceObject {
 
     public ReferenceObject() { } // default constructor
@@ -28,6 +29,7 @@ public class ReferenceObject {
     @Column(length = 8191)
     protected String name;
     protected String refsource;
+    @CollectionTable(name = "reference_tags")
     @ElementCollection(targetClass = String.class)
     protected List<String> tags;
     @ManyToOne

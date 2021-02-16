@@ -9,12 +9,13 @@ import java.util.Objects;
 /**
  * This class represents a CPE node object (cpe_matches, vulnerable attributes of specific CPE objects, ...)
  * <p>
- * //* It can create a CPE node object and return it
+ *  It can create a CPE node object and return it, its used in CVE objects
+ *  It can also be put into database including updates (Via CVEobject.putIntoDatabase() method)
  *
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="cpenodeobject")
+@Table(name="cpenode")
 public class CPEnodeObject {
 
     public CPEnodeObject() { } // default constructor
@@ -28,10 +29,10 @@ public class CPEnodeObject {
     protected Long id;
     @ManyToMany
     public List<CPEcomplexObj> complex_cpe_objs;
-    @Column
+    @CollectionTable(name = "cpenode_operators")
     @ElementCollection(targetClass = String.class)
     protected List<String> operators;
-    @Column
+    @CollectionTable(name = "cpenode_counts")
     @ElementCollection(targetClass = Integer.class)
     protected List<Integer> counts;
     @ManyToOne

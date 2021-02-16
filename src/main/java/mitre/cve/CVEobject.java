@@ -27,43 +27,44 @@ import java.util.Date;
 /**
  * This class represents a CVE object (CPE matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE attributes, ...)
  * <p>
- * //* Its can create and return all CVE objects from JSON file (input)
+ * It can create and return all CVE objects from JSON file (input) and put them into database including updates
  * <p>
- * //* It also can create CVE object from given parameters and return it
+ * It also can create CVE object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="cveobject")
+@Table(name="cve")
 public class CVEobject {
 
     public CVEobject() { } // default constructor
 
     @Id
     @Column(unique = true)
-    protected final String meta_data_id;
-    protected final String data_type;
-    protected final String data_format;
-    protected final String data_version;
-    protected final String meta_data_assigner;
+    protected String meta_data_id;
+    protected String data_type;
+    protected String data_format;
+    protected String data_version;
+    protected String meta_data_assigner;
     //@OneToMany(mappedBy = "") // --
     //protected final List<CWEobject> problem_type_data; // --
     @OneToMany(mappedBy = "cve_obj")
-    protected final List<ReferenceObject> references;
+    protected List<ReferenceObject> references;
     @Column(length = 8191)
+    @CollectionTable(name = "cve_descriptions")
     @ElementCollection(targetClass = String.class)
-    protected final List<String> descriptions;
-    protected final String cve_data_version;
+    protected List<String> descriptions;
+    protected String cve_data_version;
     @OneToMany(mappedBy = "cve_obj")
-    protected final List<CPEnodeObject> cpe_nodes;
+    protected List<CPEnodeObject> cpe_nodes;
     @OneToOne
-    protected final CVSS2object cvss_v2;
+    protected CVSS2object cvss_v2;
     @OneToOne
-    protected final CVSS3object cvss_v3;
-    protected final double cvss_v2_base_score;
-    protected final double cvss_v3_base_score;
-    protected final Date published_date;
-    protected final Date last_modified_date;
+    protected CVSS3object cvss_v3;
+    protected double cvss_v2_base_score;
+    protected double cvss_v3_base_score;
+    protected Date published_date;
+    protected Date last_modified_date;
 
     /**
      * Copies constructor
@@ -95,7 +96,7 @@ public class CVEobject {
         this.data_version = data_version;
         this.meta_data_id = meta_data_id;
         this.meta_data_assigner = meta_data_assigner;
-    //    this.problem_type_data = problem_type_data;
+        //    this.problem_type_data = problem_type_data;
         this.references = references;
         this.descriptions = descriptions;
         this.cve_data_version = cve_data_version;

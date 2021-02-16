@@ -6,12 +6,13 @@ import java.util.List;
 /**
  * This class represents a complex CPE object (CPE object attributes plus vulnerable etc. from CVE data feed JSON file)
  * <p>
- * //* It extends CPEobject class - adds a few attributes so that it can contain additional attributes gotten from CVE data feed JSON file
+ * It extends CPEobject class - adds a few attributes so that it can contain additional attributes gotten from CVE data feed JSON file
+ * It can also store those additional attributes in the database including updates (Via CVEobject.putIntoDatabase() method)
  *
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="cpecomplexobj")
+@Table(name="cpecomplex")
 public class CPEcomplexObj extends CPEobject {
 
     CPEcomplexObj(){ } // default constructor

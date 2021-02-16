@@ -7,12 +7,13 @@ import javax.persistence.*;
 /**
  * This class represents a CVSS v2 object (Base score metrics, ...)
  * <p>
- * //* It can create a CVSS v2 (base metric v2) object from given parameters and return it
+ * It can create a CVSS v2 (base metric v2) object from given parameters and return it
+ * It can also be put into database including updates (Via CVEobject.putIntoDatabase() method)
  *
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="cvss2object")
+@Table(name="cvss2")
 public class CVSS2object {
 
     public CVSS2object() { } // default constructor

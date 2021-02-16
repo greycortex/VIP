@@ -29,7 +29,7 @@ import java.util.*;
 
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
-@Table(name="cpeobject")
+@Table(name="cpe")
 public class CPEobject {
 
     public CPEobject(){ } // default constructor
