@@ -5,7 +5,6 @@ import mitre.cvss.CVSS2object;
 import mitre.cpe.CPEcomplexObj;
 import mitre.cpe.CPEobject;
 import mitre.cpe.CPEnodeObject;
-import mitre.cwe.CWEobject;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -21,12 +20,9 @@ import org.json.simple.parser.ParseException;
 import javax.persistence.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.io.*;
-import java.sql.*;
-import java.util.List;
+import java.util.Date;
 
 /**
  * This class represents a CVE object (CPE matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE attributes, ...)
@@ -41,6 +37,8 @@ import java.util.List;
 @Table(name="cveobject")
 public class CVEobject {
 
+    public CVEobject() { } // default constructor
+
     @Id
     @Column(unique = true)
     protected final String meta_data_id;
@@ -52,7 +50,7 @@ public class CVEobject {
     //protected final List<CWEobject> problem_type_data; // --
     @OneToMany(mappedBy = "cve_obj")
     protected final List<ReferenceObject> references;
-    @Column(length = 2047)
+    @Column(length = 8191)
     @ElementCollection(targetClass = String.class)
     protected final List<String> descriptions;
     protected final String cve_data_version;
@@ -505,8 +503,13 @@ public class CVEobject {
                 session.save(obj);
                 for (CPEnodeObject node_obj : obj.cpe_nodes){
                     if (!(node_obj == null)) {
+                        int count = 0;
                         for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
-                            if (!(cpe_obj == null)) session.save(cpe_obj); // Possible data redundance!
+                            count++;
+                            if (!(cpe_obj == null)){
+                                cpe_obj.cpe_id += ":::"+(obj.hashCode()+node_obj.hashCode()+count); // creating gettable unique ID
+                                session.save(cpe_obj); // Possible data redundance!
+                            }
                         }
                         node_obj.cve_obj = obj;
                         session.save(node_obj);
@@ -538,8 +541,8 @@ public class CVEobject {
                 for (CVEobject new_obj : cve_objs){
                     display++;
                     if (display % 300 == 0) {
-                        // Displaying one object from many
-                        System.out.println(new_obj);
+                        // Displaying one object from many -- //
+                        //System.out.println(new_obj);
                         // Ensuring optimalization
                         // Ending session
                         sessionc.close();
@@ -562,8 +565,13 @@ public class CVEobject {
                         sessionc.save(new_obj);
                         for (CPEnodeObject node_obj : new_obj.cpe_nodes){
                             if (!(node_obj == null)) {
+                                int count = 0;
                                 for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
-                                    if (!(cpe_obj == null)) sessionc.save(cpe_obj); // Possible data redundance!
+                                    count++;
+                                    if (!(cpe_obj == null)){
+                                        cpe_obj.cpe_id += ":::"+(new_obj.hashCode()+node_obj.hashCode()+count); // creating gettable unique ID
+                                        sessionc.save(cpe_obj); // Possible data redundance!
+                                    }
                                 }
                                 node_obj.cve_obj = new_obj;
                                 sessionc.save(node_obj);
@@ -573,6 +581,57 @@ public class CVEobject {
                             if (!(ref_obj == null)) {
                                 ref_obj.cve_obj = new_obj;
                                 sessionc.save(ref_obj);
+                            }
+                        }
+                    } else {
+                        // If there is an object with the same ID in the database, it will be compared and eventually replaced
+                        Query que_from_db = sessionc.createQuery("from CVEobject where meta_data_id = '"+new_obj.meta_data_id+"'");
+                        CVEobject obj_from_db = (CVEobject) que_from_db.uniqueResult();
+                        if (!(new_obj.equals(obj_from_db))){
+                            // Deleting old CVE obj and objects connected to it from database
+                            if (!(obj_from_db.cvss_v2 == null)) sessionc.delete(obj_from_db.cvss_v2);
+                            if (!(obj_from_db.cvss_v3 == null)) sessionc.delete(obj_from_db.cvss_v3);
+                            sessionc.delete(obj_from_db);
+                            for (CPEnodeObject node_obj : obj_from_db.cpe_nodes){
+                                if (!(node_obj == null)) {
+                                    for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
+                                        if (!(cpe_obj == null)) {
+                                            sessionc.delete(cpe_obj); // --- ?
+                                        }
+                                    }
+                                    node_obj.cve_obj = obj_from_db;
+                                    sessionc.delete(node_obj);
+                                }
+                            }
+                            for (ReferenceObject ref_obj : obj_from_db.references){
+                                if (!(ref_obj == null)) {
+                                    ref_obj.cve_obj = obj_from_db;
+                                    sessionc.delete(ref_obj);
+                                }
+                            }
+                            // Putting CVE object and all the objects connected to CVE into database - replacing with actualized object
+                            if (!(new_obj.cvss_v2 == null)) sessionc.save(new_obj.cvss_v2);
+                            if (!(new_obj.cvss_v3 == null)) sessionc.save(new_obj.cvss_v3);
+                            sessionc.save(new_obj);
+                            for (CPEnodeObject node_obj : new_obj.cpe_nodes){
+                                if (!(node_obj == null)) {
+                                    int count = 0;
+                                    for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
+                                        count++;
+                                        if (!(cpe_obj == null)) {
+                                            cpe_obj.cpe_id += ":::"+(new_obj.hashCode()+node_obj.hashCode()+count); // creating gettable unique ID
+                                            sessionc.save(cpe_obj); // Possible data redundance!
+                                        }
+                                    }
+                                    node_obj.cve_obj = new_obj;
+                                    sessionc.save(node_obj);
+                                }
+                            }
+                            for (ReferenceObject ref_obj : new_obj.references){
+                                if (!(ref_obj == null)) {
+                                    ref_obj.cve_obj = new_obj;
+                                    sessionc.save(ref_obj);
+                                }
                             }
                         }
                     }
@@ -592,8 +651,7 @@ public class CVEobject {
             // If the session is opened at the end, it will be closed
             if (sessionc.isOpen()) sessionc.close();
         }
-        System.out.println("Actualization of CVE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
-
+        System.out.println("Actualization of CVE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds, file: "+fileName);
     }
 
     ///**
@@ -630,5 +688,18 @@ public class CVEobject {
                 ", published_date=" + published_date +
                 ", last_modified_date=" + last_modified_date +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CVEobject)) return false;
+        CVEobject cvEobject = (CVEobject) o;
+        return Double.compare(cvEobject.cvss_v2_base_score, cvss_v2_base_score) == 0 && Double.compare(cvEobject.cvss_v3_base_score, cvss_v3_base_score) == 0 && Objects.equals(meta_data_id, cvEobject.meta_data_id) && Objects.equals(data_type, cvEobject.data_type) && Objects.equals(data_format, cvEobject.data_format) && Objects.equals(data_version, cvEobject.data_version) && Objects.equals(meta_data_assigner, cvEobject.meta_data_assigner) && Objects.equals(references, cvEobject.references) && Objects.equals(descriptions, cvEobject.descriptions) && Objects.equals(cve_data_version, cvEobject.cve_data_version) && Objects.equals(cpe_nodes, cvEobject.cpe_nodes) && Objects.equals(cvss_v2, cvEobject.cvss_v2) && Objects.equals(cvss_v3, cvEobject.cvss_v3) && Objects.equals(published_date, cvEobject.published_date) && Objects.equals(last_modified_date, cvEobject.last_modified_date);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(meta_data_id, data_type, data_format, data_version, meta_data_assigner, references, descriptions, cve_data_version, cpe_nodes, cvss_v2, cvss_v3, cvss_v2_base_score, cvss_v3_base_score, published_date, last_modified_date);
     }
 }

@@ -27,28 +27,22 @@ import java.util.*;
  * @author Tomas Bozek (XarfNao)
  */
 
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @Table(name="cpeobject")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-// @Cacheable
-// @Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
 public class CPEobject {
 
     public CPEobject(){ } // default constructor
 
-    /**
-     * Automatic ID
-     */
     @Id
     @Column(unique = true)
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    protected Long id;
+    public String cpe_id;
 
     protected String vendor;
     protected String product;
     protected String version;
 
-    @Column(name="`Update`")
+    @Column(name="update_attr")
     protected String update;
     protected String edition;
     protected String language;
@@ -56,9 +50,6 @@ public class CPEobject {
     protected String targetSw;
     protected String targetHw;
     protected String other;
-
-    @ManyToMany(mappedBy = "complex_cpe_objs")
-    protected List<CPEnodeObject> cpe_node_objs;
 
     /**
      * @param vendor    vendor attribute
@@ -72,10 +63,10 @@ public class CPEobject {
      * @param targetHw  target hardware attribute
      * @param other     other attribute
      */
-    public CPEobject(String vendor, String product, String version, String update, String edition, String language,
+    public CPEobject(String cpe_id, String vendor, String product, String version, String update, String edition, String language,
                      String swEdition, String targetSw, String targetHw, String other) { // not a dumb constructor
 
-        this.id = null;
+        this.cpe_id = cpe_id;
         this.vendor = vendor;
         this.product = product;
         this.version = version;
@@ -88,10 +79,10 @@ public class CPEobject {
         this.other = other;
     }
 
-    // Constructor for specific input - String Array - useful later on
-    public CPEobject(String[] splitstr) {
+    // Constructor for specific input - String Array and id - useful later on
+    public CPEobject(String cpe_id, String[] splitstr) {
 
-        this.id = null;
+        this.cpe_id = cpe_id;
         this.vendor = splitstr[3];
         this.product = splitstr[4];
         this.version = splitstr[5];
@@ -142,14 +133,14 @@ public class CPEobject {
         }
 
         // Finally creates a new CPE object using changed parts of the splitstr Array
-        return new CPEobject(splitstr);
+        return new CPEobject(cpeUri, splitstr);
     }
 
     /**
      * @return List that contains parsed lines (Strings) from the CPE feed file
      * @throws IOException
      */
-    public static List<String> parserToLineArrayList() { // -- TODO: remake into JSON parser so that it includes CPEcomplexObjs
+    public static List<String> parserToLineArrayList() { // -- TODO: remake into JSON parser so that it includes all informations
         System.out.println("Parsing of CPE objects started");
         // List which will contain parsed lines from the CPE file
         List<String> cpe23urilines = new ArrayList<>();
@@ -172,7 +163,7 @@ public class CPEobject {
     /**
      * @return List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
      */
-    public static List<CPEobject> stringArrayListToObjectArraylist() { // -- TODO: remake into JSON parser so that it includes CPEcomplexObjs
+    public static List<CPEobject> stringArrayListToObjectArraylist() { // -- TODO: remake into JSON parser so that it includes all informations
         // Defining the object List
         List<CPEobject> obj_list = new ArrayList<>();
 
@@ -184,6 +175,9 @@ public class CPEobject {
 
             // This Array is filled with parts of the line (separates by ":")
             String[] splitstr = line.split(":");
+
+            // Used for creating CPE id later on
+            String[] splitstrid = line.split(":");
 
             /**
              * This for cycle goes through each part of the splitstr Array and changes its parts so that they are
@@ -215,8 +209,26 @@ public class CPEobject {
             // Creating final String Array which will be used for creation of a new CPE object
             String[] finalSplitstr = {splitstr[1], splitstr[2], splitstr[3], splitstr[4], splitstr[5], splitstr[6], splitstr[7], splitstr[8], splitstr[9], splitstr[10], splitstr[11], splitstr[12], splitstr[13]};
 
+            // Creating CPE id
+            for (int i = 0; i < splitstrid.length; i++){
+                if (splitstrid[i].equals("*\",") || splitstrid[i].equals("*\"")) {
+                    splitstrid[i] = "*";
+                }
+                if (splitstrid[i] != null && !(splitstrid[i].equals("*"))) {
+                    //    splitstr[i] = splitstr[i].replace("'", "''"); ---
+                    splitstrid[i] = splitstrid[i].replace("\\\\", "");
+                }
+            }
+
+            String[] splitfirst = splitstrid[1].split("\"");
+            String[] splitlast = splitstrid[13].split("\"");
+
+            String cpe_id = splitfirst[1] + ":" + splitstrid[2] + ":" + splitstrid[3] + ":" + splitstrid[4] + ":" + splitstrid[5]
+                    + ":" + splitstrid[6] + ":" + splitstrid[7] + ":" + splitstrid[8] + ":" + splitstrid[9] + ":" + splitstrid[10]
+                    + ":" + splitstrid[11] + ":" + splitstrid[12] + ":" + splitlast[0];
+
             // Finally creates a new CPE object using changed parts of the splitstr Array
-            CPEobject obj = new CPEobject(finalSplitstr);
+            CPEobject obj = new CPEobject(cpe_id, finalSplitstr);
             obj_list.add(obj);
         }
         // Returns List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
@@ -430,6 +442,7 @@ public class CPEobject {
     @Override
     public String toString() {
         return "CPEobject{"
+                + "cpe_id='" + cpe_id + '\''
                 + "vendor='" + vendor + '\''
                 + ", product='" + product + '\''
                 + ", version='" + version + '\''

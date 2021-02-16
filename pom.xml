@@ -27,16 +27,6 @@
             <artifactId>hibernate-core</artifactId>
             <version>4.1.6.Final</version>
         </dependency>
-        <dependency> <!-- -->
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <version>2.10.6</version>
-        </dependency>
-        <dependency> <!-- -->
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-ehcache</artifactId>
-            <version>4.1.6.Final</version>
-        </dependency>
     </dependencies>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>

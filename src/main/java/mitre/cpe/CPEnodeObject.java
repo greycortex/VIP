@@ -4,6 +4,7 @@ import mitre.cve.CVEobject;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CPE node object (cpe_matches, vulnerable attributes of specific CPE objects, ...)
@@ -16,7 +17,7 @@ import java.util.List;
 @Table(name="cpenodeobject")
 public class CPEnodeObject {
 
-    public CPEnodeObject(){ } // default constructor
+    public CPEnodeObject() { } // default constructor
 
     /**
      * Automatic ID
@@ -70,5 +71,18 @@ public class CPEnodeObject {
                 ", operators=" + operators +
                 ", counts=" + counts +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CPEnodeObject)) return false;
+        CPEnodeObject that = (CPEnodeObject) o;
+        return Objects.equals(id, that.id) && Objects.equals(complex_cpe_objs, that.complex_cpe_objs) && Objects.equals(operators, that.operators) && Objects.equals(counts, that.counts) && Objects.equals(cve_obj, that.cve_obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, complex_cpe_objs, operators, counts, cve_obj);
     }
 }

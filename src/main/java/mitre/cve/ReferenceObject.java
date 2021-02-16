@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name="referenceobject")
 public class ReferenceObject {
 
-    public ReferenceObject(){ } // default constructor
+    public ReferenceObject() { } // default constructor
 
     /**
      * Automatic ID
@@ -23,9 +23,9 @@ public class ReferenceObject {
     @Column(unique = true)
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     protected Long id;
-    @Column(length = 2047)
+    @Column(length = 8191)
     protected String url;
-    @Column(length = 2047)
+    @Column(length = 8191)
     protected String name;
     protected String refsource;
     @ElementCollection(targetClass = String.class)

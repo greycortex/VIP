@@ -1,49 +1,42 @@
 //import java.io.FileWriter;
 //import java.io.IOException;
 
+import mitre.cpe.CPEobject;
+import mitre.cve.CVEobject;
+
 public class Main {
+
+    public static void putIntoDatabase(){
+
+        // Putting all CPE objects from match feed file into database and actualizing them
+        CPEobject.putIntoDatabase();
+
+        // Putting all CVE objects and basic objects related to them into database and actualizing them
+        CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2002.json"); // https://nvd.nist.gov/vuln/data-feeds
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2003.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2004.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2005.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2006.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2007.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2008.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2009.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2010.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2011.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2012.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2013.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2014.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2015.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2016.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2017.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2018.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2019.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2020.json");
+        //CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2021.json");
+    }
 
     public static void main(String[] args) {
         System.out.println("Welcome to the VIP application");
 
-        //mitre.cpe.CPEobject.putIntoDatabase();
-
-        //mitre.capec.CAPECobject.CAPECfileToArrayList(); // https://capec.mitre.org/data/xml/capec_latest.xml
-        //System.out.println(mitre.capec.CAPECobject.CAPECfileToArrayList()); // https://capec.mitre.org/data/xml/capec_latest.xml
-
-        //mitre.cve.CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2003.json"); // https://nvd.nist.gov/vuln/data-feeds + https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
-        //mitre.cve.CVEobject.putIntoDatabase("exclude/nvdcve-1.1-2013.json");
-
-        //System.out.println(mitre.cve.CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2015.json"));
-        //System.out.println(mitre.cve.CVEobject.CVEjsonToObjects("exclude/nvdcve-1.1-2015.json").size());
-
-        //try {
-        //     FileWriter myWriter = new FileWriter("exclude/test_objektu.txt");
-        //     myWriter.write(mitre.capec.CAPECobject.CAPECfileToArrayList().get(4).toString());
-        //     myWriter.close();
-        //     System.out.println("Successfully wrote to the file.");
-        //} catch (IOException e) {
-        //     System.out.println("An error occurred.");
-        //     e.printStackTrace();
-        //}
-
-        //mitre.cwe.CWEcategoryObj.CWEcategoryToArrayList("exclude/cwec_v4.2.xml"); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
-        //mitre.cwe.CWEcategoryObj.CWEcategoryToArrayList("exclude/capec_latest.xml"); // https://capec.mitre.org/data/xml/capec_latest.xml
-
-        //System.out.println(mitre.cwe.CWEcategoryObj.CWEcategoryToArrayList("exclude/cwec_v4.2.xml"));
-        //System.out.println(mitre.cwe.CWEcategoryObj.CWEcategoryToArrayList("exclude/capec_latest.xml"));
-
-        //mitre.cwe.CWEextRefObj.CWEextRefToArrayList("exclude/cwec_v4.2.xml"); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
-        //mitre.cwe.CWEextRefObj.CWEextRefToArrayList("exclude/capec_latest.xml"); // https://capec.mitre.org/data/xml/capec_latest.xml
-
-        //System.out.println(mitre.cwe.CWEextRefObj.CWEextRefToArrayList("exclude/cwec_v4.2.xml"));
-        //System.out.println(mitre.cwe.CWEextRefObj.CWEextRefToArrayList("exclude/capec_latest.xml"));
-
-        //mitre.cwe.CWEviewObj.CWEviewToArrayList("exclude/cwec_v4.2.xml"); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
-        //mitre.cwe.CWEviewObj.CWEviewToArrayList("exclude/capec_latest.xml"); // https://capec.mitre.org/data/xml/capec_latest.xml
-
-        //System.out.println(mitre.cwe.CWEviewObj.CWEviewToArrayList("exclude/cwec_v4.2.xml"));
-        //System.out.println(mitre.cwe.CWEviewObj.CWEviewToArrayList("exclude/capec_latest.xml"));
-
+        putIntoDatabase();
     }
 }

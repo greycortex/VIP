@@ -1,6 +1,7 @@
 package mitre.cpe;
 
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * This class represents a complex CPE object (CPE object attributes plus vulnerable etc. from CVE data feed JSON file)
@@ -10,15 +11,19 @@ import javax.persistence.*;
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
+@Table(name="cpecomplexobj")
 public class CPEcomplexObj extends CPEobject {
 
-    public CPEcomplexObj(){ } // default constructor
+    CPEcomplexObj(){ } // default constructor
 
     protected boolean vulnerable;
     protected String version_start_excluding;
     protected String version_end_excluding;
     protected String version_start_including;
     protected String version_end_including;
+
+    @ManyToMany(mappedBy = "complex_cpe_objs")
+    protected List<CPEnodeObject> cpe_node_objs;
 
     /**
      * Copies constructor
@@ -29,11 +34,11 @@ public class CPEcomplexObj extends CPEobject {
      * @param version_start_including version start including parameter
      * @param version_end_including   version end including parameter
      */
-    public CPEcomplexObj(String vendor, String product, String version, String update,
+    public CPEcomplexObj(String cpe_id, String vendor, String product, String version, String update,
                          String edition, String language, String swEdition, String targetSw,
                          String targetHw, String other, boolean vulnerable, String version_start_excluding,
                          String version_end_excluding, String version_start_including, String version_end_including) {
-        super(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
+        super(cpe_id, vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
 
         this.vulnerable = vulnerable;
         this.version_start_excluding = version_start_excluding;
@@ -51,7 +56,7 @@ public class CPEcomplexObj extends CPEobject {
     public static CPEcomplexObj getInstanceFromCPE(CPEobject cpeUri, boolean vulnerable, String version_start_excluding,
                                                    String version_end_excluding, String version_start_including, String version_end_including) {
 
-        return new CPEcomplexObj(cpeUri.vendor, cpeUri.product, cpeUri.version, cpeUri.update, cpeUri.edition, cpeUri.language,
+        return new CPEcomplexObj(cpeUri.cpe_id, cpeUri.vendor, cpeUri.product, cpeUri.version, cpeUri.update, cpeUri.edition, cpeUri.language,
                 cpeUri.swEdition, cpeUri.targetSw, cpeUri.targetHw, cpeUri.other, vulnerable, version_start_excluding,
                 version_end_excluding, version_start_including, version_end_including);
     }
@@ -61,12 +66,12 @@ public class CPEcomplexObj extends CPEobject {
     // *
     // * @return more complex CPE object
     // */
-    //public static CPEcomplexObj getInstance(String vendor, String product, String version, String update,
+    //public static CPEcomplexObj getInstance(String cpe_id, String vendor, String product, String version, String update,
     //                                        String edition, String language, String swEdition, String targetSw,
     //                                        String targetHw, String other, boolean vulnerable, String version_start_excluding,
     //                                        String version_end_excluding, String version_start_including, String version_end_including) {
 
-    //    return new CPEcomplexObj(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other, vulnerable,
+    //    return new CPEcomplexObj(cpe_id, vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other, vulnerable,
     //            version_start_excluding, version_end_excluding, version_start_including, version_end_including);
     //}
 

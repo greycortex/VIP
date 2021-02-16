@@ -15,7 +15,7 @@ import javax.persistence.*;
 @Table(name="cvss3object")
 public class CVSS3object {
 
-    public CVSS3object(){ } // default constructor
+    public CVSS3object() { } // default constructor
 
     /**
      * Automatic ID
