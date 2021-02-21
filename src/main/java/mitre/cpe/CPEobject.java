@@ -6,13 +6,12 @@ import mitre.cve.CVEobject;
 import mitre.cve.ReferenceObject;
 import mitre.cvss.CVSS2object;
 import mitre.cvss.CVSS3object;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 
 import java.io.*;
 import java.util.*;
@@ -27,29 +26,31 @@ import java.util.*;
  * @author Tomas Bozek (XarfNao)
  */
 
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Entity
-@Table(name="cpe")
-public class CPEobject {
+@Table(name = "cpe", schema = "mitre", indexes = @Index(name = "cpe_vendor_product_idx", columnList = "vendor, product"))
+public class CPEobject implements Serializable{
 
     public CPEobject(){ } // default constructor
 
     @Id
     @Column(unique = true)
     public String cpe_id;
-
-    protected String vendor;
-    protected String product;
-    protected String version;
+    public String vendor;
+    public String product;
+    public String version;
 
     @Column(name="update_attr")
-    protected String update;
-    protected String edition;
-    protected String language;
-    protected String swEdition;
-    protected String targetSw;
-    protected String targetHw;
-    protected String other;
+    public String update;
+    public String edition;
+    public String language;
+    public String swEdition;
+    public String targetSw;
+    public String targetHw;
+    public String other;
+
+    @ManyToMany(mappedBy = "cpe_objs")
+    protected List<CPEcomplexObj> complex_cpes;
 
     /**
      * @param vendor    vendor attribute
@@ -105,6 +106,9 @@ public class CPEobject {
         // This Array is filled with parts of the cpeUri String (separates by ":")
         String[] splitstr = cpeUri.split(":");
 
+        // Used for creating CPE id later on
+        String[] splitstrid = cpeUri.split(":");
+
         /**
          * This for cycle goes through each part of the splitstr Array and changes its parts so that they are
          * more database and search friendly and have a better form in general
@@ -132,8 +136,23 @@ public class CPEobject {
             splitstr[12] = splitstr[12].replace("\"", "");
         }
 
+        // Creating CPE id
+        for (int i = 0; i < splitstrid.length; i++){
+            if (splitstrid[i].equals("*\",") || splitstrid[i].equals("*\"") || splitstrid[i].equals("*")) {
+                splitstrid[i] = "";
+            }
+            if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
+                //    splitstr[i] = splitstr[i].replace("'", "''"); ---
+                splitstrid[i] = splitstrid[i].replace("\\\\", "");
+            }
+        }
+
+        String cpe_id = splitstrid[0] + ":" + splitstrid[1] + ":" + splitstrid[2] + ":" + splitstrid[3] + ":" + splitstrid[4]
+                + ":" + splitstrid[5] + ":" + splitstrid[6] + ":" + splitstrid[7] + ":" + splitstrid[8] + ":" + splitstrid[9]
+                + ":" + splitstrid[10] + ":" + splitstrid[11] + ":" + splitstrid[12];
+
         // Finally creates a new CPE object using changed parts of the splitstr Array
-        return new CPEobject(cpeUri, splitstr);
+        return new CPEobject(cpe_id, splitstr);
     }
 
     /**
@@ -211,10 +230,10 @@ public class CPEobject {
 
             // Creating CPE id
             for (int i = 0; i < splitstrid.length; i++){
-                if (splitstrid[i].equals("*\",") || splitstrid[i].equals("*\"")) {
-                    splitstrid[i] = "*";
+                if (splitstrid[i].equals("*\",") || splitstrid[i].equals("*\"") || splitstrid[i].equals("*")) {
+                    splitstrid[i] = "";
                 }
-                if (splitstrid[i] != null && !(splitstrid[i].equals("*"))) {
+                if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
                     //    splitstr[i] = splitstr[i].replace("'", "''"); ---
                     splitstrid[i] = splitstrid[i].replace("\\\\", "");
                 }
@@ -241,12 +260,12 @@ public class CPEobject {
         // Takes all objects returned by the stringArrayListToObjectArraylist() method
         List<CPEobject> all_objs = stringArrayListToObjectArraylist();
 
-        System.out.println("Duplicates of CPE objects removal started, current object count: "+all_objs.size());
+        System.out.println("Duplicates of basic CPE objects removal started, current object count: "+all_objs.size());
 
         // Removing duplicates by creating a LinkedHashSet
         ArrayList<CPEobject> return_objs = new ArrayList<CPEobject>(new LinkedHashSet<CPEobject>(all_objs));
 
-        System.out.println("Duplicates of CPE objects removal done, current object count: "+return_objs.size());
+        System.out.println("Duplicates of basic CPE objects removal done, current object count: "+return_objs.size());
         // Returns List of CPE objects from the up-to-date file without duplicates
         return return_objs;
     }
@@ -273,18 +292,17 @@ public class CPEobject {
         int display = 0;
 
         // Creating connection and session
-        // Creating connection and session
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                 .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
-        ServiceRegistry reg = new ServiceRegistryBuilder().applySettings(con.getProperties()).buildServiceRegistry();
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
 
         // If the cpeobject table is empty, the method doesn't compare
         Query q = session.createQuery("from CPEobject");
         q.setMaxResults(10);
-        if (q.list().isEmpty()){
+        if (q.getResultList().isEmpty()){
             // Beginning transaction
             Transaction txv = session.beginTransaction();
             System.out.println("Database table empty, comparing not included");
@@ -322,7 +340,7 @@ public class CPEobject {
                     }
 
                     // Print one of many CPE objects
-                    if (display == 500) {
+                    if (display == 1000) {
                         System.out.println(compared_objects_vendor.get(0));
                         display = 0;
                         // Ending session
@@ -340,7 +358,7 @@ public class CPEobject {
                     Query qv = sessionc.createQuery("from CPEobject where vendor = '" + vendor + "'");
 
                     // list of CPE objects from DB with the specific vendor
-                    List<CPEobject> objects_to_compare = (List<CPEobject>) qv.list(); // Default constructor calling
+                    List<CPEobject> objects_to_compare = (List<CPEobject>) qv.getResultList(); // Default constructor calling
 
                     /**
                      * This block of code compares all objects with the current specific vendor from the up-to-date file with
@@ -372,6 +390,7 @@ public class CPEobject {
         }
         if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Actualization of basic CPE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
         else System.out.println("Actualization of basic CPE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
+        sf.close();
     }
 
     /**
@@ -443,7 +462,7 @@ public class CPEobject {
     public String toString() {
         return "CPEobject{"
                 + "cpe_id='" + cpe_id + '\''
-                + "vendor='" + vendor + '\''
+                + ", vendor='" + vendor + '\''
                 + ", product='" + product + '\''
                 + ", version='" + version + '\''
                 + ", update='" + update + '\''

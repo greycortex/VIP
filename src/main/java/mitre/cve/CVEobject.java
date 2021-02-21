@@ -5,13 +5,12 @@ import mitre.cvss.CVSS2object;
 import mitre.cpe.CPEcomplexObj;
 import mitre.cpe.CPEobject;
 import mitre.cpe.CPEnodeObject;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -34,7 +33,7 @@ import java.util.Date;
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="cve")
+@Table(name="cve", schema = "mitre")
 public class CVEobject {
 
     public CVEobject() { } // default constructor
@@ -51,7 +50,7 @@ public class CVEobject {
     @OneToMany(mappedBy = "cve_obj")
     protected List<ReferenceObject> references;
     @Column(length = 8191)
-    @CollectionTable(name = "cve_descriptions")
+    @CollectionTable(name = "cve_descriptions", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> descriptions;
     protected String cve_data_version;
@@ -469,13 +468,9 @@ public class CVEobject {
     /**
      * This method's purpose is to put all given CVE objects into database or to update them - easy thanks to meta_data_id attribute
      *
-     * @param fileName path to the .json file with CVE objects
+     * @param fileNames paths to .json files with CVE objects
      */
-    public static void putIntoDatabase (String fileName) {
-
-        // Taking objects returned by the CVEjsonToObjects() method
-        List<CVEobject> cve_objs = CVEjsonToObjects(fileName);
-
+    public static void putIntoDatabase (String[] fileNames) {
         // Measuring, how long it will take to update the table in database
         long start_time = System.currentTimeMillis();
 
@@ -485,174 +480,208 @@ public class CVEobject {
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                 .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
-        ServiceRegistry reg = new ServiceRegistryBuilder().applySettings(con.getProperties()).buildServiceRegistry();
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
 
         // If the cveobject table is empty, the method doesn't compare
         Query q = session.createQuery("select meta_data_id from CVEobject");
         // List which will contain ids of all CVE objects that are in the database before the actualization
-        List<String> meta_data_ids_from_db = (List<String>) q.list();
-        if (q.list().isEmpty()){
-            // Beginning transaction
-            Transaction txv = session.beginTransaction();
+        List<String> meta_data_ids_from_db = (List<String>) q.getResultList();
+        if (q.getResultList().isEmpty()) {
             System.out.println("Database table empty, comparing not included");
-            // Putting CVE object and all the objects connected to CVE into database
-            for (CVEobject obj : cve_objs){
-                if (!(obj.cvss_v2 == null)) session.save(obj.cvss_v2);
-                if (!(obj.cvss_v3 == null)) session.save(obj.cvss_v3);
-                session.save(obj);
-                for (CPEnodeObject node_obj : obj.cpe_nodes){
-                    if (!(node_obj == null)) {
-                        int count = 0;
-                        for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
-                            count++;
-                            if (!(cpe_obj == null)){
-                                cpe_obj.cpe_id += ":::"+(obj.hashCode()+node_obj.hashCode()+count); // creating gettable unique ID
-                                session.save(cpe_obj); // Possible data redundance!
+            for (String fileName : fileNames) {
+                // Taking objects returned by the CVEjsonToObjects() method
+                List<CVEobject> cve_objs = CVEjsonToObjects(fileName);
+                // Beginning transaction
+                Transaction txv = session.beginTransaction();
+                // Putting CVE object and all the objects connected to CVE into database
+                for (CVEobject obj : cve_objs) {
+                    if (!(obj.cvss_v2 == null)) session.save(obj.cvss_v2);
+                    if (!(obj.cvss_v3 == null)) session.save(obj.cvss_v3);
+                    session.save(obj);
+                    for (CPEnodeObject node_obj : obj.cpe_nodes) {
+                        if (!(node_obj == null)) {
+                            int count = 0;
+                            for (CPEcomplexObj complex_cpe_obj : node_obj.complex_cpe_objs) {
+                                count++;
+                                if (!(complex_cpe_obj == null)) {
+                                    complex_cpe_obj.cpe_objs = new ArrayList<>();
+                                    Serializable cpe_spec_id = complex_cpe_obj.cpe_id;
+                                    CPEobject cpe_to_add = (CPEobject) session.get(CPEobject.class, cpe_spec_id);
+                                    complex_cpe_obj.cpe_objs.add(cpe_to_add);
+                                    complex_cpe_obj.cpe_id += "*" + (obj.hashCode() + node_obj.hashCode() + count); // creating gettable unique ID
+                                    session.save(complex_cpe_obj);
+                                }
                             }
+                            node_obj.cve_obj = obj;
+                            session.save(node_obj);
                         }
-                        node_obj.cve_obj = obj;
-                        session.save(node_obj);
+                    }
+                    for (ReferenceObject ref_obj : obj.references) {
+                        if (!(ref_obj == null)) {
+                            ref_obj.cve_obj = obj;
+                            session.save(ref_obj);
+                        }
                     }
                 }
-                for (ReferenceObject ref_obj : obj.references){
-                    if (!(ref_obj == null)) {
-                        ref_obj.cve_obj = obj;
-                        session.save(ref_obj);
-                    }
-                }
+                // Ending transaction
+                txv.commit();
             }
-            // Ending transaction and session
-            txv.commit();
+            // Ending session
             session.close();
         }
         // If the cveobject table isn't empty, the method does compare
         else {
-                System.out.println("Database table not empty, comparing included");
-                // Ending session
-                session.close();
+            System.out.println("Database table not empty, comparing included");
+            // Ending session
+            session.close();
+            for (String fileName : fileNames) {
+                // Taking objects returned by the CVEjsonToObjects() method
+                List<CVEobject> cve_objs = CVEjsonToObjects(fileName);
                 // Beginning session
                 Session sessionc = sf.openSession();
                 // Beginning transaction
                 Transaction txv = sessionc.beginTransaction();
-            try {
-                int display = 0;
-                boolean duplicity;
-                for (CVEobject new_obj : cve_objs){
-                    display++;
-                    if (display % 300 == 0) {
-                        // Displaying one object from many -- //
-                        //System.out.println(new_obj);
-                        // Ensuring optimalization
-                        // Ending session
-                        sessionc.close();
-                        // Beginning session
-                        sessionc = sf.openSession();
-                    }
-                    duplicity = false;
-                    // Controlling if the object is in the database
-                    for (String db_id : meta_data_ids_from_db){
-                        if (new_obj.meta_data_id.equals(db_id)) {
-                            duplicity = true;
-                            break;
+                try {
+                    int display = 0;
+                    boolean duplicity;
+                    for (CVEobject new_obj : cve_objs) {
+                        display++;
+                        if (display % 500 == 0) {
+                            //Displaying one object from many
+                            System.out.println(new_obj.meta_data_id);
+                            // Ensuring optimalization
+                            // Ending session
+                            if (txv.isActive()) txv.commit();
+                            sessionc.close();
+                            // Beginning session and transaction
+                            sessionc = sf.openSession();
+                            txv = sessionc.beginTransaction();
                         }
-                    }
-                    // If the object isn't in the database (its new), its added into the database
-                    if (!(duplicity)) {
-                        // Putting CVE object and all the objects connected to CVE into database
-                        if (!(new_obj.cvss_v2 == null)) sessionc.save(new_obj.cvss_v2);
-                        if (!(new_obj.cvss_v3 == null)) sessionc.save(new_obj.cvss_v3);
-                        sessionc.save(new_obj);
-                        for (CPEnodeObject node_obj : new_obj.cpe_nodes){
-                            if (!(node_obj == null)) {
-                                int count = 0;
-                                for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
-                                    count++;
-                                    if (!(cpe_obj == null)){
-                                        cpe_obj.cpe_id += ":::"+(new_obj.hashCode()+node_obj.hashCode()+count); // creating gettable unique ID
-                                        sessionc.save(cpe_obj); // Possible data redundance!
-                                    }
-                                }
-                                node_obj.cve_obj = new_obj;
-                                sessionc.save(node_obj);
+                        duplicity = false;
+                        // Controlling if the object is in the database
+                        for (String db_id : meta_data_ids_from_db) {
+                            if (new_obj.meta_data_id.equals(db_id)) {
+                                duplicity = true;
+                                break;
                             }
                         }
-                        for (ReferenceObject ref_obj : new_obj.references){
-                            if (!(ref_obj == null)) {
-                                ref_obj.cve_obj = new_obj;
-                                sessionc.save(ref_obj);
-                            }
-                        }
-                    } else {
-                        // If there is an object with the same ID in the database, it will be compared and eventually replaced
-                        Query que_from_db = sessionc.createQuery("from CVEobject where meta_data_id = '"+new_obj.meta_data_id+"'");
-                        CVEobject obj_from_db = (CVEobject) que_from_db.uniqueResult();
-                        if (!(new_obj.equals(obj_from_db))){
-                            // Deleting old CVE obj and objects connected to it from database
-                            if (!(obj_from_db.cvss_v2 == null)) sessionc.delete(obj_from_db.cvss_v2);
-                            if (!(obj_from_db.cvss_v3 == null)) sessionc.delete(obj_from_db.cvss_v3);
-                            sessionc.delete(obj_from_db);
-                            for (CPEnodeObject node_obj : obj_from_db.cpe_nodes){
-                                if (!(node_obj == null)) {
-                                    for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
-                                        if (!(cpe_obj == null)) {
-                                            sessionc.delete(cpe_obj); // --- ?
-                                        }
-                                    }
-                                    node_obj.cve_obj = obj_from_db;
-                                    sessionc.delete(node_obj);
-                                }
-                            }
-                            for (ReferenceObject ref_obj : obj_from_db.references){
-                                if (!(ref_obj == null)) {
-                                    ref_obj.cve_obj = obj_from_db;
-                                    sessionc.delete(ref_obj);
-                                }
-                            }
-                            // Putting CVE object and all the objects connected to CVE into database - replacing with actualized object
+                        // If the object isn't in the database (its new), its added into the database
+                        if (!(duplicity)) {
+                            // Putting CVE object and all the objects connected to CVE into database
                             if (!(new_obj.cvss_v2 == null)) sessionc.save(new_obj.cvss_v2);
                             if (!(new_obj.cvss_v3 == null)) sessionc.save(new_obj.cvss_v3);
                             sessionc.save(new_obj);
-                            for (CPEnodeObject node_obj : new_obj.cpe_nodes){
+                            for (CPEnodeObject node_obj : new_obj.cpe_nodes) {
                                 if (!(node_obj == null)) {
                                     int count = 0;
-                                    for (CPEcomplexObj cpe_obj : node_obj.complex_cpe_objs){
+                                    for (CPEcomplexObj complex_cpe_obj : node_obj.complex_cpe_objs) {
                                         count++;
-                                        if (!(cpe_obj == null)) {
-                                            cpe_obj.cpe_id += ":::"+(new_obj.hashCode()+node_obj.hashCode()+count); // creating gettable unique ID
-                                            sessionc.save(cpe_obj); // Possible data redundance!
+                                        if (!(complex_cpe_obj == null)) {
+                                            complex_cpe_obj.cpe_objs = new ArrayList<>();
+                                            Serializable cpe_spec_id = complex_cpe_obj.cpe_id;
+                                            CPEobject cpe_to_add = (CPEobject) sessionc.get(CPEobject.class, cpe_spec_id);
+                                            complex_cpe_obj.cpe_objs.add(cpe_to_add);
+                                            complex_cpe_obj.cpe_id += "*" + (new_obj.hashCode() + node_obj.hashCode() + count); // creating gettable unique ID
+                                            sessionc.save(complex_cpe_obj);
                                         }
                                     }
                                     node_obj.cve_obj = new_obj;
                                     sessionc.save(node_obj);
                                 }
                             }
-                            for (ReferenceObject ref_obj : new_obj.references){
+                            for (ReferenceObject ref_obj : new_obj.references) {
                                 if (!(ref_obj == null)) {
                                     ref_obj.cve_obj = new_obj;
                                     sessionc.save(ref_obj);
                                 }
                             }
+                        } else {
+                            // If there is an object with the same ID in the database, it will be compared and eventually replaced
+                            Serializable cve_id = new_obj.meta_data_id;
+                            CVEobject obj_from_db = (CVEobject) sessionc.get(CVEobject.class, cve_id); // --
+                            if (!(new_obj.equals(obj_from_db))) {
+                                // Deleting old CVE obj and objects connected to it from database
+                                if (!(obj_from_db.cvss_v2 == null)) sessionc.remove(obj_from_db.cvss_v2);
+                                if (!(obj_from_db.cvss_v3 == null)) sessionc.remove(obj_from_db.cvss_v3);
+                                for (CPEnodeObject node_obj : obj_from_db.cpe_nodes) {
+                                    if (!(node_obj == null)) {
+                                        for (CPEcomplexObj complex_cpe_obj : node_obj.complex_cpe_objs) {
+                                            if (!(complex_cpe_obj == null)) {
+                                                sessionc.remove(complex_cpe_obj); // --- ?
+                                            }
+                                        }
+                                        node_obj.cve_obj = obj_from_db;
+                                        sessionc.remove(node_obj);
+                                    }
+                                }
+                                for (ReferenceObject ref_obj : obj_from_db.references) {
+                                    if (!(ref_obj == null)) {
+                                        ref_obj.cve_obj = obj_from_db;
+                                        sessionc.remove(ref_obj);
+                                    }
+                                }
+                                sessionc.remove(obj_from_db);
+                                if (display % 50 == 0) {
+                                    if (txv.isActive()) {
+                                        txv.commit();
+                                        txv = sessionc.beginTransaction();
+                                    }
+                                }
+                                // Putting CVE object and all the objects connected to CVE into database - replacing with actualized object
+                                if (!(new_obj.cvss_v2 == null)) sessionc.save(new_obj.cvss_v2);
+                                if (!(new_obj.cvss_v3 == null)) sessionc.save(new_obj.cvss_v3);
+                                sessionc.save(new_obj);
+                                for (CPEnodeObject node_obj : new_obj.cpe_nodes) {
+                                    if (!(node_obj == null)) {
+                                        int count = 0;
+                                        for (CPEcomplexObj complex_cpe_obj : node_obj.complex_cpe_objs) {
+                                            count++;
+                                            if (!(complex_cpe_obj == null)) {
+                                                complex_cpe_obj.cpe_objs = new ArrayList<>();
+                                                Serializable cpe_spec_id = complex_cpe_obj.cpe_id;
+                                                CPEobject cpe_to_add = (CPEobject) sessionc.get(CPEobject.class, cpe_spec_id);
+                                                complex_cpe_obj.cpe_objs.add(cpe_to_add);
+                                                complex_cpe_obj.cpe_id += "*" + (new_obj.hashCode() + node_obj.hashCode() + count); // creating gettable unique ID
+                                                sessionc.save(complex_cpe_obj);
+                                            }
+                                        }
+                                        node_obj.cve_obj = new_obj;
+                                        sessionc.save(node_obj);
+                                    }
+                                }
+                                for (ReferenceObject ref_obj : new_obj.references) {
+                                    if (!(ref_obj == null)) {
+                                        ref_obj.cve_obj = new_obj;
+                                        sessionc.save(ref_obj);
+                                    }
+                                }
+                            }
+                        }
+                        // Ensuring optimalization
+                        if (display % 50 == 0) {
+                            // Ending transaction
+                            txv.commit();
+                            // Beginning transaction
+                            txv.begin();
                         }
                     }
-                    // Ensuring optimalization
-                    if (display % 50 == 0) {
-                        // Ending transaction
-                        txv.commit();
-                        // Beginning transaction
-                        txv = sessionc.beginTransaction();
-                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e){
-                e.printStackTrace();
+                // Ending transaction
+                if (txv.isActive()) txv.commit();
+                // If the session is opened at the end, it will be closed
+                if (sessionc.isOpen()) sessionc.close();
             }
-            // Ending transaction
-            txv.commit();
-            // If the session is opened at the end, it will be closed
-            if (sessionc.isOpen()) sessionc.close();
         }
-        System.out.println("Actualization of CVE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds, file: "+fileName);
+        // If the session is opened at the end, it will be closed
+        if (session.isOpen()) session.close();
+        // Closing session factory
+        sf.close();
+        if ((System.currentTimeMillis() - start_time) > 60000) System.out.println("Actualization of CVE objects in database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 60000) + " minutes, files: " + Arrays.toString(fileNames));
+        else System.out.println("Actualization of CVE objects in database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 1000) + " seconds, files: " + Arrays.toString(fileNames));
     }
 
     ///**

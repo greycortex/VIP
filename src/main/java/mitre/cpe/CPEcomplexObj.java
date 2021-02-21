@@ -12,16 +12,19 @@ import java.util.List;
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="cpecomplex")
 public class CPEcomplexObj extends CPEobject {
 
-    CPEcomplexObj(){ } // default constructor
+    public CPEcomplexObj(){ } // default constructor
 
     protected boolean vulnerable;
     protected String version_start_excluding;
     protected String version_end_excluding;
     protected String version_start_including;
     protected String version_end_including;
+
+    @ManyToMany
+    @CollectionTable(name = "complex_cpe_to_cpe", schema = "mitre")
+    public List<CPEobject> cpe_objs;
 
     @ManyToMany(mappedBy = "complex_cpe_objs")
     protected List<CPEnodeObject> cpe_node_objs;
@@ -79,7 +82,8 @@ public class CPEcomplexObj extends CPEobject {
     @Override
     public String toString() {
         return "CPEcomplexObj{" +
-                "vulnerable=" + vulnerable +
+                "cpe_id='" + cpe_id + '\'' +
+                ", vulnerable=" + vulnerable +
                 ", version_start_excluding='" + version_start_excluding + '\'' +
                 ", version_end_excluding='" + version_end_excluding + '\'' +
                 ", version_start_including='" + version_start_including + '\'' +

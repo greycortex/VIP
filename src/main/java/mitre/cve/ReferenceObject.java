@@ -1,5 +1,7 @@
 package mitre.cve;
 
+import org.hibernate.annotations.Index;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -12,7 +14,7 @@ import java.util.List;
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="reference")
+@Table(name="reference", schema = "mitre")
 public class ReferenceObject {
 
     public ReferenceObject() { } // default constructor
@@ -22,14 +24,14 @@ public class ReferenceObject {
      */
     @Id
     @Column(unique = true)
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     @Column(length = 8191)
     protected String url;
     @Column(length = 8191)
     protected String name;
     protected String refsource;
-    @CollectionTable(name = "reference_tags")
+    @CollectionTable(name = "reference_tags", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> tags;
     @ManyToOne

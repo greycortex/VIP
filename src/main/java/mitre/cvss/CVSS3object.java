@@ -1,6 +1,7 @@
 package mitre.cvss;
 
 import mitre.cve.CVEobject;
+import org.hibernate.annotations.Index;
 
 import javax.persistence.*;
 
@@ -13,7 +14,7 @@ import javax.persistence.*;
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="cvss3")
+@Table(name="cvss3", schema = "mitre")
 public class CVSS3object {
 
     public CVSS3object() { } // default constructor
@@ -23,7 +24,7 @@ public class CVSS3object {
      */
     @Id
     @Column(unique = true)
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String version;
     protected String vector_string;

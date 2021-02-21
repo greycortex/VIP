@@ -15,7 +15,7 @@ import java.util.Objects;
  * @author Tomas Bozek (XarfNao)
  */
 @Entity
-@Table(name="cpenode")
+@Table(name="cpenode", schema = "mitre")
 public class CPEnodeObject {
 
     public CPEnodeObject() { } // default constructor
@@ -25,14 +25,15 @@ public class CPEnodeObject {
      */
     @Id
     @Column(unique = true)
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     @ManyToMany
+    @CollectionTable(name = "cpenode_cpecomplex", schema = "mitre")
     public List<CPEcomplexObj> complex_cpe_objs;
-    @CollectionTable(name = "cpenode_operators")
+    @CollectionTable(name = "cpenode_operators", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> operators;
-    @CollectionTable(name = "cpenode_counts")
+    @CollectionTable(name = "cpenode_counts", schema = "mitre")
     @ElementCollection(targetClass = Integer.class)
     protected List<Integer> counts;
     @ManyToOne
