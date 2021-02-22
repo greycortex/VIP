@@ -29,7 +29,7 @@ public class CPEnodeObject {
     protected Long id;
     @ManyToMany
     @CollectionTable(name = "cpenode_cpecomplex", schema = "mitre")
-    public List<CPEcomplexObj> complex_cpe_objs;
+    protected List<CPEcomplexObj> complex_cpe_objs;
     @CollectionTable(name = "cpenode_operators", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> operators;
@@ -38,7 +38,23 @@ public class CPEnodeObject {
     protected List<Integer> counts;
     @ManyToOne
     @JoinColumn(nullable = false)
-    public CVEobject cve_obj;
+    protected CVEobject cve_obj;
+
+    public List<CPEcomplexObj> getComplex_cpe_objs() {
+        return complex_cpe_objs;
+    }
+
+    public void setComplex_cpe_objs(List<CPEcomplexObj> complex_cpe_objs) {
+        this.complex_cpe_objs = complex_cpe_objs;
+    }
+
+    public CVEobject getCve_obj() {
+        return cve_obj;
+    }
+
+    public void setCve_obj(CVEobject cve_obj) {
+        this.cve_obj = cve_obj;
+    }
 
     /**
      * Copies constructor

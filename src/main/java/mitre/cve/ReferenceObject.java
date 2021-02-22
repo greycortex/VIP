@@ -1,7 +1,5 @@
 package mitre.cve;
 
-import org.hibernate.annotations.Index;
-
 import javax.persistence.*;
 import java.util.List;
 
@@ -36,7 +34,15 @@ public class ReferenceObject {
     protected List<String> tags;
     @ManyToOne
     @JoinColumn(nullable = false)
-    public CVEobject cve_obj;
+    protected CVEobject cve_obj;
+
+    public CVEobject getCve_obj() {
+        return cve_obj;
+    }
+
+    public void setCve_obj(CVEobject cve_obj) {
+        this.cve_obj = cve_obj;
+    }
 
     /**
      * Copies constructor

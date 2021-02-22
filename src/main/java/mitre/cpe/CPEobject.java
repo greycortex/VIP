@@ -19,7 +19,7 @@ import java.util.*;
 /**
  * This class represents a normal CPE object (vendor, product, version, ...)
  * <p>
- * It can read from file, create objects representing CPE objects and insert them into the database including updates
+ * It can read from file, create objects representing CPE objects and complex CPE objects and insert them into the database including updates
  * <p>
  * It also can create a normal CPE object from cpe23Uri String and return it
  *
@@ -35,22 +35,30 @@ public class CPEobject implements Serializable{
 
     @Id
     @Column(unique = true)
-    public String cpe_id;
-    public String vendor;
-    public String product;
-    public String version;
+    protected String cpe_id;
+    protected String vendor;
+    protected String product;
+    protected String version;
 
-    @Column(name="update_attr")
-    public String update;
-    public String edition;
-    public String language;
-    public String swEdition;
-    public String targetSw;
-    public String targetHw;
-    public String other;
+    @Column(name="`Update`")
+    protected String update;
+    protected String edition;
+    protected String language;
+    protected String swEdition;
+    protected String targetSw;
+    protected String targetHw;
+    protected String other;
 
     @ManyToMany(mappedBy = "cpe_objs")
     protected List<CPEcomplexObj> complex_cpes;
+
+    public String getCpe_id() {
+        return cpe_id;
+    }
+
+    public void setCpe_id(String cpe_id) {
+        this.cpe_id = cpe_id;
+    }
 
     /**
      * @param vendor    vendor attribute
@@ -159,7 +167,7 @@ public class CPEobject implements Serializable{
      * @return List that contains parsed lines (Strings) from the CPE feed file
      * @throws IOException
      */
-    public static List<String> parserToLineArrayList() { // -- TODO: remake into JSON parser so that it includes all informations
+    public static List<String> parserToLineArrayList() {
         System.out.println("Parsing of CPE objects started");
         // List which will contain parsed lines from the CPE file
         List<String> cpe23urilines = new ArrayList<>();
@@ -182,7 +190,7 @@ public class CPEobject implements Serializable{
     /**
      * @return List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
      */
-    public static List<CPEobject> stringArrayListToObjectArraylist() { // -- TODO: remake into JSON parser so that it includes all informations
+    public static List<CPEobject> stringArrayListToObjectArraylist() {
         // Defining the object List
         List<CPEobject> obj_list = new ArrayList<>();
 
@@ -280,24 +288,25 @@ public class CPEobject implements Serializable{
         // list of objects from up-to-date file
         List<CPEobject> compared_objects = removeDuplicates();
 
+        System.out.println("Actualization of basic CPE objects in database started");
+
+        // Creating connection
+        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
+        // Creating session and session factory
+        SessionFactory sf = con.buildSessionFactory(reg);
+        Session session = sf.openSession();
+
         // Measuring, how long it will take to update the table in database
         long start_time = System.currentTimeMillis();
-
-        System.out.println("Actualization of basic CPE objects in database started");
 
         // List which will contain all the vendors that exist in the up-to-date file
         List<String> obj_vendors = new ArrayList<>();
 
         // Count of vendors gone through from the last print of a CPE object and from the last refresh of the session
         int display = 0;
-
-        // Creating connection and session
-        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
-        SessionFactory sf = con.buildSessionFactory(reg);
-        Session session = sf.openSession();
 
         // If the cpeobject table is empty, the method doesn't compare
         Query q = session.createQuery("from CPEobject");
@@ -339,15 +348,17 @@ public class CPEobject implements Serializable{
                         if (obj.vendor.equals(vendor)) compared_objects_vendor.add(obj);
                     }
 
-                    // Print one of many CPE objects
-                    if (display == 1000) {
-                        System.out.println(compared_objects_vendor.get(0));
-                        display = 0;
+                    // Ensuring good speed of the actualization
+                    if (display % 100 == 0) {
                         // Ending session
                         sessionc.close();
                         // Beginning session
                         sessionc = sf.openSession();
                     }
+
+                    // Print one of many CPE objects
+                    if (display % 1000 == 0) System.out.println(compared_objects_vendor.get(0));
+
                     // Beginning transaction
                     Transaction txv = sessionc.beginTransaction();
 
