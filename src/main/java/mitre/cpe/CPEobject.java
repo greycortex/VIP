@@ -12,6 +12,10 @@ import org.hibernate.Transaction;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.util.*;
@@ -19,7 +23,7 @@ import java.util.*;
 /**
  * This class represents a normal CPE object (vendor, product, version, ...)
  * <p>
- * It can read from file, create objects representing CPE objects and complex CPE objects and insert them into the database including updates
+ * It can read from file, create objects representing CPE objects and complex CPE objects and insert them into the database
  * <p>
  * It also can create a normal CPE object from cpe23Uri String and return it
  *
@@ -105,10 +109,10 @@ public class CPEobject implements Serializable{
     }
 
     /**
-     * This method's purpose is to take cpeUri line and create an sql-friendly normal CPE object
+     * This method's purpose is to take cpeUri line and create basic CPE object
      *
-     * @param cpeUri line which is used to create a final normal CPE object
-     * @return an sql-friendly normal CPE object
+     * @param cpeUri line which is used to create a final basic CPE object
+     * @return basic CPE object
      */
     public static CPEobject cpeUriToObject(String cpeUri) {
         // This Array is filled with parts of the cpeUri String (separates by ":")
@@ -167,7 +171,7 @@ public class CPEobject implements Serializable{
      * @return List that contains parsed lines (Strings) from the CPE feed file
      * @throws IOException
      */
-    public static List<String> parserToLineArrayList() {
+    public static List<String> parseIntoLines() { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
         System.out.println("Parsing of CPE objects started");
         // List which will contain parsed lines from the CPE file
         List<String> cpe23urilines = new ArrayList<>();
@@ -188,14 +192,14 @@ public class CPEobject implements Serializable{
     }
 
     /**
-     * @return List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
+     * @return List that contains basic CPE objects without duplicates made from the cpe23uri lines List returned by the parseIntoLines() method
      */
-    public static List<CPEobject> stringArrayListToObjectArraylist() {
+    public static List<CPEobject> linesIntoReadyList() {
         // Defining the object List
         List<CPEobject> obj_list = new ArrayList<>();
 
         // Taking the lines returned by the parserToLineArrayList() method
-        List<String> cpe23uriliness = parserToLineArrayList();
+        List<String> cpe23uriliness = parseIntoLines();
 
         // We go line by line (Object by Object)
         for (String line : cpe23uriliness) {
@@ -260,35 +264,156 @@ public class CPEobject implements Serializable{
         }
         // Returns List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
         System.out.println("Parsing of CPE objects done");
-        return obj_list;
-    }
 
-    // This method's purpose is to remove duplicates from the List returned by the stringArrayListToObjectArraylist() method
-    public static List<CPEobject> removeDuplicates() {
-        // Takes all objects returned by the stringArrayListToObjectArraylist() method
-        List<CPEobject> all_objs = stringArrayListToObjectArraylist();
-
-        System.out.println("Duplicates of basic CPE objects removal started, current object count: "+all_objs.size());
+        // Removing duplicates
+        System.out.println("Duplicates of basic CPE objects removal started, current object count: "+obj_list.size());
 
         // Removing duplicates by creating a LinkedHashSet
-        ArrayList<CPEobject> return_objs = new ArrayList<CPEobject>(new LinkedHashSet<CPEobject>(all_objs));
+        ArrayList<CPEobject> return_objs = new ArrayList<CPEobject>(new LinkedHashSet<CPEobject>(obj_list));
 
         System.out.println("Duplicates of basic CPE objects removal done, current object count: "+return_objs.size());
+
         // Returns List of CPE objects from the up-to-date file without duplicates
         return return_objs;
     }
 
     /**
-     * This method's purpose is to update the database full of CPE objects so that it can be up-to-date
+     * This method parses complex CPE objects from the up-to-date file and puts them into database with right relations between objects
+     */
+    public static void CPEcomplexIntoDatabase(){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+
+        // Creating connection
+        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
+        // Creating transaction, session and session factory
+        SessionFactory sf = con.buildSessionFactory(reg);
+        Session session = sf.openSession();
+        Transaction txv = session.beginTransaction();
+
+        int count = 0;
+
+        // Parsing JSON file
+        JSONParser parser = new JSONParser();
+
+        try (Reader reader = new FileReader("exclude/nvdcpematch-1.0.json")){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+
+            JSONObject jsonObject = (JSONObject) parser.parse(reader);
+
+            /**
+             * Getting to "matches" json array and iterating through him (array of CPE objects with various relations)
+             */
+            JSONArray matches = (JSONArray) jsonObject.get("matches");
+            Iterator<JSONObject> iterator = matches.iterator();
+
+            while (iterator.hasNext()){
+
+                // Getting CPE item
+                JSONObject cpe_item = iterator.next();
+
+                // Recognizing if its complex CPE object
+                if (cpe_item.get("versionStartExcluding") != null | cpe_item.get("versionStartIncluding") != null
+                        | cpe_item.get("versionEndExcluding") != null | cpe_item.get("versionEndIncluding") != null){
+
+                    // Ensuring optimalization
+                    if (count % 5000 == 0){
+                        txv.commit();
+                        txv = session.beginTransaction();
+                    }
+                    count++;
+
+                    // Getting basic cpeUri attribute
+                    String cpeUri = (String) cpe_item.get("cpe23Uri");
+                    String versionStartExcluding = null;
+                    String versionStartIncluding = null;
+                    String versionEndExcluding = null;
+                    String versionEndIncluding = null;
+
+                    // Getting eventual attributes
+                    if (cpe_item.get("versionStartExcluding") != null){
+                        versionStartExcluding = (String) cpe_item.get("versionStartExcluding");
+                    }
+                    if (cpe_item.get("versionStartIncluding") != null){
+                        versionStartIncluding = (String) cpe_item.get("versionStartIncluding");
+                    }
+                    if (cpe_item.get("versionEndExcluding") != null){
+                        versionEndExcluding = (String) cpe_item.get("versionEndExcluding");
+                    }
+                    if (cpe_item.get("versionEndIncluding") != null){
+                        versionEndIncluding = (String) cpe_item.get("versionEndIncluding");
+                    }
+
+                    // Creating complex CPE object
+                    CPEcomplexObj complex_obj = CPEcomplexObj.getInstanceFromCPE(CPEobject.cpeUriToObject(cpeUri), null,
+                            versionStartExcluding, versionEndExcluding, versionStartIncluding, versionEndIncluding);
+
+                    // Getting all basic CPE objects that are related to the specific complex CPE object
+                    if (cpe_item.get("cpe_name") != null){
+                        complex_obj.setCpe_objs(new ArrayList<>());
+
+                        JSONArray basic_cpes_to_relate = (JSONArray) cpe_item.get("cpe_name");
+                        Iterator<JSONObject> iterator_basic = basic_cpes_to_relate.iterator();
+
+                        while (iterator_basic.hasNext()){
+
+                            JSONObject basic_cpe_json = iterator_basic.next();
+
+                            if (basic_cpe_json.get("cpe23Uri") != null){
+
+                                // Getting cpeUri String of a basic CPE object
+                                String basic_cpe_uri = (String) basic_cpe_json.get("cpe23Uri");
+
+                                // Used for creating CPE id
+                                String[] splitstrid = basic_cpe_uri.split(":");
+
+                                // Creating CPE id
+                                for (int i = 0; i < splitstrid.length; i++){
+                                    if (splitstrid[i].equals("*\",") || splitstrid[i].equals("*\"") || splitstrid[i].equals("*")) {
+                                        splitstrid[i] = "";
+                                    }
+                                    if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
+                                        //    splitstr[i] = splitstr[i].replace("'", "''"); ---
+                                        splitstrid[i] = splitstrid[i].replace("\\\\", "");
+                                    }
+                                }
+                                String cpe_id = splitstrid[0] + ":" + splitstrid[1] + ":" + splitstrid[2] + ":" + splitstrid[3] + ":" + splitstrid[4]
+                                        + ":" + splitstrid[5] + ":" + splitstrid[6] + ":" + splitstrid[7] + ":" + splitstrid[8] + ":" + splitstrid[9]
+                                        + ":" + splitstrid[10] + ":" + splitstrid[11] + ":" + splitstrid[12];
+
+                                // Getting related basic CPE object from the database and relating it to the specific complex CPE object
+                                CPEobject cpe_to_add = (CPEobject) session.get(CPEobject.class, cpe_id);
+                                complex_obj.getCpe_objs().add(cpe_to_add);
+                            }
+                        }
+                    }
+                    UUID uuid = UUID.randomUUID();
+                    complex_obj.setCpe_id(complex_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
+                    session.save(complex_obj);
+                }
+            }
+        } catch (IOException | ParseException e){
+            e.printStackTrace();
+        }
+        // Commiting transaction, closing session and session factory
+        if (txv.isActive()) txv.commit();
+        session.close();
+        sf.close();
+    }
+
+    /**
+     * This method's purpose is to put basic CPE objects into database so that it can be up-to-date
      * <p>
-     * This method loads all the objects from the up-to-date file and puts them into database or it updates the database
+     * This method loads all basic CPE objects from the up-to-date file and puts them into database,
+     * it also calls the CPEcomplexIntoDatabase() method which puts all complex CPE objects from the up-to-date file
+     * into database with right relations between objects
      *
      */
     public static void putIntoDatabase() {
         // list of objects from up-to-date file
-        List<CPEobject> compared_objects = removeDuplicates();
+        List<CPEobject> compared_objects = linesIntoReadyList();
 
-        System.out.println("Actualization of basic CPE objects in database started");
+        System.out.println("Actualization of basic CPE objects from match feed file in database started");
 
         // Creating connection
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
@@ -299,109 +424,31 @@ public class CPEobject implements Serializable{
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
 
-        // Measuring, how long it will take to update the table in database
+        // Measuring, how long it will take to put basic CPE objects into database
         long start_time = System.currentTimeMillis();
 
-        // List which will contain all the vendors that exist in the up-to-date file
-        List<String> obj_vendors = new ArrayList<>();
-
-        // Count of vendors gone through from the last print of a CPE object and from the last refresh of the session
-        int display = 0;
-
-        // If the cpeobject table is empty, the method doesn't compare
-        Query q = session.createQuery("from CPEobject");
-        q.setMaxResults(10);
-        if (q.getResultList().isEmpty()){
-            // Beginning transaction
-            Transaction txv = session.beginTransaction();
-            System.out.println("Database table empty, comparing not included");
-            for (CPEobject obj : compared_objects){
-                session.save(obj);
-            }
-            // Ending transaction and session
-            txv.commit();
-            session.close();
+        // Putting basic CPE objects into database
+        // Beginning transaction
+        Transaction txv = session.beginTransaction();
+        for (CPEobject obj : compared_objects){
+            session.save(obj);
         }
-        // If the cpeobject table isn't empty, the method does compare
-        else{
-            System.out.println("Database table not empty, comparing included");
-            // Ending session
-            session.close();
-            // Beginning session
-            Session sessionc = sf.openSession();
-            // This for cycle fills the obj_vendor List with all vendors that exist in the up-to-date file
-            for (CPEobject obj : compared_objects) {
-                if (!(obj_vendors.contains(obj.vendor))) obj_vendors.add(obj.vendor);
-            }
-            // This for cycle is for the purpose to go through all the vendors that exist in the up-to-date file one by one
-            for (String vendor : obj_vendors) {
-                display++;
-                try {
-                    // list of CPE objects from up-to-date file with the specific vendor
-                    List<CPEobject> compared_objects_vendor = new ArrayList<>();
-
-                    /**
-                     * This for cycle fills the List compared_objects_vendor with all CPE objects that have the
-                     * current specific vendor from the up-to-date file
-                     */
-                    for (CPEobject obj : compared_objects) {
-                        if (obj.vendor.equals(vendor)) compared_objects_vendor.add(obj);
-                    }
-
-                    // Ensuring good speed of the actualization
-                    if (display % 100 == 0) {
-                        // Ending session
-                        sessionc.close();
-                        // Beginning session
-                        sessionc = sf.openSession();
-                    }
-
-                    // Print one of many CPE objects
-                    if (display % 1000 == 0) System.out.println(compared_objects_vendor.get(0));
-
-                    // Beginning transaction
-                    Transaction txv = sessionc.beginTransaction();
-
-                    // Controlling if the vendor String is sql-friendly
-                    vendor = vendor.replaceAll("'", "''");
-
-                    // Getting CPE objects with current specific vendor from the database
-                    Query qv = sessionc.createQuery("from CPEobject where vendor = '" + vendor + "'");
-
-                    // list of CPE objects from DB with the specific vendor
-                    List<CPEobject> objects_to_compare = (List<CPEobject>) qv.getResultList(); // Default constructor calling
-
-                    /**
-                     * This block of code compares all objects with the current specific vendor from the up-to-date file with
-                     * all objects with the current specific vendor from the database.
-                     * It uses the equals() method which can be seen overridden at the bottom of this class.
-                     */
-                    boolean duplicity;
-                    for (CPEobject new_obj : compared_objects_vendor) {
-                        duplicity = false;
-                        for (CPEobject old_obj : objects_to_compare) {
-                            if (new_obj.equals(old_obj)) {
-                                duplicity = true;
-                                break;
-                            }
-                        }
-                        // If the object isn't in the database (its new), its added into the database
-                        if (!(duplicity)) {
-                            sessionc.save(new_obj);
-                        }
-                    }
-                    // Ending transaction
-                    txv.commit();
-                } catch (Exception ex){
-                    ex.printStackTrace();
-                }
-            }
-            // If the session is opened at the end, it will be closed
-            if (sessionc.isOpen()) sessionc.close();
-        }
-        if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Actualization of basic CPE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
-        else System.out.println("Actualization of basic CPE objects in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
+        // Ending transaction and session
+        txv.commit();
+        session.close();
+        if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Actualization of basic CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
+        else System.out.println("Actualization of basic CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
         sf.close();
+
+        // Measuring, how long it will take to put complex CPE objects into database
+        start_time = System.currentTimeMillis();
+        System.out.println("Actualization of complex CPE objects from match feed file in database started");
+
+        // Calling method CPEcomplexIntoDatabase() which will put all complex CPE objects from match feed file into database with right relations
+        CPEcomplexIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+
+        if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Actualization of complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
+        else System.out.println("Actualization of complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
     }
 
     /**

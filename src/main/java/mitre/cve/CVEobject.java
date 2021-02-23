@@ -491,7 +491,7 @@ public class CVEobject {
             System.out.println("Database table empty, emptying not included");
             session.close();
             sf.close();
-            CPEobject.putIntoDatabase();
+            CPEobject.putIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
             System.out.println("Actualization of CVE objects started");
             // Creating connection, session factory and session
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
@@ -514,11 +514,11 @@ public class CVEobject {
                         if (!(node_obj == null)) {
                             for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
                                 if (!(complex_cpe_obj == null)) {
-                                    complex_cpe_obj.cpe_objs = new ArrayList<>();
+                                    complex_cpe_obj.setCpe_objs(new ArrayList<>());
                                     Serializable cpe_spec_id = complex_cpe_obj.getCpe_id();
                                     CPEobject cpe_to_add = (CPEobject) sessionc.get(CPEobject.class, cpe_spec_id);
                                     // Connecting the right specific CPE object to the specific complex CPE object
-                                    complex_cpe_obj.cpe_objs.add(cpe_to_add);
+                                    complex_cpe_obj.getCpe_objs().add(cpe_to_add);
                                     UUID uuid = UUID.randomUUID();
                                     complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
                                     sessionc.save(complex_cpe_obj);
@@ -540,6 +540,7 @@ public class CVEobject {
             }
             // Ending session
             sessionc.close();
+            System.out.println("Actualization of CVE objects done");
         }
         // If the cveobject table isn't empty, the method does empty the database
         else {
@@ -563,7 +564,7 @@ public class CVEobject {
             sf.close();
             System.out.println("Database emptying done, filling of the database started");
             // Putting CPE objects from match feed file into database again because of the emptying process
-            CPEobject.putIntoDatabase();
+            CPEobject.putIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
             // Creating connection, session factory and session
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                     .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
@@ -585,11 +586,11 @@ public class CVEobject {
                         if (!(node_obj == null)) {
                             for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
                                 if (!(complex_cpe_obj == null)) {
-                                    complex_cpe_obj.cpe_objs = new ArrayList<>();
+                                    complex_cpe_obj.setCpe_objs(new ArrayList<>());
                                     Serializable cpe_spec_id = complex_cpe_obj.getCpe_id();
                                     CPEobject cpe_to_add = (CPEobject) sessionc.get(CPEobject.class, cpe_spec_id);
                                     // Connecting the right specific CPE object to the specific complex CPE object
-                                    complex_cpe_obj.cpe_objs.add(cpe_to_add);
+                                    complex_cpe_obj.getCpe_objs().add(cpe_to_add);
                                     UUID uuid = UUID.randomUUID();
                                     complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
                                     sessionc.save(complex_cpe_obj);
@@ -612,6 +613,7 @@ public class CVEobject {
             // Ending session and session factory
             sessionc.close();
             if (sesf.isOpen()) sesf.close();
+            System.out.println("Actualization of CVE objects done");
         }
         // If the session is opened at the end, it will be closed
         if (session.isOpen()) session.close();
