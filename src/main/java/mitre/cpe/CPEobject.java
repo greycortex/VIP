@@ -172,7 +172,7 @@ public class CPEobject implements Serializable{
      * @throws IOException
      */
     public static List<String> parseIntoLines() { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
-        System.out.println("Parsing of CPE objects started");
+        System.out.println("Parsing of basic CPE objects from match feed file started");
         // List which will contain parsed lines from the CPE file
         List<String> cpe23urilines = new ArrayList<>();
 
@@ -263,7 +263,7 @@ public class CPEobject implements Serializable{
             obj_list.add(obj);
         }
         // Returns List that contains CPE objects made from the cpe23uri lines List returned by the parserToLineArrayList() method
-        System.out.println("Parsing of CPE objects done");
+        System.out.println("Parsing of basic CPE objects from match feed file done");
 
         // Removing duplicates
         System.out.println("Duplicates of basic CPE objects removal started, current object count: "+obj_list.size());
