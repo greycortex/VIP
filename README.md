@@ -16,6 +16,6 @@ It can also put these CPEs and CVEs into database including actualizations by wo
 
 ### Current database schema
 
-![Current database schema](https://github.com/greycortex/VIP/tree/master/doc/current_mitre_schema.jpg?raw=true)
+![Current database schema](https://github.com/greycortex/VIP/tree/master/doc/current_mitre_schema.png?raw=true)
 
 Copyright (c) 2020 GreyCortex s.r.o.
