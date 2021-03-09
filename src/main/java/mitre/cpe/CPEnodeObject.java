@@ -14,8 +14,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
-@Table(name="cpenode", schema = "mitre")
+@Entity(name = "node")
+@Table(name="node", schema = "mitre")
 public class CPEnodeObject {
 
     public CPEnodeObject() { } // default constructor
@@ -28,45 +28,45 @@ public class CPEnodeObject {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     @ManyToMany
-    @CollectionTable(name = "cpenode_cpecomplex", schema = "mitre")
-    protected List<CPEcomplexObj> complex_cpe_objs;
-    @CollectionTable(name = "cpenode_operators", schema = "mitre")
+    @CollectionTable(name = "node_compl_cpe", schema = "mitre")
+    protected List<CPEcomplexObj> compl_cpe;
+    @CollectionTable(name = "node_operators", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> operators;
-    @CollectionTable(name = "cpenode_counts", schema = "mitre")
+    @CollectionTable(name = "node_counts", schema = "mitre")
     @ElementCollection(targetClass = Integer.class)
     protected List<Integer> counts;
     @ManyToOne
     @JoinColumn(nullable = false)
-    protected CVEobject cve_obj;
+    protected CVEobject cve;
 
     public List<CPEcomplexObj> getComplex_cpe_objs() {
-        return complex_cpe_objs;
+        return compl_cpe;
     }
 
-    public void setComplex_cpe_objs(List<CPEcomplexObj> complex_cpe_objs) {
-        this.complex_cpe_objs = complex_cpe_objs;
+    public void setComplex_cpe_objs(List<CPEcomplexObj> compl_cpe) {
+        this.compl_cpe = compl_cpe;
     }
 
     public CVEobject getCve_obj() {
-        return cve_obj;
+        return cve;
     }
 
-    public void setCve_obj(CVEobject cve_obj) {
-        this.cve_obj = cve_obj;
+    public void setCve_obj(CVEobject cve) {
+        this.cve = cve;
     }
 
     /**
      * Copies constructor
      *
-     * @param complex_cpe_objs more complex CPE (CPEcomplexObj) objects from node
+     * @param compl_cpe        more complex CPE (CPEcomplexObj) objects from node
      * @param operators        data about what operators are on which positions in CPE node
      * @param counts           counts of CPE objects under one operator
      */
-    public CPEnodeObject(List<CPEcomplexObj> complex_cpe_objs,
+    public CPEnodeObject(List<CPEcomplexObj> compl_cpe,
                          List<String> operators, List<Integer> counts) {
 
-        this.complex_cpe_objs = complex_cpe_objs;
+        this.compl_cpe = compl_cpe;
         this.operators = operators;
         this.counts = counts;
     }
@@ -76,16 +76,16 @@ public class CPEnodeObject {
     // *
     // * @return CPE node object
     // */
-    //public static CPEnodeObject getInstance(List<CPEcomplexObj> complex_cpe_objs,
+    //public static CPEnodeObject getInstance(List<CPEcomplexObj> compl_cpe,
     //                                        List<String> operators, List<Integer> counts) {
 
-    //    return new CPEnodeObject(complex_cpe_objs, operators, counts);
+    //    return new CPEnodeObject(compl_cpe, operators, counts);
     //}
 
     @Override
     public String toString() {
         return "CPEnodeObject{" +
-                "complex_cpe_objs=" + complex_cpe_objs +
+                "complex_cpe_objs=" + compl_cpe +
                 ", operators=" + operators +
                 ", counts=" + counts +
                 '}';
@@ -96,11 +96,11 @@ public class CPEnodeObject {
         if (this == o) return true;
         if (!(o instanceof CPEnodeObject)) return false;
         CPEnodeObject that = (CPEnodeObject) o;
-        return Objects.equals(id, that.id) && Objects.equals(complex_cpe_objs, that.complex_cpe_objs) && Objects.equals(operators, that.operators) && Objects.equals(counts, that.counts) && Objects.equals(cve_obj, that.cve_obj);
+        return Objects.equals(id, that.id) && Objects.equals(compl_cpe, that.compl_cpe) && Objects.equals(operators, that.operators) && Objects.equals(counts, that.counts) && Objects.equals(cve, that.cve);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, complex_cpe_objs, operators, counts, cve_obj);
+        return Objects.hash(id, compl_cpe, operators, counts, cve);
     }
 }

@@ -32,14 +32,14 @@ import java.util.Date;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "cve")
 @Table(name="cve", schema = "mitre")
 public class CVEobject {
 
     public CVEobject() { } // default constructor
 
     @Id
-    @Column(unique = true)
+    @Column(unique = true, name = "cve_id")
     protected String meta_data_id;
     protected String data_type;
     protected String data_format;
@@ -47,14 +47,14 @@ public class CVEobject {
     protected String meta_data_assigner;
     //@OneToMany(mappedBy = "") // --
     //protected final List<CWEobject> problem_type_data; // --
-    @OneToMany(mappedBy = "cve_obj")
+    @OneToMany(mappedBy = "cve")
     protected List<ReferenceObject> references;
     @Column(length = 8191)
     @CollectionTable(name = "cve_descriptions", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> descriptions;
     protected String cve_data_version;
-    @OneToMany(mappedBy = "cve_obj")
+    @OneToMany(mappedBy = "cve")
     protected List<CPEnodeObject> cpe_nodes;
     @OneToOne
     protected CVSS2object cvss_v2;
@@ -485,7 +485,7 @@ public class CVEobject {
         Session session = sf.openSession();
 
         // If the cveobject table is empty, the method doesn't empty the database
-        Query q = session.createQuery("from CVEobject");
+        Query q = session.createQuery("from cve");
         q.setMaxResults(10);
         if (q.getResultList().isEmpty()) {
             System.out.println("Database table empty, emptying not included");

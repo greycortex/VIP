@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "reference")
 @Table(name="reference", schema = "mitre")
 public class ReferenceObject {
 
@@ -29,19 +29,19 @@ public class ReferenceObject {
     @Column(length = 8191)
     protected String name;
     protected String refsource;
-    @CollectionTable(name = "reference_tags", schema = "mitre")
+    @CollectionTable(name = "ref_tags", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> tags;
     @ManyToOne
     @JoinColumn(nullable = false)
-    protected CVEobject cve_obj;
+    protected CVEobject cve;
 
     public CVEobject getCve_obj() {
-        return cve_obj;
+        return cve;
     }
 
-    public void setCve_obj(CVEobject cve_obj) {
-        this.cve_obj = cve_obj;
+    public void setCve_obj(CVEobject cve) {
+        this.cve = cve;
     }
 
     /**

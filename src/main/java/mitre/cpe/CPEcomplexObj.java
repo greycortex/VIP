@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "compl_cpe")
 public class CPEcomplexObj extends CPEobject {
 
     public CPEcomplexObj(){ } // default constructor
@@ -23,18 +23,18 @@ public class CPEcomplexObj extends CPEobject {
     protected String version_end_including;
 
     @ManyToMany
-    @CollectionTable(name = "complex_cpe_to_cpe", schema = "mitre")
-    protected List<CPEobject> cpe_objs;
+    @CollectionTable(name = "cpe_compl_cpe", schema = "mitre")
+    protected List<CPEobject> cpe;
 
-    @ManyToMany(mappedBy = "complex_cpe_objs")
-    protected List<CPEnodeObject> cpe_node_objs;
+    @ManyToMany(mappedBy = "compl_cpe")
+    protected List<CPEnodeObject> node;
 
     public List<CPEobject> getCpe_objs() {
-        return cpe_objs;
+        return cpe;
     }
 
-    public void setCpe_objs(List<CPEobject> cpe_objs) {
-        this.cpe_objs = cpe_objs;
+    public void setCpe_objs(List<CPEobject> cpe) {
+        this.cpe = cpe;
     }
 
     /**

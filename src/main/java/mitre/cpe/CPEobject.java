@@ -29,9 +29,8 @@ import java.util.*;
  *
  * @author Tomas Bozek (XarfNao)
  */
-
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Entity
+@Entity(name = "cpe")
 @Table(name = "cpe", schema = "mitre", indexes = @Index(name = "cpe_vendor_product_idx", columnList = "vendor, product"))
 public class CPEobject implements Serializable{
 
@@ -53,8 +52,8 @@ public class CPEobject implements Serializable{
     protected String targetHw;
     protected String other;
 
-    @ManyToMany(mappedBy = "cpe_objs")
-    protected List<CPEcomplexObj> complex_cpes;
+    @ManyToMany(mappedBy = "cpe")
+    protected List<CPEcomplexObj> compl_cpe;
 
     public String getCpe_id() {
         return cpe_id;
