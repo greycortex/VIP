@@ -401,6 +401,144 @@ public class CPEobject implements Serializable{
     }
 
     /**
+     * This method recreates CPE match feed file from objects that it takes from the database
+     */
+    public static void feedReconstr() {
+        // Creating connection
+        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
+        // Creating session and session factory
+        SessionFactory sf = con.buildSessionFactory(reg);
+        Session session = sf.openSession();
+        Transaction txv = session.beginTransaction();
+
+        // Measuring, how long it will take to put basic CPE objects into database
+        long start_time = System.currentTimeMillis();
+        System.out.println("Reconstruction of CPE match feed file started.");
+
+        // Taking all basic CPE objects from the database
+        Query basic_q = session.createQuery("from cpe");
+
+        // list of basic objects into match feed file from database
+        List<CPEobject> basic_objs = (List<CPEobject>) basic_q.getResultList();
+
+        // Taking all complex CPE objects that were taken from the CPE match feed file from the database
+        Query compl_q = session.createQuery("from compl_cpe where vulnerable = null");
+
+        // list of complex objects into match feed file from database
+        List<CPEcomplexObj> compl_objs = (List<CPEcomplexObj>) compl_q.getResultList();
+
+        // Commiting transaction
+        txv.commit();
+        // Closing session
+        session.close();
+
+        // Writing into file - "nvdcpematch-1.0-test.json"
+        try (FileWriter file = new FileWriter("exclude/nvdcpematch-1.0-test.json")) { //
+            // Opening session
+            session = sf.openSession();
+            // Beginning transaction
+            txv = session.beginTransaction();
+
+            /**
+             * List which will be filled with basic CPE objects that will be later
+             * on removed from adding into the file so that there is not that much redundance
+             */
+            List<CPEobject> basic_objs_to_remove = new ArrayList<>();
+
+            // Writing the start of the file
+            file.write("{\n\t\"matches\" : [\n");
+
+            // Going through all complex CPE objects from CPE match feed file one by one
+            for (int i = 0; i<compl_objs.size(); i++) {
+                // Making cpe23Uri String
+                String[] id_splitstr = compl_objs.get(i).cpe_id.split("[*]");
+                // Replacing problematic backslashes
+                id_splitstr[0] = id_splitstr[0].replace("\\","\\\\");
+                // Writing cpe23Uri into the file
+                file.write("\t\t{\"cpe23Uri\" : \""+id_splitstr[0]+"\",\n");
+
+                // Writing attributes of the complex object into the file (plus replacing problematic backslashes)
+                if (compl_objs.get(i).version_end_excluding != null) {
+                    compl_objs.get(i).version_end_excluding = compl_objs.get(i).version_end_excluding.replace("\\","\\\\");
+                    file.write("\t\t\"versionEndExcluding\" : \""+compl_objs.get(i).version_end_excluding+"\",\n");
+                }
+                if (compl_objs.get(i).version_end_including != null) {
+                    compl_objs.get(i).version_end_including = compl_objs.get(i).version_end_including.replace("\\","\\\\");
+                    file.write("\t\t\"versionEndIncluding\" : \""+compl_objs.get(i).version_end_including+"\",\n");
+                }
+                if (compl_objs.get(i).version_start_excluding != null) {
+                    compl_objs.get(i).version_start_excluding = compl_objs.get(i).version_start_excluding.replace("\\","\\\\");
+                    file.write("\t\t\"versionStartExcluding\" : \""+compl_objs.get(i).version_start_excluding+"\",\n");
+                }
+                if (compl_objs.get(i).version_start_including != null) {
+                    compl_objs.get(i).version_start_including = compl_objs.get(i).version_start_including.replace("\\","\\\\");
+                    file.write("\t\t\"versionStartIncluding\" : \""+compl_objs.get(i).version_start_including+"\",\n");
+                }
+
+                // If there are no related basic CPE objects, writing empty JSONArray
+                if (compl_objs.get(i).getCpe_objs() == null){
+                    file.write("\t\t\"cpe_name\" : [ ] },\n");
+                }
+
+                // If there are related basic CPE objects, writing them
+                else {
+                    // Getting related basic CPE objects
+                    List<CPEobject> rel_basic_objs = compl_objs.get(i).getCpe_objs();
+
+                    // Writing start of the JSONArray
+                    file.write("\t\t\"cpe_name\" : [ \n");
+                    // Writing all cpe23Uri Strings of related basic CPE objects (plus removing problematic backslashes)
+                    for (int y = 0; y < rel_basic_objs.size(); y++){
+                        // If its last, no comma
+                        if (y == rel_basic_objs.size()-1) {
+                            rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
+                            file.write("\t\t{\"cpe23Uri\" : \""+rel_basic_objs.get(y).cpe_id+"\"}\n");
+                            basic_objs_to_remove.add(rel_basic_objs.get(y));
+                        }
+                        else {
+                            rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
+                            file.write("\t\t{\"cpe23Uri\" : \""+rel_basic_objs.get(y).cpe_id+"\"},\n");
+                            basic_objs_to_remove.add(rel_basic_objs.get(y));
+                        }
+                    }
+                    // Ending JSONArray
+                    file.write("] },\n");
+                }
+            }
+
+            // Removing redundant basic CPE objects
+            basic_objs.removeAll(basic_objs_to_remove);
+
+            // Closing session, committing transaction, closing session factory
+            if (txv.isActive()) txv.commit();
+            if (session.isOpen()) session.close();
+            sf.close();
+
+            // Writing all left basic CPE objects one by one (and replacing problematic backslashes)
+            for (int i = 0; i<basic_objs.size(); i++){
+                // If its last, no comma + ending the JSON structure - reconstruction done
+                if (i == basic_objs.size()-1){
+                    basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
+                    file.write("\t\t{\"cpe23Uri\" : \""+basic_objs.get(i).cpe_id+"\",\n");
+                    file.write("\t\t\"cpe_name\" : [ ] } \n ] \n }\n");
+                } else {
+                    basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
+                    file.write("\t\t{\"cpe23Uri\" : \""+basic_objs.get(i).cpe_id+"\",\n");
+                    file.write("\t\t\"cpe_name\" : [ ] },\n");
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Writing how much time has expired
+        System.out.println("Reconstruction of CPE match feed file done. Time expired: "+(System.currentTimeMillis() - start_time)/60000+" minutes");
+    }
+
+    /**
      * This method's purpose is to put basic CPE objects into database so that it can be up-to-date
      * <p>
      * This method loads all basic CPE objects from the up-to-date file and puts them into database,

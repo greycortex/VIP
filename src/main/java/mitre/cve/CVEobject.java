@@ -547,18 +547,18 @@ public class CVEobject {
             System.out.println("Database table not empty, emptying started");
             // Emptying database
             session.beginTransaction();
-            session.createSQLQuery("DROP TABLE IF EXISTS mitre.complex_cpe_to_cpe CASCADE;" +
+            session.createSQLQuery("DROP TABLE IF EXISTS mitre.cpe_compl_cpe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cpe CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cpenode CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cpenode_counts CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cpenode_cpecomplex CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cpenode_operators CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.node CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.node_counts CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.node_compl_cpe CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.node_operators CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cve CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cve_descriptions CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cvss2 CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cvss3 CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.reference CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.reference_tags CASCADE;").executeUpdate();
+                    "DROP TABLE IF EXISTS mitre.ref_tags CASCADE;").executeUpdate();
             session.getTransaction().commit();
             session.close();
             sf.close();
