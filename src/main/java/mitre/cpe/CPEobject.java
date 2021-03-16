@@ -3,6 +3,7 @@ package mitre.cpe;
 import javax.persistence.*;
 
 import mitre.cve.CVEobject;
+import mitre.cve.CVEtoCPE;
 import mitre.cve.ReferenceObject;
 import mitre.cvss.CVSS2object;
 import mitre.cvss.CVSS3object;
@@ -26,6 +27,8 @@ import java.util.*;
  * It can read from file, create objects representing CPE objects and complex CPE objects and insert them into the database
  * <p>
  * It also can create a normal CPE object from cpe23Uri String and return it
+ * <p>
+ * It can also recreate CPE match feed file from database by using the feedReconstr() method
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -284,7 +287,8 @@ public class CPEobject implements Serializable{
         // Creating connection
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVEtoCPE.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating transaction, session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);
@@ -407,7 +411,8 @@ public class CPEobject implements Serializable{
         // Creating connection
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVEtoCPE.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);
@@ -555,7 +560,8 @@ public class CPEobject implements Serializable{
         // Creating connection
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class);
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVEtoCPE.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);

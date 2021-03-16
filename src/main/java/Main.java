@@ -22,6 +22,6 @@ public class Main {
         System.out.println("Welcome to the VIP application");
         putIntoDatabase();
 
-        //CPEobject.feedReconstr(); -- Reconstructs CPE match feed file by using objects from the database
+        //CPEobject.feedReconstr(); // -- Reconstructs CPE match feed file by using objects from the database
     }
 }

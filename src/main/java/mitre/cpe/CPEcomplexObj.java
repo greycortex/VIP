@@ -1,5 +1,7 @@
 package mitre.cpe;
 
+import mitre.cve.CVEtoCPE;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -29,12 +31,43 @@ public class CPEcomplexObj extends CPEobject {
     @ManyToMany(mappedBy = "compl_cpe")
     protected List<CPEnodeObject> node;
 
+    @OneToMany(mappedBy = "cpe")
+    protected List<CVEtoCPE> cve_cpe;
+
     public List<CPEobject> getCpe_objs() {
         return cpe;
     }
 
     public void setCpe_objs(List<CPEobject> cpe) {
         this.cpe = cpe;
+    }
+
+    public List<CVEtoCPE> getCve_cpe() {
+        return cve_cpe;
+    }
+
+    public void setCve_cpe(List<CVEtoCPE> cve_cpe) {
+        this.cve_cpe = cve_cpe;
+    }
+
+    public Boolean getVulnerable() {
+        return vulnerable;
+    }
+
+    public String getVersion_start_excluding() {
+        return version_start_excluding;
+    }
+
+    public String getVersion_end_excluding() {
+        return version_end_excluding;
+    }
+
+    public String getVersion_start_including() {
+        return version_start_including;
+    }
+
+    public String getVersion_end_including() {
+        return version_end_including;
     }
 
     /**
