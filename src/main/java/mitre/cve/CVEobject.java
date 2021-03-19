@@ -1,5 +1,6 @@
 package mitre.cve;
 
+import mitre.cpe.CPEnodeToComplex;
 import mitre.cvss.CVSS3object;
 import mitre.cvss.CVSS2object;
 import mitre.cpe.CPEcomplexObj;
@@ -56,8 +57,6 @@ public class CVEobject {
     protected String cve_data_version;
     @OneToMany(mappedBy = "cve")
     protected List<CPEnodeObject> cpe_nodes;
-    @OneToMany(mappedBy = "cve")
-    protected List<CVEtoCPE> cve_cpe;
     @OneToOne
     protected CVSS2object cvss_v2;
     @OneToOne
@@ -484,7 +483,7 @@ public class CVEobject {
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                 .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CVEtoCPE.class);
+                .addAnnotatedClass(CPEnodeToComplex.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
@@ -502,7 +501,7 @@ public class CVEobject {
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                     .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                     .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                    .addAnnotatedClass(CVEtoCPE.class);
+                    .addAnnotatedClass(CPEnodeToComplex.class);
             ServiceRegistry regg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
             SessionFactory sesf = conn.buildSessionFactory(regg);
             Session sessionc = sesf.openSession();
@@ -528,10 +527,9 @@ public class CVEobject {
                                     complex_cpe_obj.getCpe_objs().add(cpe_to_add);
                                     UUID uuid = UUID.randomUUID();
                                     complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
-                                    if (complex_cpe_obj.getVulnerable()) { // Putting relation between complex CPE object and CVE object if the vulnerable attribute is true
-                                        CVEtoCPE cve_cpe = new CVEtoCPE((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, obj, complex_cpe_obj.getVulnerable());
-                                        sessionc.save(cve_cpe);
-                                    }
+                                    // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
+                                    CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable());
+                                    sessionc.save(node_to_compl_cpe);
                                     sessionc.save(complex_cpe_obj);
                                 }
                             }
@@ -587,7 +585,7 @@ public class CVEobject {
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                     .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                     .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                    .addAnnotatedClass(CVEtoCPE.class);
+                    .addAnnotatedClass(CPEnodeToComplex.class);
             ServiceRegistry regg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
             SessionFactory sesf = conn.buildSessionFactory(regg);
             Session sessionc = sesf.openSession();
@@ -613,10 +611,9 @@ public class CVEobject {
                                     complex_cpe_obj.getCpe_objs().add(cpe_to_add);
                                     UUID uuid = UUID.randomUUID();
                                     complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
-                                    if (complex_cpe_obj.getVulnerable()) { // Putting relation between complex CPE object and CVE object if the vulnerable attribute is true
-                                        CVEtoCPE cve_cpe = new CVEtoCPE((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, obj, complex_cpe_obj.getVulnerable());
-                                        sessionc.save(cve_cpe);
-                                    }
+                                    // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
+                                    CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable());
+                                    sessionc.save(node_to_compl_cpe);
                                     sessionc.save(complex_cpe_obj);
                                 }
                             }

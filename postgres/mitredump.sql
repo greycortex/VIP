@@ -200,8 +200,11 @@ ALTER TABLE mitre.node OWNER TO postgres;
 --
 
 CREATE TABLE mitre.node_compl_cpe (
-    node_id bigint NOT NULL,
-    compl_cpe_cpe_id character varying(255) NOT NULL
+    id character varying(255) NOT NULL,
+    cve_id character varying(255),
+    vulnerable boolean,
+    cpe_cpe_id character varying(255),
+    node_id bigint
 );
 
 
@@ -319,6 +322,14 @@ ALTER TABLE ONLY mitre.cvss3
 
 
 --
+-- Name: node_compl_cpe node_compl_cpe_pkey; Type: CONSTRAINT; Schema: mitre; Owner: postgres
+--
+
+ALTER TABLE ONLY mitre.node_compl_cpe
+    ADD CONSTRAINT node_compl_cpe_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: node node_pkey; Type: CONSTRAINT; Schema: mitre; Owner: postgres
 --
 
@@ -366,14 +377,6 @@ ALTER TABLE ONLY mitre.cve
 
 
 --
--- Name: node_compl_cpe fka643yrkmks7c798jpdj1956d8; Type: FK CONSTRAINT; Schema: mitre; Owner: postgres
---
-
-ALTER TABLE ONLY mitre.node_compl_cpe
-    ADD CONSTRAINT fka643yrkmks7c798jpdj1956d8 FOREIGN KEY (compl_cpe_cpe_id) REFERENCES mitre.cpe(cpe_id);
-
-
---
 -- Name: node fke0epthqcjyip4jsr131x83k78; Type: FK CONSTRAINT; Schema: mitre; Owner: postgres
 --
 
@@ -411,6 +414,14 @@ ALTER TABLE ONLY mitre.cpe_compl_cpe
 
 ALTER TABLE ONLY mitre.node_operators
     ADD CONSTRAINT fkgdf155uurjt5otgchm9b9w9cp FOREIGN KEY (node_id) REFERENCES mitre.node(id);
+
+
+--
+-- Name: node_compl_cpe fkhtcyftkgwk0qf4oy19170y7rr; Type: FK CONSTRAINT; Schema: mitre; Owner: postgres
+--
+
+ALTER TABLE ONLY mitre.node_compl_cpe
+    ADD CONSTRAINT fkhtcyftkgwk0qf4oy19170y7rr FOREIGN KEY (cpe_cpe_id) REFERENCES mitre.cpe(cpe_id);
 
 
 --

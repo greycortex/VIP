@@ -3,7 +3,6 @@ package mitre.cpe;
 import javax.persistence.*;
 
 import mitre.cve.CVEobject;
-import mitre.cve.CVEtoCPE;
 import mitre.cve.ReferenceObject;
 import mitre.cvss.CVSS2object;
 import mitre.cvss.CVSS3object;
@@ -288,7 +287,7 @@ public class CPEobject implements Serializable{
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                 .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CVEtoCPE.class);
+                .addAnnotatedClass(CPEnodeToComplex.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating transaction, session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);
@@ -412,7 +411,7 @@ public class CPEobject implements Serializable{
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                 .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CVEtoCPE.class);
+                .addAnnotatedClass(CPEnodeToComplex.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);
@@ -421,7 +420,7 @@ public class CPEobject implements Serializable{
 
         // Measuring, how long it will take to put basic CPE objects into database
         long start_time = System.currentTimeMillis();
-        System.out.println("Reconstruction of CPE match feed file started.");
+        System.out.println("Reconstruction of CPE match feed file started. \n Do not look into the file while the construction is in process.");
 
         // Taking all basic CPE objects from the database
         Query basic_q = session.createQuery("from cpe");
@@ -451,7 +450,7 @@ public class CPEobject implements Serializable{
              * List which will be filled with basic CPE objects that will be later
              * on removed from adding into the file so that there is not that much redundance
              */
-            List<CPEobject> basic_objs_to_remove = new ArrayList<>();
+            Set<CPEobject> basic_objs_to_remove = new LinkedHashSet<>();
 
             // Writing the start of the file
             file.write("{\n\t\"matches\" : [\n");
@@ -510,7 +509,8 @@ public class CPEobject implements Serializable{
                         }
                     }
                     // Ending JSONArray
-                    file.write("] },\n");
+                    if ((i == (compl_objs.size()-1)) && (basic_objs.size() == basic_objs_to_remove.size())) file.write("] } \n ] \n } \n") ;
+                    else file.write("] },\n");
                 }
             }
 
@@ -561,7 +561,7 @@ public class CPEobject implements Serializable{
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                 .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CVEtoCPE.class);
+                .addAnnotatedClass(CPEnodeToComplex.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);

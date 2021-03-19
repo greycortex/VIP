@@ -9,9 +9,9 @@ import java.util.Objects;
 /**
  * This class represents a CPE node object (cpe_matches, vulnerable attributes of specific CPE objects, ...)
  * <p>
- *  It can create a CPE node object and return it, its used in CVE objects
- *  It can also be put into database including updates (Via CVEobject.putIntoDatabase() method)
- *
+ * It can create a CPE node object and return it, its used in CVE objects
+ * It can also be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * @author Tomas Bozek (XarfNao)
  */
 @Entity(name = "node")
@@ -27,9 +27,6 @@ public class CPEnodeObject {
     @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
-    @ManyToMany
-    @CollectionTable(name = "node_compl_cpe", schema = "mitre")
-    protected List<CPEcomplexObj> compl_cpe;
     @CollectionTable(name = "node_operators", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> operators;
@@ -39,6 +36,11 @@ public class CPEnodeObject {
     @ManyToOne
     @JoinColumn(nullable = false)
     protected CVEobject cve;
+    @OneToMany(mappedBy = "node")
+    protected List<CPEnodeToComplex> node_to_compl;
+
+    @Transient
+    protected List<CPEcomplexObj> compl_cpe;
 
     public List<CPEcomplexObj> getComplex_cpe_objs() {
         return compl_cpe;
@@ -46,6 +48,14 @@ public class CPEnodeObject {
 
     public void setComplex_cpe_objs(List<CPEcomplexObj> compl_cpe) {
         this.compl_cpe = compl_cpe;
+    }
+
+    public List<CPEnodeToComplex> getNode_to_compl() {
+        return node_to_compl;
+    }
+
+    public void setNode_to_compl(List<CPEnodeToComplex> node_to_compl) {
+        this.node_to_compl = node_to_compl;
     }
 
     public CVEobject getCve_obj() {

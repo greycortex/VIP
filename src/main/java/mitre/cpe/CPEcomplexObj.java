@@ -1,7 +1,5 @@
 package mitre.cpe;
 
-import mitre.cve.CVEtoCPE;
-
 import javax.persistence.*;
 import java.util.List;
 
@@ -10,7 +8,7 @@ import java.util.List;
  * <p>
  * It extends CPEobject class - adds a few attributes so that it can contain additional attributes gotten from CVE data feed JSON file
  * It can also store those additional attributes in the database including updates (Via CVEobject.putIntoDatabase() method)
- *
+ * <p>
  * @author Tomas Bozek (XarfNao)
  */
 @Entity(name = "compl_cpe")
@@ -28,11 +26,8 @@ public class CPEcomplexObj extends CPEobject {
     @CollectionTable(name = "cpe_compl_cpe", schema = "mitre")
     protected List<CPEobject> cpe;
 
-    @ManyToMany(mappedBy = "compl_cpe")
-    protected List<CPEnodeObject> node;
-
     @OneToMany(mappedBy = "cpe")
-    protected List<CVEtoCPE> cve_cpe;
+    protected List<CPEnodeToComplex> node_to_compl;
 
     public List<CPEobject> getCpe_objs() {
         return cpe;
@@ -42,12 +37,12 @@ public class CPEcomplexObj extends CPEobject {
         this.cpe = cpe;
     }
 
-    public List<CVEtoCPE> getCve_cpe() {
-        return cve_cpe;
+    public List<CPEnodeToComplex> getNode_to_compl() {
+        return node_to_compl;
     }
 
-    public void setCve_cpe(List<CVEtoCPE> cve_cpe) {
-        this.cve_cpe = cve_cpe;
+    public void setNode_to_compl(List<CPEnodeToComplex> node_to_compl) {
+        this.node_to_compl = node_to_compl;
     }
 
     public Boolean getVulnerable() {
