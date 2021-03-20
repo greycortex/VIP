@@ -40,7 +40,7 @@ public class CVEobject {
     public CVEobject() { } // default constructor
 
     @Id
-    @Column(unique = true, name = "cve_id")
+    @Column(unique = true, name = "id")
     protected String meta_data_id;
     protected String data_type;
     protected String data_format;

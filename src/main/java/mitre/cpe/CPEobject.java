@@ -39,7 +39,7 @@ public class CPEobject implements Serializable{
     public CPEobject(){ } // default constructor
 
     @Id
-    @Column(unique = true)
+    @Column(unique = true, name = "id")
     protected String cpe_id;
     protected String vendor;
     protected String product;
