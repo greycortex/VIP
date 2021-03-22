@@ -138,8 +138,8 @@ public class CPEobject implements Serializable{
              */
             if (splitstr[i] != null) {
 
-            //    splitstr[i] = splitstr[i].replaceAll("'", "''"); ---
-                splitstr[i] = splitstr[i].replaceAll("\\\\", "");
+            //    splitstr[i] = splitstr[i].replace("'", "''"); ---
+                splitstr[i] = splitstr[i].replace("\\", "");
             }
         }
 
@@ -156,7 +156,7 @@ public class CPEobject implements Serializable{
             }
             if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
                 //    splitstr[i] = splitstr[i].replace("'", "''"); ---
-                splitstrid[i] = splitstrid[i].replace("\\\\", "");
+                splitstrid[i] = splitstrid[i].replace("\\", "");
             }
         }
 
@@ -228,7 +228,7 @@ public class CPEobject implements Serializable{
                 if (splitstr[i] != null) {
 
                 //    splitstr[i] = splitstr[i].replace("'", "''"); ---
-                    splitstr[i] = splitstr[i].replace("\\\\", "");
+                    splitstr[i] = splitstr[i].replace("\\", "");
                 }
             }
 
@@ -248,7 +248,7 @@ public class CPEobject implements Serializable{
                 }
                 if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
                     //    splitstr[i] = splitstr[i].replace("'", "''"); ---
-                    splitstrid[i] = splitstrid[i].replace("\\\\", "");
+                    splitstrid[i] = splitstrid[i].replace("\\", "");
                 }
             }
 

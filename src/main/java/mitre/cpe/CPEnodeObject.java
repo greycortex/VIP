@@ -27,20 +27,28 @@ public class CPEnodeObject {
     @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
-    @CollectionTable(name = "node_operators", schema = "mitre")
-    @ElementCollection(targetClass = String.class)
-    protected List<String> operators;
-    @CollectionTable(name = "node_counts", schema = "mitre")
-    @ElementCollection(targetClass = Integer.class)
-    protected List<Integer> counts;
+    @Column
+    protected String operator;
     @ManyToOne
     @JoinColumn(nullable = false)
     protected CVEobject cve;
     @OneToMany(mappedBy = "node")
     protected List<CPEnodeToComplex> node_to_compl;
+    @OneToMany(mappedBy = "parent")
+    protected List<CPEnodeObject> children;
+    @ManyToOne
+    protected CPEnodeObject parent;
 
     @Transient
     protected List<CPEcomplexObj> compl_cpe;
+
+    public List<CPEnodeObject> getChildren() { return children; }
+
+    public void setChildren(List<CPEnodeObject> children) { this.children = children; }
+
+    public CPEnodeObject getParent() { return parent; }
+
+    public void setParent(CPEnodeObject parent) { this.parent = parent; }
 
     public List<CPEcomplexObj> getComplex_cpe_objs() {
         return compl_cpe;
@@ -70,15 +78,15 @@ public class CPEnodeObject {
      * Copies constructor
      *
      * @param compl_cpe        more complex CPE (CPEcomplexObj) objects from node
-     * @param operators        data about what operators are on which positions in CPE node
-     * @param counts           counts of CPE objects under one operator
+     * @param operator         operator attribute of specific CPE node object
+     * @param parent           parent CPE node object
      */
     public CPEnodeObject(List<CPEcomplexObj> compl_cpe,
-                         List<String> operators, List<Integer> counts) {
+                         String operator, CPEnodeObject parent) {
 
         this.compl_cpe = compl_cpe;
-        this.operators = operators;
-        this.counts = counts;
+        this.operator = operator;
+        this.parent = parent;
     }
 
     ///**
@@ -87,17 +95,17 @@ public class CPEnodeObject {
     // * @return CPE node object
     // */
     //public static CPEnodeObject getInstance(List<CPEcomplexObj> compl_cpe,
-    //                                        List<String> operators, List<Integer> counts) {
+    //                         String operator) {
 
-    //    return new CPEnodeObject(compl_cpe, operators, counts);
+    //    return new CPEnodeObject(compl_cpe, operator);
     //}
 
     @Override
     public String toString() {
         return "CPEnodeObject{" +
                 "complex_cpe_objs=" + compl_cpe +
-                ", operators=" + operators +
-                ", counts=" + counts +
+                ", operator=" + operator +
+                ", parent=" + parent +
                 '}';
     }
 
@@ -106,11 +114,11 @@ public class CPEnodeObject {
         if (this == o) return true;
         if (!(o instanceof CPEnodeObject)) return false;
         CPEnodeObject that = (CPEnodeObject) o;
-        return Objects.equals(id, that.id) && Objects.equals(compl_cpe, that.compl_cpe) && Objects.equals(operators, that.operators) && Objects.equals(counts, that.counts) && Objects.equals(cve, that.cve);
+        return Objects.equals(id, that.id) && Objects.equals(compl_cpe, that.compl_cpe) && Objects.equals(operator, that.operator) && Objects.equals(parent, that.parent) && Objects.equals(cve, that.cve);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, compl_cpe, operators, counts, cve);
+        return Objects.hash(id, compl_cpe, operator, parent, cve);
     }
 }

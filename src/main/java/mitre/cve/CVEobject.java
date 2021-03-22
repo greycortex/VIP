@@ -209,33 +209,29 @@ public class CVEobject {
                 List<CPEnodeObject> cpe_nodes_final = new ArrayList<>(); // cpe_nodes
 
                 while (nodes_iterator.hasNext()) {
-                    List<CPEcomplexObj> cpe_complex_objs_part = new ArrayList<>(); // complex CPE objects - CPE node object
-                    List<String> operators_part = new ArrayList<>(); // operators - CPE node object
-                    List<Integer> counts_part = new ArrayList<>(); // counts of CPE objects under specific operators - CPE node object
-
                     JSONObject node = nodes_iterator.next();
                     String first_op = (String) node.get("operator");
 
-                    if (node.get("negate") == null) operators_part.add(first_op);
-                    else operators_part.add("N" + first_op);
+                    if (!(node.get("negate") == null)) first_op = "N" + first_op;
 
                     if (node.get("children") != null) { // More complex structure
-                        counts_part.add(0);
+                        CPEnodeObject parent_node_obj = new CPEnodeObject(null, first_op, null);
+                        cpe_nodes_final.add(parent_node_obj); // new parent CPE node object added
+
                         JSONArray children = (JSONArray) node.get("children");
                         Iterator<JSONObject> children_iterator = children.iterator();
 
                         while (children_iterator.hasNext()) {
+                            List<CPEcomplexObj> cpe_complex_objs = new ArrayList<>(); // complex CPE objects - CPE node object
+
                             JSONObject child = children_iterator.next();
 
                             String child_oper = (String) child.get("operator");
-                            if (child.get("negate") == null) operators_part.add(child_oper);
-                            else operators_part.add("N" + child_oper);
-                            Integer count = 0; // counting how many CPE objects are under one operator so that we can recostruct the structure later on
+                            if (!(child.get("negate") == null)) child_oper = "N" + child_oper;
 
                             JSONArray cpe_match = (JSONArray) child.get("cpe_match");
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
                             while (cpe_iterator.hasNext()) {
-                                count++;
                                 JSONObject cpe_match_specific = cpe_iterator.next();
                                 String cpe23uri = (String) cpe_match_specific.get("cpe23Uri");
                                 boolean vulnerable = (boolean) cpe_match_specific.get("vulnerable");
@@ -244,23 +240,21 @@ public class CVEobject {
                                 String version_start_including = (String) cpe_match_specific.get("versionStartIncluding");
                                 String version_end_including = (String) cpe_match_specific.get("versionEndIncluding");
                                 CPEobject cpe_normal_obj = CPEcomplexObj.cpeUriToObject(cpe23uri); // create method from CPEobject class used - normal CPE object
-                                cpe_complex_objs_part.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
+                                cpe_complex_objs.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
                                         version_start_excluding, version_end_excluding, version_start_including, version_end_including)); // CPEcompexObj class used - more complex CPE object
 
                             }
-                            counts_part.add(count); // count of CPE objects under one operator added
+                            CPEnodeObject child_obj = new CPEnodeObject(cpe_complex_objs, child_oper, parent_node_obj); // creating child CPE node object (also creating relation with parent object)
+                            cpe_nodes_final.add(child_obj); // child CPE node object added
                         }
-                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs_part, operators_part, counts_part)); // CPE node object added
 
                     } else { // Less complex structure
                         JSONArray cpe_match = (JSONArray) node.get("cpe_match");
-                        if (cpe_match == null) {
-                            counts_part.add(0);
-                        } else {
-                            Integer count = 0; // counting how many CPE objects are under one operator so that we can recostruct the structure later on
+                        List<CPEcomplexObj> cpe_complex_objs = new ArrayList<>(); // complex CPE objects - CPE node object
+
+                        if (cpe_match != null) {
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
                             while (cpe_iterator.hasNext()) {
-                                count++;
                                 JSONObject cpe_match_specific = cpe_iterator.next();
                                 String cpe23uri = (String) cpe_match_specific.get("cpe23Uri");
                                 boolean vulnerable = (boolean) cpe_match_specific.get("vulnerable");
@@ -269,12 +263,11 @@ public class CVEobject {
                                 String version_start_including = (String) cpe_match_specific.get("versionStartIncluding");
                                 String version_end_including = (String) cpe_match_specific.get("versionEndIncluding");
                                 CPEobject cpe_normal_obj = CPEcomplexObj.cpeUriToObject(cpe23uri); // create method from CPEobject class used - normal CPE object
-                                cpe_complex_objs_part.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
+                                cpe_complex_objs.add(CPEcomplexObj.getInstanceFromCPE(cpe_normal_obj, vulnerable,
                                         version_start_excluding, version_end_excluding, version_start_including, version_end_including)); // CPEcompexObj class used - more complex CPE object
                             }
-                            counts_part.add(count); // count of CPE objects under one operator added
                         }
-                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs_part, operators_part, counts_part)); // CPE node object added
+                        cpe_nodes_final.add(new CPEnodeObject(cpe_complex_objs, first_op, null)); // CPE node object added
                     }
                 }
 
@@ -517,7 +510,7 @@ public class CVEobject {
                     if (!(obj.cvss_v3 == null)) sessionc.save(obj.cvss_v3);
                     sessionc.save(obj);
                     for (CPEnodeObject node_obj : obj.cpe_nodes) {
-                        if (!(node_obj == null)) {
+                        if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
                             for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
                                 if (!(complex_cpe_obj == null)) {
                                     complex_cpe_obj.setCpe_objs(new ArrayList<>());
@@ -533,6 +526,9 @@ public class CVEobject {
                                     sessionc.save(complex_cpe_obj);
                                 }
                             }
+                            node_obj.setCve_obj(obj);
+                            sessionc.save(node_obj);
+                        } else if (node_obj != null) {
                             node_obj.setCve_obj(obj);
                             sessionc.save(node_obj);
                         }
@@ -565,16 +561,13 @@ public class CVEobject {
             session.createSQLQuery("DROP TABLE IF EXISTS mitre.cpe_compl_cpe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cpe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.node CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.node_counts CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.node_compl_cpe CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.node_operators CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cve CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cve_descriptions CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cvss2 CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cvss3 CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.reference CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.ref_tags CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cve_cpe CASCADE;").executeUpdate();
+                    "DROP TABLE IF EXISTS mitre.ref_tags CASCADE;").executeUpdate();
             session.getTransaction().commit();
             session.close();
             sf.close();
@@ -601,7 +594,7 @@ public class CVEobject {
                     if (!(obj.cvss_v3 == null)) sessionc.save(obj.cvss_v3);
                     sessionc.save(obj);
                     for (CPEnodeObject node_obj : obj.cpe_nodes) {
-                        if (!(node_obj == null)) {
+                        if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
                             for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
                                 if (!(complex_cpe_obj == null)) {
                                     complex_cpe_obj.setCpe_objs(new ArrayList<>());
@@ -617,6 +610,9 @@ public class CVEobject {
                                     sessionc.save(complex_cpe_obj);
                                 }
                             }
+                            node_obj.setCve_obj(obj);
+                            sessionc.save(node_obj);
+                        } else if (node_obj != null) {
                             node_obj.setCve_obj(obj);
                             sessionc.save(node_obj);
                         }
