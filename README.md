@@ -8,7 +8,7 @@ It can parse CPEs from - [CPE match feed file](https://nvd.nist.gov/feeds/json/c
 
 VIP in its current state is also able to put these CPEs and CVEs into database including actualizations in quite short amounts of time.
 
-Its also possible to completely (without content history) parse CWE objects - [XML file](https://cwe.mitre.org/data/xml/cwec_latest.xml.zip) -
+Its also possible to completely (without content history) parse CWE objects - [XML file](https://cwe.mitre.org/data/xml/cwec_latest.xml.zip) 
 
 and CAPEC objects - [XML file](https://capec.mitre.org/data/xml/capec_latest.xml) - thanks to the additional implemented methods.
 
