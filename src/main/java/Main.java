@@ -1,6 +1,3 @@
-//import java.io.FileWriter;
-//import java.io.IOException;
-
 import mitre.cpe.CPEobject;
 import mitre.cve.CVEobject;
 

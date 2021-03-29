@@ -315,8 +315,8 @@ public class CPEobject implements Serializable{
                 JSONObject cpe_item = iterator.next();
 
                 // Recognizing if its complex CPE object
-                if (cpe_item.get("versionStartExcluding") != null | cpe_item.get("versionStartIncluding") != null
-                        | cpe_item.get("versionEndExcluding") != null | cpe_item.get("versionEndIncluding") != null){
+                if (cpe_item.get("versionStartExcluding") != null || cpe_item.get("versionStartIncluding") != null
+                        || cpe_item.get("versionEndExcluding") != null || cpe_item.get("versionEndIncluding") != null){
 
                     // Ensuring optimalization
                     if (count % 5000 == 0){
@@ -420,7 +420,7 @@ public class CPEobject implements Serializable{
 
         // Measuring, how long it will take to put basic CPE objects into database
         long start_time = System.currentTimeMillis();
-        System.out.println("Reconstruction of CPE match feed file started. \n Do not look into the file while the construction is in process.");
+        System.out.println("Reconstruction of CPE match feed file started.");
 
         // Taking all basic CPE objects from the database
         Query basic_q = session.createQuery("from cpe");
@@ -429,7 +429,7 @@ public class CPEobject implements Serializable{
         List<CPEobject> basic_objs = (List<CPEobject>) basic_q.getResultList();
 
         // Taking all complex CPE objects that were taken from the CPE match feed file from the database
-        Query compl_q = session.createQuery("from compl_cpe where vulnerable = null");
+        Query compl_q = session.createQuery("from compl_cpe where vulnerable is null");
 
         // list of complex objects into match feed file from database
         List<CPEcomplexObj> compl_objs = (List<CPEcomplexObj>) compl_q.getResultList();
@@ -439,8 +439,7 @@ public class CPEobject implements Serializable{
         // Closing session
         session.close();
 
-        // Writing into file - "nvdcpematch-1.0-test.json"
-        try (FileWriter file = new FileWriter("exclude/nvdcpematch-1.0-test.json")) { //
+        try {
             // Opening session
             session = sf.openSession();
             // Beginning transaction
@@ -452,8 +451,15 @@ public class CPEobject implements Serializable{
              */
             Set<CPEobject> basic_objs_to_remove = new LinkedHashSet<>();
 
+            // Writing into file - "nvdcpematch-1.0-test.json"
+            FileWriter file_start = new FileWriter("exclude/nvdcpematch-1.0-test.json");
             // Writing the start of the file
-            file.write("{\n\t\"matches\" : [\n");
+            file_start.write("{\n\t\"matches\" : [\n");
+            // Closing writing into the file
+            file_start.close();
+
+            // Writing into file - "nvdcpematch-1.0-test.json"
+            BufferedWriter file = new BufferedWriter(new FileWriter("exclude/nvdcpematch-1.0-test.json", true));
 
             // Going through all complex CPE objects from CPE match feed file one by one
             for (int i = 0; i<compl_objs.size(); i++) {
@@ -497,7 +503,7 @@ public class CPEobject implements Serializable{
                     // Writing all cpe23Uri Strings of related basic CPE objects (plus removing problematic backslashes)
                     for (int y = 0; y < rel_basic_objs.size(); y++){
                         // If its last, no comma
-                        if (y == rel_basic_objs.size()-1) {
+                        if (y == (rel_basic_objs.size()-1)) {
                             rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
                             file.write("\t\t{\"cpe23Uri\" : \""+rel_basic_objs.get(y).cpe_id+"\"}\n");
                             basic_objs_to_remove.add(rel_basic_objs.get(y));
@@ -522,10 +528,28 @@ public class CPEobject implements Serializable{
             if (session.isOpen()) session.close();
             sf.close();
 
+            // Removing unwanted complex CPE objects
+            List<CPEobject> objs_to_remove = new ArrayList<>();
+            for (CPEobject obj : basic_objs){
+                String[] id_splitstr = obj.cpe_id.split("[*]");
+                if (id_splitstr.length > 1) {
+                    if (id_splitstr[1].length() == 36){
+                        objs_to_remove.add(obj);
+                    }
+                }
+            }
+            basic_objs.removeAll(objs_to_remove);
+
+            // Closing writing into the file
+            file.close();
+
+            // Writing into file - "nvdcpematch-1.0-test.json"
+            file = new BufferedWriter(new FileWriter("exclude/nvdcpematch-1.0-test.json", true));
+
             // Writing all left basic CPE objects one by one (and replacing problematic backslashes)
             for (int i = 0; i<basic_objs.size(); i++){
                 // If its last, no comma + ending the JSON structure - reconstruction done
-                if (i == basic_objs.size()-1){
+                if (i == (basic_objs.size()-1)){
                     basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
                     file.write("\t\t{\"cpe23Uri\" : \""+basic_objs.get(i).cpe_id+"\",\n");
                     file.write("\t\t\"cpe_name\" : [ ] } \n ] \n }\n");
@@ -535,6 +559,9 @@ public class CPEobject implements Serializable{
                     file.write("\t\t\"cpe_name\" : [ ] },\n");
                 }
             }
+
+            // Closing writing into the file
+            file.close();
 
         } catch (IOException e) {
             e.printStackTrace();
