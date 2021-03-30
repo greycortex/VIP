@@ -10,7 +10,7 @@ public class Main {
                 "exclude/nvdcve-1.1-2013.json", "exclude/nvdcve-1.1-2014.json", "exclude/nvdcve-1.1-2015.json", "exclude/nvdcve-1.1-2016.json",
                 "exclude/nvdcve-1.1-2017.json", "exclude/nvdcve-1.1-2018.json", "exclude/nvdcve-1.1-2019.json", "exclude/nvdcve-1.1-2020.json",
                 "exclude/nvdcve-1.1-2021.json"}; // "nvdcve-1.1-2002.json" -- "nvdcve-1.1-2021.json" - - - https://nvd.nist.gov/vuln/data-feeds
-        // Putting all CVE objects and basic objects related to them into database and actualizing them, Putting all basic and complex CPE objects into database
+        // Putting all CVE objects and objects related to them into database and actualizing them, Putting all basic and complex CPE objects into database
         CVEobject.putIntoDatabase(fileNames);
     }
 

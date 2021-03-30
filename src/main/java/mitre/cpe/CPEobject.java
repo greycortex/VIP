@@ -6,6 +6,7 @@ import mitre.cve.CVEobject;
 import mitre.cve.ReferenceObject;
 import mitre.cvss.CVSS2object;
 import mitre.cvss.CVSS3object;
+import org.hibernate.NonUniqueObjectException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -116,11 +117,12 @@ public class CPEobject implements Serializable{
      * @return basic CPE object
      */
     public static CPEobject cpeUriToObject(String cpeUri) {
+
         // This Array is filled with parts of the cpeUri String (separates by ":")
-        String[] splitstr = cpeUri.split(":");
+        String[] splitstr = cpeUri.split("[:]", -1);
 
         // Used for creating CPE id later on
-        String[] splitstrid = cpeUri.split(":");
+        String[] splitstrid = cpeUri.split("[:]", -1);
 
         /**
          * This for cycle goes through each part of the splitstr Array and changes its parts so that they are
@@ -132,21 +134,22 @@ public class CPEobject implements Serializable{
                 splitstr[i] = null;
             }
 
-            /**
-             * This block of code replaces all SQL-not-friendly apostrophes with sql-friendly apostrophes,
-             * it also removes backslashes in weird places
-             */
-            if (splitstr[i] != null) {
+            ///**
+            // * This block of code replaces all SQL-not-friendly apostrophes with sql-friendly apostrophes,
+            // * it also removes backslashes in weird places
+            // */
+            //if (splitstr[i] != null) {
 
-            //    splitstr[i] = splitstr[i].replace("'", "''"); ---
-                splitstr[i] = splitstr[i].replace("\\", "");
-            }
+            //    splitstr[i] = splitstr[i].replace("'", "''");
+            //    splitstr[i] = splitstr[i].replace("\\\\", "\\");
+            //}
         }
 
         // This block of code removes the apostrophes that can appear at the end of the cpeUri String
         if (splitstr[12] != null) {
-            splitstr[12] = splitstr[12].replace("\",", "");
+            splitstr[12] = splitstr[12].replace(",", "");
             splitstr[12] = splitstr[12].replace("\"", "");
+            splitstr[12] = splitstr[12].replace("}", "");
         }
 
         // Creating CPE id
@@ -154,10 +157,10 @@ public class CPEobject implements Serializable{
             if (splitstrid[i].equals("*\",") || splitstrid[i].equals("*\"") || splitstrid[i].equals("*")) {
                 splitstrid[i] = "";
             }
-            if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
-                //    splitstr[i] = splitstr[i].replace("'", "''"); ---
-                splitstrid[i] = splitstrid[i].replace("\\", "");
-            }
+            //if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
+                //splitstr[i] = splitstr[i].replace("'", "''");
+                //splitstrid[i] = splitstrid[i].replace("\\\\", "\\");
+            //}
         }
 
         String cpe_id = splitstrid[0] + ":" + splitstrid[1] + ":" + splitstrid[2] + ":" + splitstrid[3] + ":" + splitstrid[4]
@@ -206,10 +209,10 @@ public class CPEobject implements Serializable{
         for (String line : cpe23uriliness) {
 
             // This Array is filled with parts of the line (separates by ":")
-            String[] splitstr = line.split(":");
+            String[] splitstr = line.split("[:]", -1);
 
             // Used for creating CPE id later on
-            String[] splitstrid = line.split(":");
+            String[] splitstrid = line.split("[:]", -1);
 
             /**
              * This for cycle goes through each part of the splitstr Array and changes its parts so that they are
@@ -221,21 +224,22 @@ public class CPEobject implements Serializable{
                     splitstr[i] = null;
                 }
 
-                /**
-                 * This block of code replaces all the SQL-not-friendly apostrophes with a sql-friendly apostrophes,
-                 * it also removes backslashes in weird places
-                 */
-                if (splitstr[i] != null) {
+                ///**
+                // * This block of code replaces all the SQL-not-friendly apostrophes with a sql-friendly apostrophes,
+                // * it also removes backslashes in weird places
+                // */
+                //if (splitstr[i] != null) {
 
-                //    splitstr[i] = splitstr[i].replace("'", "''"); ---
-                    splitstr[i] = splitstr[i].replace("\\", "");
-                }
+                //    splitstr[i] = splitstr[i].replace("'", "''");
+                //    splitstr[i] = splitstr[i].replace("\\\\", "\\");
+                //}
             }
 
             // This block of code removes the apostrophes that can appear at the end of the line
             if (splitstr[13] != null) {
-                splitstr[13] = splitstr[13].replace("\",", "");
+                splitstr[13] = splitstr[13].replace(",", "");
                 splitstr[13] = splitstr[13].replace("\"", "");
+                splitstr[13] = splitstr[13].replace("}", "");
             }
 
             // Creating final String Array which will be used for creation of a new CPE object
@@ -246,10 +250,10 @@ public class CPEobject implements Serializable{
                 if (splitstrid[i].equals("*\",") || splitstrid[i].equals("*\"") || splitstrid[i].equals("*")) {
                     splitstrid[i] = "";
                 }
-                if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
-                    //    splitstr[i] = splitstr[i].replace("'", "''"); ---
-                    splitstrid[i] = splitstrid[i].replace("\\", "");
-                }
+                //if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
+                    //splitstr[i] = splitstr[i].replace("'", "''");
+                    //splitstrid[i] = splitstrid[i].replace("\\\\", "\\");
+                //}
             }
 
             String[] splitfirst = splitstrid[1].split("\"");
@@ -367,17 +371,17 @@ public class CPEobject implements Serializable{
                                 String basic_cpe_uri = (String) basic_cpe_json.get("cpe23Uri");
 
                                 // Used for creating CPE id
-                                String[] splitstrid = basic_cpe_uri.split(":");
+                                String[] splitstrid = basic_cpe_uri.split("[:]", -1);
 
                                 // Creating CPE id
                                 for (int i = 0; i < splitstrid.length; i++){
                                     if (splitstrid[i].equals("*\",") || splitstrid[i].equals("*\"") || splitstrid[i].equals("*")) {
                                         splitstrid[i] = "";
                                     }
-                                    if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
-                                        //    splitstr[i] = splitstr[i].replace("'", "''"); ---
-                                        splitstrid[i] = splitstrid[i].replace("\\\\", "");
-                                    }
+                                    //if (splitstrid[i] != null && !(splitstrid[i].equals(""))) {
+                                    //    //splitstr[i] = splitstr[i].replace("'", "''");
+                                    //    //splitstrid[i] = splitstrid[i].replace("\\\\", "\\");
+                                    //}
                                 }
                                 String cpe_id = splitstrid[0] + ":" + splitstrid[1] + ":" + splitstrid[2] + ":" + splitstrid[3] + ":" + splitstrid[4]
                                         + ":" + splitstrid[5] + ":" + splitstrid[6] + ":" + splitstrid[7] + ":" + splitstrid[8] + ":" + splitstrid[9]
@@ -465,26 +469,26 @@ public class CPEobject implements Serializable{
             for (int i = 0; i<compl_objs.size(); i++) {
                 // Making cpe23Uri String
                 String[] id_splitstr = compl_objs.get(i).cpe_id.split("[*]");
-                // Replacing problematic backslashes
-                id_splitstr[0] = id_splitstr[0].replace("\\","\\\\");
+                //// Replacing problematic backslashes
+                //id_splitstr[0] = id_splitstr[0].replace("\\","\\\\");
                 // Writing cpe23Uri into the file
                 file.write("\t\t{\"cpe23Uri\" : \""+id_splitstr[0]+"\",\n");
 
                 // Writing attributes of the complex object into the file (plus replacing problematic backslashes)
                 if (compl_objs.get(i).version_end_excluding != null) {
-                    compl_objs.get(i).version_end_excluding = compl_objs.get(i).version_end_excluding.replace("\\","\\\\");
+                    //compl_objs.get(i).version_end_excluding = compl_objs.get(i).version_end_excluding.replace("\\","\\\\");
                     file.write("\t\t\"versionEndExcluding\" : \""+compl_objs.get(i).version_end_excluding+"\",\n");
                 }
                 if (compl_objs.get(i).version_end_including != null) {
-                    compl_objs.get(i).version_end_including = compl_objs.get(i).version_end_including.replace("\\","\\\\");
+                    //compl_objs.get(i).version_end_including = compl_objs.get(i).version_end_including.replace("\\","\\\\");
                     file.write("\t\t\"versionEndIncluding\" : \""+compl_objs.get(i).version_end_including+"\",\n");
                 }
                 if (compl_objs.get(i).version_start_excluding != null) {
-                    compl_objs.get(i).version_start_excluding = compl_objs.get(i).version_start_excluding.replace("\\","\\\\");
+                    //compl_objs.get(i).version_start_excluding = compl_objs.get(i).version_start_excluding.replace("\\","\\\\");
                     file.write("\t\t\"versionStartExcluding\" : \""+compl_objs.get(i).version_start_excluding+"\",\n");
                 }
                 if (compl_objs.get(i).version_start_including != null) {
-                    compl_objs.get(i).version_start_including = compl_objs.get(i).version_start_including.replace("\\","\\\\");
+                    //compl_objs.get(i).version_start_including = compl_objs.get(i).version_start_including.replace("\\","\\\\");
                     file.write("\t\t\"versionStartIncluding\" : \""+compl_objs.get(i).version_start_including+"\",\n");
                 }
 
@@ -504,12 +508,12 @@ public class CPEobject implements Serializable{
                     for (int y = 0; y < rel_basic_objs.size(); y++){
                         // If its last, no comma
                         if (y == (rel_basic_objs.size()-1)) {
-                            rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
+                            //rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
                             file.write("\t\t{\"cpe23Uri\" : \""+rel_basic_objs.get(y).cpe_id+"\"}\n");
                             basic_objs_to_remove.add(rel_basic_objs.get(y));
                         }
                         else {
-                            rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
+                            //rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
                             file.write("\t\t{\"cpe23Uri\" : \""+rel_basic_objs.get(y).cpe_id+"\"},\n");
                             basic_objs_to_remove.add(rel_basic_objs.get(y));
                         }
@@ -550,11 +554,11 @@ public class CPEobject implements Serializable{
             for (int i = 0; i<basic_objs.size(); i++){
                 // If its last, no comma + ending the JSON structure - reconstruction done
                 if (i == (basic_objs.size()-1)){
-                    basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
+                    //basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
                     file.write("\t\t{\"cpe23Uri\" : \""+basic_objs.get(i).cpe_id+"\",\n");
                     file.write("\t\t\"cpe_name\" : [ ] } \n ] \n }\n");
                 } else {
-                    basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
+                    //basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
                     file.write("\t\t{\"cpe23Uri\" : \""+basic_objs.get(i).cpe_id+"\",\n");
                     file.write("\t\t\"cpe_name\" : [ ] },\n");
                 }
@@ -683,7 +687,7 @@ public class CPEobject implements Serializable{
 
     @Override
     public int hashCode() {
-        return Objects.hash(vendor, product, version, update, edition, language, swEdition, targetSw, targetHw, other);
+        return Objects.hash(cpe_id);
     }
 
     @Override
