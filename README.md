@@ -12,6 +12,8 @@ It is also possible to completely (without content history) parse CWE objects - 
 
 and CAPEC objects - [XML file](https://capec.mitre.org/data/xml/capec_latest.xml) - thanks to the additional implemented methods.
 
+There is a method which can successfully reconstruct CPE match feed file by using objects from the database, too.
+
 ### Current database schema
 
 ![Current database schema](https://github.com/greycortex/VIP/blob/master/doc/current_mitre_schema.png?raw=true)
