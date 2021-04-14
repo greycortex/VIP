@@ -475,8 +475,7 @@ public class CVEobject {
         // Creating connection and session
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CPEnodeToComplex.class);
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
@@ -493,8 +492,7 @@ public class CVEobject {
             // Creating connection, session factory and session
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                     .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                    .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                    .addAnnotatedClass(CPEnodeToComplex.class);
+                    .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class);
             ServiceRegistry regg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
             SessionFactory sesf = conn.buildSessionFactory(regg);
             Session sessionc = sesf.openSession();
@@ -577,8 +575,7 @@ public class CVEobject {
             // Creating connection, session factory and session
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                     .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                    .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEobject.class)
-                    .addAnnotatedClass(CPEnodeToComplex.class);
+                    .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class);
             ServiceRegistry regg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
             SessionFactory sesf = conn.buildSessionFactory(regg);
             Session sessionc = sesf.openSession();
