@@ -1,7 +1,7 @@
 import mitre.cpe.CPEobject;
 import mitre.cve.CVEobject;
 
-public class Main {
+public class Test {
 
     public static void putIntoDatabase(){
         String[] fileNames = {"exclude/nvdcve-1.1-2002.json", "exclude/nvdcve-1.1-2003.json", "exclude/nvdcve-1.1-2004.json",
