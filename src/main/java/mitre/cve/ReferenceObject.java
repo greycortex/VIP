@@ -2,6 +2,7 @@ package mitre.cve;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a reference object which can be found in CVE object
@@ -78,5 +79,18 @@ public class ReferenceObject {
                 ", refsource='" + refsource + '\'' +
                 ", tags=" + tags +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ReferenceObject)) return false;
+        ReferenceObject that = (ReferenceObject) o;
+        return Objects.equals(id, that.id) && Objects.equals(url, that.url) && Objects.equals(name, that.name) && Objects.equals(refsource, that.refsource) && Objects.equals(tags, that.tags) && Objects.equals(cve, that.cve);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, url, name, refsource, tags, cve);
     }
 }

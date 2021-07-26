@@ -2,6 +2,7 @@ package mitre.cpe;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a complex CPE object (CPE object attributes plus vulnerable etc. from CVE data feed JSON file)
@@ -135,5 +136,19 @@ public class CPEcomplexObj extends CPEobject {
                 ", targetHw='" + targetHw + '\'' +
                 ", other='" + other + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CPEcomplexObj)) return false;
+        if (!super.equals(o)) return false;
+        CPEcomplexObj that = (CPEcomplexObj) o;
+        return Objects.equals(vulnerable, that.vulnerable) && Objects.equals(version_start_excluding, that.version_start_excluding) && Objects.equals(version_end_excluding, that.version_end_excluding) && Objects.equals(version_start_including, that.version_start_including) && Objects.equals(version_end_including, that.version_end_including) && Objects.equals(cpe, that.cpe) && Objects.equals(node_to_compl, that.node_to_compl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), vulnerable, version_start_excluding, version_end_excluding, version_start_including, version_end_including, cpe, node_to_compl);
     }
 }

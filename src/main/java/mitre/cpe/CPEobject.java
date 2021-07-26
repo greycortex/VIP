@@ -35,7 +35,7 @@ import java.util.*;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Entity(name = "cpe")
 @Table(name = "cpe", schema = "mitre", indexes = @Index(name = "cpe_vendor_product_idx", columnList = "vendor, product"))
-public class CPEobject implements Serializable{
+public class CPEobject implements Serializable {
 
     public CPEobject(){ } // default constructor
 
@@ -402,7 +402,7 @@ public class CPEobject implements Serializable{
         }
         // Commiting transaction, closing session and session factory
         if (txv.isActive()) txv.commit();
-        session.close();
+        if (session.isOpen()) session.close();
         sf.close();
     }
 

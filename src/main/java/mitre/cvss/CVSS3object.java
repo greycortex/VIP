@@ -4,6 +4,7 @@ import mitre.cve.CVEobject;
 import org.hibernate.annotations.Index;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 /**
  * This class represents a CVSS v3 object (Base score metrics, ...)
@@ -115,5 +116,18 @@ public class CVSS3object {
                 ", exploitability_score_v3='" + exploitability_score_v3 + '\'' +
                 ", impact_score_v3='" + impact_score_v3 + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CVSS3object)) return false;
+        CVSS3object that = (CVSS3object) o;
+        return Double.compare(that.base_score_v3, base_score_v3) == 0 && Double.compare(that.exploitability_score_v3, exploitability_score_v3) == 0 && Double.compare(that.impact_score_v3, impact_score_v3) == 0 && Objects.equals(id, that.id) && Objects.equals(version, that.version) && Objects.equals(vector_string, that.vector_string) && Objects.equals(attack_vector, that.attack_vector) && Objects.equals(attack_complexity, that.attack_complexity) && Objects.equals(privileges_required, that.privileges_required) && Objects.equals(user_interaction, that.user_interaction) && Objects.equals(scope, that.scope) && Objects.equals(confidentiality_impact, that.confidentiality_impact) && Objects.equals(integrity_impact, that.integrity_impact) && Objects.equals(availability_impact, that.availability_impact) && Objects.equals(base_severity_v3, that.base_severity_v3) && Objects.equals(cve_obj, that.cve_obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, version, vector_string, attack_vector, attack_complexity, privileges_required, user_interaction, scope, confidentiality_impact, integrity_impact, availability_impact, base_score_v3, base_severity_v3, exploitability_score_v3, impact_score_v3, cve_obj);
     }
 }

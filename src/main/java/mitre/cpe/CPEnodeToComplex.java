@@ -1,6 +1,7 @@
 package mitre.cpe;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 /**
  * This class represents ManyToMany relation between complex CPE object and CPE node object,
@@ -79,5 +80,18 @@ public class CPEnodeToComplex {
         this.node = node;
         this.cve_id = cve_id;
         this.vulnerable = vulnerable;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CPEnodeToComplex)) return false;
+        CPEnodeToComplex that = (CPEnodeToComplex) o;
+        return Objects.equals(id, that.id) && Objects.equals(cpe, that.cpe) && Objects.equals(node, that.node) && Objects.equals(cve_id, that.cve_id) && Objects.equals(vulnerable, that.vulnerable);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, cpe, node, cve_id, vulnerable);
     }
 }

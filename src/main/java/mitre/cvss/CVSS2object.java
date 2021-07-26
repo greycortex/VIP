@@ -4,6 +4,7 @@ import mitre.cve.CVEobject;
 import org.hibernate.annotations.Index;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 /**
  * This class represents a CVSS v2 object (Base score metrics, ...)
@@ -130,5 +131,18 @@ public class CVSS2object {
                 ", obtain_other_privilege=" + obtain_other_privilege +
                 ", user_interaction_required=" + user_interaction_required +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CVSS2object)) return false;
+        CVSS2object that = (CVSS2object) o;
+        return Double.compare(that.base_score_v2, base_score_v2) == 0 && Double.compare(that.exploitability_score_v2, exploitability_score_v2) == 0 && Double.compare(that.impact_score_v2, impact_score_v2) == 0 && Objects.equals(id, that.id) && Objects.equals(version, that.version) && Objects.equals(vector_string, that.vector_string) && Objects.equals(access_vector, that.access_vector) && Objects.equals(access_complexity, that.access_complexity) && Objects.equals(authentication, that.authentication) && Objects.equals(confidentiality_impact, that.confidentiality_impact) && Objects.equals(integrity_impact, that.integrity_impact) && Objects.equals(availability_impact, that.availability_impact) && Objects.equals(severity, that.severity) && Objects.equals(ac_insuf_info, that.ac_insuf_info) && Objects.equals(obtain_all_privilege, that.obtain_all_privilege) && Objects.equals(obtain_user_privilege, that.obtain_user_privilege) && Objects.equals(obtain_other_privilege, that.obtain_other_privilege) && Objects.equals(user_interaction_required, that.user_interaction_required) && Objects.equals(cve_obj, that.cve_obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, version, vector_string, access_vector, access_complexity, authentication, confidentiality_impact, integrity_impact, availability_impact, base_score_v2, severity, exploitability_score_v2, impact_score_v2, ac_insuf_info, obtain_all_privilege, obtain_user_privilege, obtain_other_privilege, user_interaction_required, cve_obj);
     }
 }

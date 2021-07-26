@@ -631,7 +631,7 @@ public class CVEobject {
                 trans.commit();
             }
             // Ending session and session factory
-            sessionc.close();
+            if (sessionc.isOpen()) sessionc.close();
             if (sesf.isOpen()) sesf.close();
             System.out.println("Actualization of CVE objects done");
         }
