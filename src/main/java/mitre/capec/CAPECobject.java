@@ -1,16 +1,13 @@
 package mitre.capec;
 
-import mitre.cwe.CWEalterTermObj;
-import mitre.cwe.CWEnoteObj;
-import mitre.cwe.CWEconseqObj;
-import mitre.cwe.CWEtaxMapObj;
-import mitre.cwe.CWEextRefRefObj;
+import mitre.cwe.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.persistence.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CAPEC attack pattern object (CAPEC ID, name, abstraction attribute, status, ...)
@@ -30,8 +28,14 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity(name = "capec")
+@Table(name="capec", schema = "mitre")
 public class CAPECobject {
 
+    public CAPECobject() { } // default constructor
+
+    @Id
+    @Column(unique = true, name = "id")
     protected String capec_id;
     protected String capec_name;
     protected String capec_abstraction;
@@ -39,19 +43,44 @@ public class CAPECobject {
     protected String description;
     protected String attack_likelihood;
     protected String typical_severity;
-    protected List<String> rel_cwe_ids;
+    @ManyToMany
+    @CollectionTable(name = "cwe_capec", schema = "mitre")
+    protected List<CWEobject> rel_cwe;
+    @Column(length = 8191)
+    @CollectionTable(name = "mitigation", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> mitigations;
+    @Column(length = 8191)
+    @CollectionTable(name = "prerequisite", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> prerequisites;
+    @Column(length = 8191)
+    @CollectionTable(name = "example", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> examples;
+    @Column(length = 8191)
+    @CollectionTable(name = "resource", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> resources;
+    @Column(length = 8191)
+    @CollectionTable(name = "indicator", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> indicators;
+    @OneToMany(mappedBy = "capec")
     protected List<CWEnoteObj> notes;
+    @OneToMany(mappedBy = "capec")
     protected List<CWEtaxMapObj> tax_maps;
+    @OneToMany(mappedBy = "capec")
     protected List<CWEalterTermObj> alter_terms;
+    @OneToMany(mappedBy = "capec")
     protected List<CWEextRefRefObj> ext_ref_refs;
+    @OneToMany(mappedBy = "capec")
     protected List<CWEconseqObj> consequences;
+    @OneToMany(mappedBy = "capec")
     protected List<CAPECrelationObj> related_patterns;
+    @OneToMany(mappedBy = "capec")
     protected List<CAPECattStepObj> attack_steps;
+    @OneToMany(mappedBy = "capec")
     protected List<CAPECskillObj> skills_required;
 
     /**
@@ -64,7 +93,7 @@ public class CAPECobject {
      * @param description             description of a specific attack pattern (CAPEC)
      * @param attack_likelihood       likelihood of attack attribute of a specific attack pattern (CAPEC)
      * @param typical_severity        typical severity attribute of a specific attack pattern (CAPEC)
-     * @param rel_cwe_ids             IDs of relating CWE weaknesses for a specific attack pattern (CAPEC)
+     * @param rel_cwe                 relating CWE weaknesses for a specific attack pattern (CAPEC)
      * @param mitigations             mitigation attributes of a specific attack pattern (CAPEC)
      * @param prerequisites           prerequisite attributes of a specific attack pattern (CAPEC)
      * @param examples                example attributes of a specific attack pattern (CAPEC)
@@ -80,7 +109,7 @@ public class CAPECobject {
      * @param skills_required         skills required attribute of a specific CAPEC object - skill objects
      */
     public CAPECobject(String capec_id, String capec_name, String capec_abstraction, String capec_status, String description,
-                       String attack_likelihood, String typical_severity, List<String> rel_cwe_ids, List<String> mitigations,
+                       String attack_likelihood, String typical_severity, List<CWEobject> rel_cwe, List<String> mitigations,
                        List<CWEnoteObj> notes, List<CWEtaxMapObj> tax_maps, List<CWEalterTermObj> alter_terms,
                        List<CWEextRefRefObj> ext_ref_refs, List<CWEconseqObj> consequences,
                        List<CAPECattStepObj> attack_steps, List<CAPECrelationObj> related_patterns,
@@ -94,7 +123,7 @@ public class CAPECobject {
         this.description = description;
         this.attack_likelihood = attack_likelihood;
         this.typical_severity = typical_severity;
-        this.rel_cwe_ids = rel_cwe_ids;
+        this.rel_cwe = rel_cwe;
         this.mitigations = mitigations;
         this.prerequisites = prerequisites;
         this.examples = examples;
@@ -109,6 +138,10 @@ public class CAPECobject {
         this.attack_steps = attack_steps;
         this.skills_required = skills_required;
 
+    }
+
+    public String getCapec_id() {
+        return capec_id;
     }
 
     /**
@@ -142,7 +175,7 @@ public class CAPECobject {
                             String pattern_description = null; // description
                             String pattern_attack_likelihood = null; // likelihood of attack attribute
                             String pattern_typical_severity = null; // typical severity attribute
-                            List<String> pattern_rel_cwe_ids = new ArrayList<>(); // relating CWE IDs
+                            List<CWEobject> pattern_rel_cwe_ids = new ArrayList<>(); // relating CWEs
                             List<String> pattern_mitigs = new ArrayList<>(); // mitigation attributes
                             List<String> pattern_prerequisites = new ArrayList<>(); // prerequisite attributes
                             List<String> pattern_examples = new ArrayList<>(); // example attributes
@@ -286,16 +319,16 @@ public class CAPECobject {
                                             }
                                         }
 
-                                    } else if (attack_patt_child_nodes.item(y).getNodeName().equals("Related_Weaknesses")){
-                                        NodeList rel_cwe_nodes = attack_patt_child_nodes.item(y).getChildNodes();
+                                    //} else if (attack_patt_child_nodes.item(y).getNodeName().equals("Related_Weaknesses")){
+                                    //    NodeList rel_cwe_nodes = attack_patt_child_nodes.item(y).getChildNodes();
 
-                                        for (int t = 0; t < rel_cwe_nodes.getLength(); t++) {
-                                            if (rel_cwe_nodes.item(t).getNodeName().equals("Related_Weakness")){
-                                                NamedNodeMap pattern_rel_cwe_attr = rel_cwe_nodes.item(t).getAttributes();
-                                                String rel_cwe_id = pattern_rel_cwe_attr.getNamedItem("CWE_ID").getNodeValue(); // getting related weakness ID (CWE)
-                                                pattern_rel_cwe_ids.add(rel_cwe_id);
-                                            }
-                                        }
+                                        //for (int t = 0; t < rel_cwe_nodes.getLength(); t++) {
+                                        //    if (rel_cwe_nodes.item(t).getNodeName().equals("Related_Weakness")){
+                                        //        NamedNodeMap pattern_rel_cwe_attr = rel_cwe_nodes.item(t).getAttributes();
+                                        //        String rel_cwe_id = pattern_rel_cwe_attr.getNamedItem("CWE_ID").getNodeValue(); // getting related weakness ID (CWE)
+                                        //        pattern_rel_cwe_ids.add(rel_cwe_id);
+                                        //    }
+                                        //}
 
                                     } else if (attack_patt_child_nodes.item(y).getNodeName().equals("Likelihood_Of_Attack")){
                                         pattern_attack_likelihood = attack_patt_child_nodes.item(y).getTextContent(); // getting likelihood of attack attribute
@@ -432,7 +465,7 @@ public class CAPECobject {
     // * @return CAPEC attack pattern object
     // */
     //public static CAPECobject getInstance(String capec_id, String capec_name, String capec_abstraction, String capec_status, String description,
-    //                                      String attack_likelihood, String typical_severity, List<String> rel_cwe_ids,
+    //                                      String attack_likelihood, String typical_severity, List<String> rel_cwe,
     //                                      List<String> mitigations, List<CWEnoteObj> notes, List<CWEtaxMapObj> tax_maps,
     //                                      List<CWEalterTermObj> alter_terms, List<CWEextRefRefObj> ext_ref_refs,
     //                                      List<CWEconseqObj> consequences, List<CAPECattStepObj> attack_steps,
@@ -441,7 +474,7 @@ public class CAPECobject {
     //                                      List<String> resources, List<String> indicators) {
 
     //    return new CAPECobject(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood,
-    //                           typical_severity, rel_cwe_ids, mitigations, notes, tax_maps, alter_terms, ext_ref_refs, consequences,
+    //                           typical_severity, rel_cwe, mitigations, notes, tax_maps, alter_terms, ext_ref_refs, consequences,
     //                           attack_steps, related_patterns, prerequisites, skills_required, examples, resources, indicators);
     //}
 
@@ -455,7 +488,7 @@ public class CAPECobject {
                 ", description='" + description + '\'' +
                 ", attack_likelihood='" + attack_likelihood + '\'' +
                 ", typical_severity='" + typical_severity + '\'' +
-                ", rel_cwe_ids=" + rel_cwe_ids +
+                ", rel_cwe_ids=" + rel_cwe +
                 ", mitigations=" + mitigations +
                 ", notes=" + notes +
                 ", tax_maps=" + tax_maps +
@@ -470,5 +503,18 @@ public class CAPECobject {
                 ", resources=" + resources +
                 ", indicators=" + indicators +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CAPECobject)) return false;
+        CAPECobject that = (CAPECobject) o;
+        return Objects.equals(capec_id, that.capec_id) && Objects.equals(capec_name, that.capec_name) && Objects.equals(capec_abstraction, that.capec_abstraction) && Objects.equals(capec_status, that.capec_status) && Objects.equals(description, that.description) && Objects.equals(attack_likelihood, that.attack_likelihood) && Objects.equals(typical_severity, that.typical_severity) && Objects.equals(rel_cwe, that.rel_cwe) && Objects.equals(mitigations, that.mitigations) && Objects.equals(prerequisites, that.prerequisites) && Objects.equals(examples, that.examples) && Objects.equals(resources, that.resources) && Objects.equals(indicators, that.indicators) && Objects.equals(notes, that.notes) && Objects.equals(tax_maps, that.tax_maps) && Objects.equals(alter_terms, that.alter_terms) && Objects.equals(ext_ref_refs, that.ext_ref_refs) && Objects.equals(consequences, that.consequences) && Objects.equals(related_patterns, that.related_patterns) && Objects.equals(attack_steps, that.attack_steps) && Objects.equals(skills_required, that.skills_required);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood, typical_severity, rel_cwe, mitigations, prerequisites, examples, resources, indicators, notes, tax_maps, alter_terms, ext_ref_refs, consequences, related_patterns, attack_steps, skills_required);
     }
 }

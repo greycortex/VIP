@@ -1,6 +1,8 @@
 package mitre.capec;
 
+import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CAPEC relation object (nature attribute, CAPEC code (ID) of related CAPEC attack pattern, exclude IDs)
@@ -9,11 +11,27 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity(name = "capec_relation")
+@Table(name="capec_relation", schema = "mitre")
 public class CAPECrelationObj {
 
+    public CAPECrelationObj() { } // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
     protected String nature;
     protected String related_capec_id;
+    @Column(length = 8191)
+    @CollectionTable(name = "exclude_id", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> exclude_ids;
+    @ManyToOne
+    protected CAPECobject capec;
 
     /**
      * Copies constructor
@@ -47,5 +65,18 @@ public class CAPECrelationObj {
                 ", related_capec_id='" + related_capec_id + '\'' +
                 ", exclude_ids=" + exclude_ids +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CAPECrelationObj)) return false;
+        CAPECrelationObj that = (CAPECrelationObj) o;
+        return Objects.equals(id, that.id) && Objects.equals(nature, that.nature) && Objects.equals(related_capec_id, that.related_capec_id) && Objects.equals(exclude_ids, that.exclude_ids) && Objects.equals(capec, that.capec);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nature, related_capec_id, exclude_ids, capec);
     }
 }

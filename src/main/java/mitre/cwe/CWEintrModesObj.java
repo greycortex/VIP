@@ -1,5 +1,8 @@
 package mitre.cwe;
 
+import javax.persistence.*;
+import java.util.Objects;
+
 /**
  * This class represents a CWE introduction (from modes of introduction) object (phase attribute, note attribute)
  * <p>
@@ -7,10 +10,23 @@ package mitre.cwe;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity(name = "introduction")
+@Table(name="introduction", schema = "mitre")
 public class CWEintrModesObj {
 
+    public CWEintrModesObj() {} // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
     protected String phase;
     protected String note;
+    @ManyToOne
+    protected CWEobject cwe;
 
     /**
      * Copies constructor
@@ -41,5 +57,18 @@ public class CWEintrModesObj {
                 "phase='" + phase + '\'' +
                 ", note='" + note + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEintrModesObj)) return false;
+        CWEintrModesObj that = (CWEintrModesObj) o;
+        return Objects.equals(id, that.id) && Objects.equals(phase, that.phase) && Objects.equals(note, that.note) && Objects.equals(cwe, that.cwe);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, phase, note, cwe);
     }
 }

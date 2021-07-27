@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CWE category object (CWE category id, category name attribute, category status attribute,
@@ -238,5 +239,18 @@ public class CWEcategoryObj {
                 ", category_ext_ref_refs=" + category_ext_ref_refs +
                 ", category_tax_maps=" + category_tax_maps +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEcategoryObj)) return false;
+        CWEcategoryObj that = (CWEcategoryObj) o;
+        return Objects.equals(category_id, that.category_id) && Objects.equals(category_name, that.category_name) && Objects.equals(category_status, that.category_status) && Objects.equals(category_summary, that.category_summary) && Objects.equals(category_notes, that.category_notes) && Objects.equals(category_relationships, that.category_relationships) && Objects.equals(category_ext_ref_refs, that.category_ext_ref_refs) && Objects.equals(category_tax_maps, that.category_tax_maps);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(category_id, category_name, category_status, category_summary, category_notes, category_relationships, category_ext_ref_refs, category_tax_maps);
     }
 }

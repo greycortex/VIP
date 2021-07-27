@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CWE view object (CWE view ID, name attribute, type attribute, status attribute,
@@ -247,5 +248,18 @@ public class CWEviewObj {
                 ", view_ext_refs=" + view_ext_refs +
                 ", view_stakeholders=" + view_stakeholders +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEviewObj)) return false;
+        CWEviewObj that = (CWEviewObj) o;
+        return Objects.equals(view_id, that.view_id) && Objects.equals(view_name, that.view_name) && Objects.equals(view_type, that.view_type) && Objects.equals(view_status, that.view_status) && Objects.equals(view_objective, that.view_objective) && Objects.equals(view_filter, that.view_filter) && Objects.equals(view_members, that.view_members) && Objects.equals(view_notes, that.view_notes) && Objects.equals(view_ext_refs, that.view_ext_refs) && Objects.equals(view_stakeholders, that.view_stakeholders);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(view_id, view_name, view_type, view_status, view_objective, view_filter, view_members, view_notes, view_ext_refs, view_stakeholders);
     }
 }

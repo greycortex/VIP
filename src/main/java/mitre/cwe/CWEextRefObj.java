@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CWE external reference object (reference ID attribute, author attributes, )
@@ -208,5 +209,18 @@ public class CWEextRefObj {
                 ", publication_date=" + publication_date +
                 ", url_date=" + url_date +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEextRefObj)) return false;
+        CWEextRefObj that = (CWEextRefObj) o;
+        return Objects.equals(reference_id, that.reference_id) && Objects.equals(title, that.title) && Objects.equals(url, that.url) && Objects.equals(publication, that.publication) && Objects.equals(publisher, that.publisher) && Objects.equals(edition, that.edition) && Objects.equals(authors, that.authors) && Objects.equals(publication_date, that.publication_date) && Objects.equals(url_date, that.url_date);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(reference_id, title, url, publication, publisher, edition, authors, publication_date, url_date);
     }
 }

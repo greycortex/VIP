@@ -1,6 +1,10 @@
 package mitre.cwe;
 
+import mitre.capec.CAPECobject;
+
+import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CWE consequence object (scope attributes, impact attributes, note attributes, likelihood attributes)
@@ -9,12 +13,39 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity(name = "consequence")
+@Table(name="consequence", schema = "mitre")
 public class CWEconseqObj {
 
+    public CWEconseqObj() {} // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
+    @Column(length = 8191)
+    @CollectionTable(name = "scope", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> scopes;
+    @Column(length = 8191)
+    @CollectionTable(name = "impact", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> impacts;
+    @Column(length = 8191)
+    @CollectionTable(name = "note", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> notes;
+    @Column(length = 8191)
+    @CollectionTable(name = "likelihood", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> likelihoods;
+    @ManyToOne
+    protected CAPECobject capec;
+    @ManyToOne
+    protected CWEobject cwe;
 
     /**
      * Copies constructor
@@ -53,5 +84,18 @@ public class CWEconseqObj {
                 ", notes=" + notes +
                 ", likelihoods=" + likelihoods +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEconseqObj)) return false;
+        CWEconseqObj that = (CWEconseqObj) o;
+        return Objects.equals(id, that.id) && Objects.equals(scopes, that.scopes) && Objects.equals(impacts, that.impacts) && Objects.equals(notes, that.notes) && Objects.equals(likelihoods, that.likelihoods) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, scopes, impacts, notes, likelihoods, capec, cwe);
     }
 }

@@ -1,6 +1,8 @@
 package mitre.cwe;
 
+import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CWE demonstrative example object (nature attribute, language attribute, content)
@@ -9,12 +11,30 @@ import java.util.List;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity(name = "demonstrative_examp")
+@Table(name="demonstrative_examp", schema = "mitre")
 public class CWEdemExObj {
 
+    public CWEdemExObj() {} // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
     protected String intro_text;
+    @OneToMany(mappedBy = "dem_ex")
     protected List<CWEexampCodeObj> dem_ex_ex_codes;
+    @Column(length = 8191)
+    @CollectionTable(name = "body_text", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> dem_ex_body_texts;
+    @OneToMany(mappedBy = "dem_ex")
     protected List<CWEextRefRefObj> dem_ex_ext_ref_refs;
+    @ManyToOne
+    protected CWEobject cwe;
 
     /**
      * Copies constructor
@@ -53,5 +73,18 @@ public class CWEdemExObj {
                 ", dem_ex_body_texts=" + dem_ex_body_texts +
                 ", dem_ex_ext_ref_refs=" + dem_ex_ext_ref_refs +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEdemExObj)) return false;
+        CWEdemExObj that = (CWEdemExObj) o;
+        return Objects.equals(id, that.id) && Objects.equals(intro_text, that.intro_text) && Objects.equals(dem_ex_ex_codes, that.dem_ex_ex_codes) && Objects.equals(dem_ex_body_texts, that.dem_ex_body_texts) && Objects.equals(dem_ex_ext_ref_refs, that.dem_ex_ext_ref_refs) && Objects.equals(cwe, that.cwe);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, intro_text, dem_ex_ex_codes, dem_ex_body_texts, dem_ex_ext_ref_refs, cwe);
     }
 }

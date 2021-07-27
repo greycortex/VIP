@@ -1,5 +1,7 @@
 package mitre.cwe;
 
+import java.util.Objects;
+
 /**
  * This class represents a CWE stakeholder object (type attribute, description attribute)
  * <p>
@@ -41,5 +43,18 @@ public class CWEstakeholderObj {
                 "type='" + type + '\'' +
                 ", description='" + description + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEstakeholderObj)) return false;
+        CWEstakeholderObj that = (CWEstakeholderObj) o;
+        return Objects.equals(type, that.type) && Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, description);
     }
 }

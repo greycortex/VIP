@@ -1,5 +1,10 @@
 package mitre.cwe;
 
+import mitre.capec.CAPECobject;
+
+import javax.persistence.*;
+import java.util.Objects;
+
 /**
  * This class represents a CWE note object (type attribute, content of the note)
  * <p>
@@ -7,10 +12,25 @@ package mitre.cwe;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity(name = "note")
+@Table(name="note", schema = "mitre")
 public class CWEnoteObj {
 
+    public CWEnoteObj() {} // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
     protected String type;
     protected String note_content;
+    @ManyToOne
+    protected CAPECobject capec;
+    @ManyToOne
+    protected CWEobject cwe;
 
     /**
      * Copies constructor
@@ -41,5 +61,18 @@ public class CWEnoteObj {
                 "type='" + type + '\'' +
                 ", note_content='" + note_content + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEnoteObj)) return false;
+        CWEnoteObj that = (CWEnoteObj) o;
+        return Objects.equals(id, that.id) && Objects.equals(type, that.type) && Objects.equals(note_content, that.note_content) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, type, note_content, capec, cwe);
     }
 }

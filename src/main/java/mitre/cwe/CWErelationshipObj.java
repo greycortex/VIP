@@ -1,5 +1,7 @@
 package mitre.cwe;
 
+import java.util.Objects;
+
 /**
  * This class represents a CWE relationship (member) object (CWE ID attribute or CAPEC ID attribute, view ID attribute)
  * <p>
@@ -45,5 +47,18 @@ public class CWErelationshipObj {
                 ", view_id='" + view_id + '\'' +
                 ", capec_id='" + capec_id + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWErelationshipObj)) return false;
+        CWErelationshipObj that = (CWErelationshipObj) o;
+        return Objects.equals(cwe_id, that.cwe_id) && Objects.equals(view_id, that.view_id) && Objects.equals(capec_id, that.capec_id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cwe_id, view_id, capec_id);
     }
 }

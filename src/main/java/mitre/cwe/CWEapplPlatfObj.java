@@ -1,5 +1,8 @@
 package mitre.cwe;
 
+import javax.persistence.*;
+import java.util.Objects;
+
 /**
  * This class represents a CWE application platform object (type attribute, class attribute, name attribute, prevalence attribute)
  * <p>
@@ -7,12 +10,25 @@ package mitre.cwe;
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity(name = "application_platform")
+@Table(name="application_platform", schema = "mitre")
 public class CWEapplPlatfObj {
 
+    public CWEapplPlatfObj() {} // default constructor
+
+    /**
+     * Automatic ID
+     */
+    @Id
+    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
     protected String type;
     protected String platform_class;
     protected String name;
     protected String prevalence;
+    @ManyToOne
+    protected CWEobject cwe;
 
     /**
      * Copies constructor
@@ -49,5 +65,18 @@ public class CWEapplPlatfObj {
                 ", name='" + name + '\'' +
                 ", prevalence='" + prevalence + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEapplPlatfObj)) return false;
+        CWEapplPlatfObj that = (CWEapplPlatfObj) o;
+        return Objects.equals(id, that.id) && Objects.equals(type, that.type) && Objects.equals(platform_class, that.platform_class) && Objects.equals(name, that.name) && Objects.equals(prevalence, that.prevalence) && Objects.equals(cwe, that.cwe);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, type, platform_class, name, prevalence, cwe);
     }
 }

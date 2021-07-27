@@ -1,8 +1,12 @@
 package mitre.cwe;
 
+import mitre.capec.CAPECobject;
+import mitre.cve.CVEobject;
 import org.xml.sax.SAXException;
 import org.w3c.dom.*;
 
+import javax.persistence.*;
+import javax.persistence.Entity;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -10,19 +14,25 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents a CWE object (CWE code (ID), name of weakness, abstraction attribute, structure attribute, ...)
  * <p>
- * It can create a CWE object from given CWE code (ID), it uses DOM XML parser to find other informations (attributes) according
- * to the specific CWE id and creates a CWE object containing all of them (CWE code (ID) and gotten informations (attributes))
+ * It can parse CWE weakness objects from given XML file
  * <p>
  * It also can create a CWE object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
+@Entity(name = "cwe")
+@Table(name="cwe", schema = "mitre")
 public class CWEobject {
 
+    public CWEobject() {} // default constructor
+
+    @Id
+    @Column(unique = true, name = "id")
     protected String code_id;
     protected String name;
     protected String abstraction;
@@ -31,23 +41,48 @@ public class CWEobject {
     protected String description;
     protected String ext_description;
     protected String exploit_likelihood;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWErelationObj> relations;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEapplPlatfObj> appl_platform_objs;
+    @Column(length = 8191)
+    @CollectionTable(name = "bg_detail", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> bg_details;
-    protected List<String> rel_attack_patterns;
+    @ManyToMany(mappedBy = "rel_cwe")
+    protected List<CAPECobject> rel_attack_patterns;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEnoteObj> notes;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEintrModesObj> intr_modes;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEconseqObj> consequences;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEalterTermObj> alter_terms;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEextRefRefObj> ext_ref_refs;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEtaxMapObj> tax_maps;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEpotMitObj> pot_mits;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEweakOrdObj> weak_ords;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEdemExObj> dem_examples;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEobsExObj> obs_examples;
+    @OneToMany(mappedBy = "cwe")
     protected List<CWEdetMethObj> det_meths;
+    @Column(length = 8191)
+    @CollectionTable(name = "affected_resource", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> affected_resources;
+    @Column(length = 8191)
+    @CollectionTable(name = "functional_area", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> functional_areas;
+    @ManyToOne
+    protected CVEobject cve;
 
 
     /**
@@ -75,7 +110,7 @@ public class CWEobject {
      * @param dem_examples        demonstrative example objects
      * @param obs_examples        observed example objects
      * @param det_meths           detection method objects
-     * @param rel_attack_patterns CAPEC ID attributes
+     * @param rel_attack_patterns related CAPEC objects
      * @param affected_resources  affected resource attributes
      * @param functional_areas    funtional area attributes
      */
@@ -85,7 +120,7 @@ public class CWEobject {
                      List<CWEconseqObj> consequences, List<CWEalterTermObj> alter_terms, List<CWEextRefRefObj> ext_ref_refs,
                      List<CWEtaxMapObj> tax_maps, List<CWEpotMitObj> pot_mits, List<CWEweakOrdObj> weak_ords,
                      List<CWEdemExObj> dem_examples, List<CWEobsExObj> obs_examples, List<CWEdetMethObj> det_meths,
-                     List<String> rel_attack_patterns, List<String> affected_resources, List<String> functional_areas) {
+                     List<CAPECobject> rel_attack_patterns, List<String> affected_resources, List<String> functional_areas) {
 
         this.code_id = code_id;
         this.name = name;
@@ -115,49 +150,30 @@ public class CWEobject {
 
     }
 
+    public String getCode_id() {
+        return code_id;
+    }
+
     /**
-     * This method's purpose is to create a CWE object from given ID, add more informations according to the input ID and return it
+     * This method's purpose is to parse and create a List of CWE weakness objects from given XML file
+     * which contains them
      * <p>
      * It uses DOM XML parser
-     * It takes input ID attribute, goes through file that contains latest list of CWE weaknesses,
-     * finds the right CWE weakness, adds relating informations and then returns a CWE object with given ID
-     * and found informations
      * <p>
-     * If it can't find any information by ID, it returns these attributes as null values
+     * It goes through file that contains latest list of CWE weaknesses,
+     * parses them and returns them in a List
      *
-     * @return CWE object (CWE code (ID), gotten informations (attributes))
+     * @param capec_objs existing CAPEC objects for search of the relating ones
+     * @return List of CWE weakness objects from given XML file
      */
-    public static CWEobject createCWEobj(String code_id) {
+    public static List<CWEobject> CWEfileToArraylist(List<CAPECobject> capec_objs) {
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-        String cwe_name = null; // name
-        String cwe_abstraction = null; // abstraction
-        String cwe_structure = null; // structure
-        String cwe_status = null; // status
-        String cwe_description = null; // description
-        String cwe_ext_description = null; // extended description
-        String cwe_exploit_likelihood = null; // likelihood of exploit
-        List<CWErelationObj> cwe_relations = new ArrayList<>(); // CWE relation objects
-        List<CWEapplPlatfObj> cwe_appl_platform_objs = new ArrayList<>(); // CWE application platform objects
-        List<String> cwe_bg_details = new ArrayList<>(); // bg_details attribute
-        List<String> cwe_rel_attack_patterns = new ArrayList<>(); // CAPEC ID attributes
-        List<String> cwe_affected_resources = new ArrayList<>(); // affected resource attributes
-        List<String> cwe_functional_areas = new ArrayList<>(); // functional area attributes
-        List<CWEnoteObj> cwe_notes = new ArrayList<>(); // notes
-        List<CWEintrModesObj> cwe_intr_modes = new ArrayList<>(); // introduction (from modes of introduction) objects
-        List<CWEconseqObj> cwe_consequences = new ArrayList<>(); // consequence objects
-        List<CWEalterTermObj> cwe_alter_terms = new ArrayList<>(); // alternate term objects
-        List<CWEextRefRefObj> cwe_ext_ref_refs = new ArrayList<>(); // external reference reference objects
-        List<CWEtaxMapObj> cwe_tax_maps = new ArrayList<>(); // taxonomy mapping objects
-        List<CWEpotMitObj> cwe_pot_mits = new ArrayList<>(); // potential mitigation objects
-        List<CWEweakOrdObj> cwe_weak_ords = new ArrayList<>(); // weakness ordinality objects
-        List<CWEdemExObj> cwe_dem_examples = new ArrayList<>(); // demonstrative example objects
-        List<CWEobsExObj> cwe_obs_examples = new ArrayList<>(); // observed example objects
-        List<CWEdetMethObj> cwe_det_meths = new ArrayList<>(); // detection method objects
+        List<CWEobject> cwe_objs = new ArrayList<>(); // empty List which will be filled with CWE weakness objects later on
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse(new FileInputStream("exclude/cwec_v4.2.xml")); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+            Document document = builder.parse(new FileInputStream("exclude/cwec_v4.5.xml")); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
             Element doc_element = document.getDocumentElement();
             NodeList nodes = doc_element.getChildNodes();
 
@@ -166,14 +182,41 @@ public class CWEobject {
                     NodeList nodes_weaknesses = nodes.item(i).getChildNodes();
                     for (int z = 0; z < nodes_weaknesses.getLength(); z++) {
                         if (nodes_weaknesses.item(z).getNodeName().equals("Weakness")) {
-                            NamedNodeMap attr = nodes_weaknesses.item(z).getAttributes();
-                            String id_from_file = attr.getNamedItem("ID").getNodeValue();
 
-                            if (id_from_file.equals(code_id)) {
+                            String cwe_name = null; // name
+                            String cwe_abstraction = null; // abstraction
+                            String cwe_structure = null; // structure
+                            String cwe_status = null; // status
+                            String cwe_description = null; // description
+                            String cwe_ext_description = null; // extended description
+                            String cwe_exploit_likelihood = null; // likelihood of exploit
+                            List<CWErelationObj> cwe_relations = new ArrayList<>(); // CWE relation objects
+                            List<CWEapplPlatfObj> cwe_appl_platform_objs = new ArrayList<>(); // CWE application platform objects
+                            List<String> cwe_bg_details = new ArrayList<>(); // bg_details attribute
+                            List<CAPECobject> cwe_rel_attack_patterns = new ArrayList<>(); // CAPEC ID attributes
+                            List<String> cwe_affected_resources = new ArrayList<>(); // affected resource attributes
+                            List<String> cwe_functional_areas = new ArrayList<>(); // functional area attributes
+                            List<CWEnoteObj> cwe_notes = new ArrayList<>(); // notes
+                            List<CWEintrModesObj> cwe_intr_modes = new ArrayList<>(); // introduction (from modes of introduction) objects
+                            List<CWEconseqObj> cwe_consequences = new ArrayList<>(); // consequence objects
+                            List<CWEalterTermObj> cwe_alter_terms = new ArrayList<>(); // alternate term objects
+                            List<CWEextRefRefObj> cwe_ext_ref_refs = new ArrayList<>(); // external reference reference objects
+                            List<CWEtaxMapObj> cwe_tax_maps = new ArrayList<>(); // taxonomy mapping objects
+                            List<CWEpotMitObj> cwe_pot_mits = new ArrayList<>(); // potential mitigation objects
+                            List<CWEweakOrdObj> cwe_weak_ords = new ArrayList<>(); // weakness ordinality objects
+                            List<CWEdemExObj> cwe_dem_examples = new ArrayList<>(); // demonstrative example objects
+                            List<CWEobsExObj> cwe_obs_examples = new ArrayList<>(); // observed example objects
+                            List<CWEdetMethObj> cwe_det_meths = new ArrayList<>(); // detection method objects
+
+                            NamedNodeMap attr = nodes_weaknesses.item(z).getAttributes();
+                            cwe_status = attr.getNamedItem("Status").getNodeValue(); // getting status attribute
+
+                            // if the CWE is deprecated, it won't be added into the returned list
+                            if (!cwe_status.equals("Deprecated")) {
+                                String cwe_id = attr.getNamedItem("ID").getNodeValue(); // getting CWE id
                                 cwe_name = attr.getNamedItem("Name").getNodeValue(); // getting name attribute
                                 cwe_abstraction = attr.getNamedItem("Abstraction").getNodeValue(); // getting abstraction attribute
                                 cwe_structure = attr.getNamedItem("Structure").getNodeValue(); // getting structure attribute
-                                cwe_status = attr.getNamedItem("Status").getNodeValue(); // getting status attribute
 
                                 NodeList cwe_child_nodes = nodes_weaknesses.item(z).getChildNodes();
 
@@ -551,13 +594,20 @@ public class CWEobject {
                                     } else if (cwe_child_nodes.item(y).getNodeName().equals("Related_Attack_Patterns")) {
                                         NodeList rel_attack_patt_nodes = cwe_child_nodes.item(y).getChildNodes();
 
+                                        List<CAPECobject> capecs_to_remove = new ArrayList<>(); // List for removing connected CAPEC objects later on
                                         for (int d = 0; d < rel_attack_patt_nodes.getLength(); d++) {
                                             if (rel_attack_patt_nodes.item(d).getNodeName().equals("Related_Attack_Pattern")) {
                                                 NamedNodeMap rel_attack_patt = rel_attack_patt_nodes.item(d).getAttributes();
                                                 String rel_attack_patt_id = rel_attack_patt.getNamedItem("CAPEC_ID").getNodeValue(); // getting CAPEC ID attribute
-                                                cwe_rel_attack_patterns.add(rel_attack_patt_id);
+                                                for (int p = 0; p < capec_objs.size(); p++){
+                                                    if (capec_objs.get(p).getCapec_id().equals(rel_attack_patt_id)){
+                                                        cwe_rel_attack_patterns.add(capec_objs.get(p));
+                                                        capecs_to_remove.add(capec_objs.get(p)); // Removing connected CAPEC object from the original list
+                                                    }
+                                                }
                                             }
                                         }
+                                        capec_objs.removeAll(capecs_to_remove); // Removing all connected CAPEC objects from the original list
 
                                     } else if (cwe_child_nodes.item(y).getNodeName().equals("Affected_Resources")) {
                                         NodeList affect_res_nodes = cwe_child_nodes.item(y).getChildNodes();
@@ -580,6 +630,12 @@ public class CWEobject {
                                         }
                                     }
                                 }
+
+                                cwe_objs.add(new CWEobject(cwe_id, cwe_name, cwe_abstraction, cwe_structure, cwe_status, cwe_description, cwe_ext_description,
+                                        cwe_exploit_likelihood, cwe_relations, cwe_appl_platform_objs, cwe_bg_details, cwe_notes, cwe_intr_modes,
+                                        cwe_consequences, cwe_alter_terms, cwe_ext_ref_refs, cwe_tax_maps, cwe_pot_mits, cwe_weak_ords,
+                                        cwe_dem_examples, cwe_obs_examples, cwe_det_meths, cwe_rel_attack_patterns, cwe_affected_resources,
+                                        cwe_functional_areas));
                             }
                         }
                     }
@@ -589,11 +645,7 @@ public class CWEobject {
             ex.printStackTrace();
         }
 
-        return new CWEobject(code_id, cwe_name, cwe_abstraction, cwe_structure, cwe_status, cwe_description, cwe_ext_description,
-                cwe_exploit_likelihood, cwe_relations, cwe_appl_platform_objs, cwe_bg_details, cwe_notes, cwe_intr_modes,
-                cwe_consequences, cwe_alter_terms, cwe_ext_ref_refs, cwe_tax_maps, cwe_pot_mits, cwe_weak_ords,
-                cwe_dem_examples, cwe_obs_examples, cwe_det_meths, cwe_rel_attack_patterns, cwe_affected_resources,
-                cwe_functional_areas);
+        return cwe_objs;
     }
 
     ///**
@@ -643,5 +695,18 @@ public class CWEobject {
                 ", affected_resources=" + affected_resources +
                 ", functional_areas=" + functional_areas +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CWEobject)) return false;
+        CWEobject cwEobject = (CWEobject) o;
+        return Objects.equals(code_id, cwEobject.code_id) && Objects.equals(name, cwEobject.name) && Objects.equals(abstraction, cwEobject.abstraction) && Objects.equals(structure, cwEobject.structure) && Objects.equals(status, cwEobject.status) && Objects.equals(description, cwEobject.description) && Objects.equals(ext_description, cwEobject.ext_description) && Objects.equals(exploit_likelihood, cwEobject.exploit_likelihood) && Objects.equals(relations, cwEobject.relations) && Objects.equals(appl_platform_objs, cwEobject.appl_platform_objs) && Objects.equals(bg_details, cwEobject.bg_details) && Objects.equals(rel_attack_patterns, cwEobject.rel_attack_patterns) && Objects.equals(notes, cwEobject.notes) && Objects.equals(intr_modes, cwEobject.intr_modes) && Objects.equals(consequences, cwEobject.consequences) && Objects.equals(alter_terms, cwEobject.alter_terms) && Objects.equals(ext_ref_refs, cwEobject.ext_ref_refs) && Objects.equals(tax_maps, cwEobject.tax_maps) && Objects.equals(pot_mits, cwEobject.pot_mits) && Objects.equals(weak_ords, cwEobject.weak_ords) && Objects.equals(dem_examples, cwEobject.dem_examples) && Objects.equals(obs_examples, cwEobject.obs_examples) && Objects.equals(det_meths, cwEobject.det_meths) && Objects.equals(affected_resources, cwEobject.affected_resources) && Objects.equals(functional_areas, cwEobject.functional_areas);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(code_id, name, abstraction, structure, status, description, ext_description, exploit_likelihood, relations, appl_platform_objs, bg_details, rel_attack_patterns, notes, intr_modes, consequences, alter_terms, ext_ref_refs, tax_maps, pot_mits, weak_ords, dem_examples, obs_examples, det_meths, affected_resources, functional_areas);
     }
 }
