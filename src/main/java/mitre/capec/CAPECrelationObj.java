@@ -26,8 +26,8 @@ public class CAPECrelationObj {
     protected Long id;
     protected String nature;
     protected String related_capec_id;
-    @Column(length = 8191)
-    @CollectionTable(name = "exclude_id", schema = "mitre")
+    @Column(name = "exclude_id")
+    @CollectionTable(name = "exclude_ids", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> exclude_ids;
     @ManyToOne

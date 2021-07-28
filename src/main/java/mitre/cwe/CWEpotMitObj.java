@@ -26,8 +26,8 @@ public class CWEpotMitObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String mitigation_id;
-    @Column(length = 8191)
-    @CollectionTable(name = "phase", schema = "mitre")
+    @Column(name = "phase")
+    @CollectionTable(name = "phases", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> phases;
     protected String strategy;

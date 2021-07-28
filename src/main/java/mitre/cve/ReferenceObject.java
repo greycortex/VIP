@@ -30,6 +30,7 @@ public class ReferenceObject {
     @Column(length = 8191)
     protected String name;
     protected String refsource;
+    @Column(name = "tag")
     @CollectionTable(name = "ref_tags", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> tags;

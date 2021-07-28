@@ -45,12 +45,12 @@ public class CWEobject {
     protected List<CWErelationObj> relations;
     @OneToMany(mappedBy = "cwe")
     protected List<CWEapplPlatfObj> appl_platform_objs;
-    @Column(length = 8191)
-    @CollectionTable(name = "bg_detail", schema = "mitre")
+    @Column(name = "bg_detail")
+    @CollectionTable(name = "bg_details", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> bg_details;
-    @ManyToMany(mappedBy = "rel_cwe")
-    protected List<CAPECobject> rel_attack_patterns;
+    @ManyToMany(mappedBy = "cwe")
+    protected List<CAPECobject> capec;
     @OneToMany(mappedBy = "cwe")
     protected List<CWEnoteObj> notes;
     @OneToMany(mappedBy = "cwe")
@@ -73,16 +73,16 @@ public class CWEobject {
     protected List<CWEobsExObj> obs_examples;
     @OneToMany(mappedBy = "cwe")
     protected List<CWEdetMethObj> det_meths;
-    @Column(length = 8191)
-    @CollectionTable(name = "affected_resource", schema = "mitre")
+    @Column(name = "affected_resource")
+    @CollectionTable(name = "affected_resources", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> affected_resources;
-    @Column(length = 8191)
-    @CollectionTable(name = "functional_area", schema = "mitre")
+    @Column(name = "functional_area")
+    @CollectionTable(name = "functional_areas", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> functional_areas;
-    @ManyToOne
-    protected CVEobject cve;
+    @ManyToMany(mappedBy = "cwe")
+    protected List<CVEobject> cve;
 
 
     /**
@@ -144,7 +144,7 @@ public class CWEobject {
         this.dem_examples = dem_examples;
         this.obs_examples = obs_examples;
         this.det_meths = det_meths;
-        this.rel_attack_patterns = rel_attack_patterns;
+        this.capec = capec;
         this.affected_resources = affected_resources;
         this.functional_areas = functional_areas;
 
@@ -691,7 +691,7 @@ public class CWEobject {
                 ", dem_examples=" + dem_examples +
                 ", obs_examples=" + obs_examples +
                 ", det_meths=" + det_meths +
-                ", rel_attack_patterns=" + rel_attack_patterns +
+                ", capec=" + capec +
                 ", affected_resources=" + affected_resources +
                 ", functional_areas=" + functional_areas +
                 '}';
@@ -702,11 +702,11 @@ public class CWEobject {
         if (this == o) return true;
         if (!(o instanceof CWEobject)) return false;
         CWEobject cwEobject = (CWEobject) o;
-        return Objects.equals(code_id, cwEobject.code_id) && Objects.equals(name, cwEobject.name) && Objects.equals(abstraction, cwEobject.abstraction) && Objects.equals(structure, cwEobject.structure) && Objects.equals(status, cwEobject.status) && Objects.equals(description, cwEobject.description) && Objects.equals(ext_description, cwEobject.ext_description) && Objects.equals(exploit_likelihood, cwEobject.exploit_likelihood) && Objects.equals(relations, cwEobject.relations) && Objects.equals(appl_platform_objs, cwEobject.appl_platform_objs) && Objects.equals(bg_details, cwEobject.bg_details) && Objects.equals(rel_attack_patterns, cwEobject.rel_attack_patterns) && Objects.equals(notes, cwEobject.notes) && Objects.equals(intr_modes, cwEobject.intr_modes) && Objects.equals(consequences, cwEobject.consequences) && Objects.equals(alter_terms, cwEobject.alter_terms) && Objects.equals(ext_ref_refs, cwEobject.ext_ref_refs) && Objects.equals(tax_maps, cwEobject.tax_maps) && Objects.equals(pot_mits, cwEobject.pot_mits) && Objects.equals(weak_ords, cwEobject.weak_ords) && Objects.equals(dem_examples, cwEobject.dem_examples) && Objects.equals(obs_examples, cwEobject.obs_examples) && Objects.equals(det_meths, cwEobject.det_meths) && Objects.equals(affected_resources, cwEobject.affected_resources) && Objects.equals(functional_areas, cwEobject.functional_areas);
+        return Objects.equals(code_id, cwEobject.code_id) && Objects.equals(name, cwEobject.name) && Objects.equals(abstraction, cwEobject.abstraction) && Objects.equals(structure, cwEobject.structure) && Objects.equals(status, cwEobject.status) && Objects.equals(description, cwEobject.description) && Objects.equals(ext_description, cwEobject.ext_description) && Objects.equals(exploit_likelihood, cwEobject.exploit_likelihood) && Objects.equals(relations, cwEobject.relations) && Objects.equals(appl_platform_objs, cwEobject.appl_platform_objs) && Objects.equals(bg_details, cwEobject.bg_details) && Objects.equals(capec, cwEobject.capec) && Objects.equals(notes, cwEobject.notes) && Objects.equals(intr_modes, cwEobject.intr_modes) && Objects.equals(consequences, cwEobject.consequences) && Objects.equals(alter_terms, cwEobject.alter_terms) && Objects.equals(ext_ref_refs, cwEobject.ext_ref_refs) && Objects.equals(tax_maps, cwEobject.tax_maps) && Objects.equals(pot_mits, cwEobject.pot_mits) && Objects.equals(weak_ords, cwEobject.weak_ords) && Objects.equals(dem_examples, cwEobject.dem_examples) && Objects.equals(obs_examples, cwEobject.obs_examples) && Objects.equals(det_meths, cwEobject.det_meths) && Objects.equals(affected_resources, cwEobject.affected_resources) && Objects.equals(functional_areas, cwEobject.functional_areas) && Objects.equals(cve, cwEobject.cve);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code_id, name, abstraction, structure, status, description, ext_description, exploit_likelihood, relations, appl_platform_objs, bg_details, rel_attack_patterns, notes, intr_modes, consequences, alter_terms, ext_ref_refs, tax_maps, pot_mits, weak_ords, dem_examples, obs_examples, det_meths, affected_resources, functional_areas);
+        return Objects.hash(code_id, name, abstraction, structure, status, description, ext_description, exploit_likelihood, relations, appl_platform_objs, bg_details, capec, notes, intr_modes, consequences, alter_terms, ext_ref_refs, tax_maps, pot_mits, weak_ords, dem_examples, obs_examples, det_meths, affected_resources, functional_areas, cve);
     }
 }

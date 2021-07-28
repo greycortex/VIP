@@ -1,13 +1,16 @@
 package mitre.cve;
 
+import mitre.capec.CAPECattStepObj;
 import mitre.capec.CAPECobject;
+import mitre.capec.CAPECrelationObj;
+import mitre.capec.CAPECskillObj;
 import mitre.cpe.CPEnodeToComplex;
 import mitre.cvss.CVSS3object;
 import mitre.cvss.CVSS2object;
 import mitre.cpe.CPEcomplexObj;
 import mitre.cpe.CPEobject;
 import mitre.cpe.CPEnodeObject;
-import mitre.cwe.CWEobject;
+import mitre.cwe.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -48,12 +51,13 @@ public class CVEobject {
     protected String data_format;
     protected String data_version;
     protected String meta_data_assigner;
-    @OneToMany(mappedBy = "cve") // --
-    protected List<CWEobject> cwe_objs; // --
+    @ManyToMany
+    @CollectionTable(name = "cve_cwe", schema = "mitre")
+    protected List<CWEobject> cwe;
     @OneToMany(mappedBy = "cve")
     protected List<ReferenceObject> references;
-    @Column(length = 8191)
-    @CollectionTable(name = "cve_descriptions", schema = "mitre")
+    @Column(length = 8191, name = "description")
+    @CollectionTable(name = "descriptions", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> descriptions;
     protected String cve_data_version;
@@ -75,7 +79,7 @@ public class CVEobject {
      * @param data_version       data version parameter
      * @param meta_data_id       CVE meta data - ID parameter
      * @param meta_data_assigner CVE meta data - ASSIGNER parameter
-     * @param cwe_objs         problem type data values (CWE objects)
+     * @param cwe                problem type data values (CWE objects)
      * @param references         reference objects - references
      * @param descriptions       descriptions
      * @param cve_data_version   CVE data version
@@ -88,7 +92,7 @@ public class CVEobject {
      * @param last_modified_date last modified date value
      */
     public CVEobject(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
-                     List<CWEobject> cwe_objs, List<ReferenceObject> references, List<String> descriptions, String cve_data_version, List<CPEnodeObject> cpe_nodes,
+                     List<CWEobject> cwe, List<ReferenceObject> references, List<String> descriptions, String cve_data_version, List<CPEnodeObject> cpe_nodes,
                      CVSS2object cvss_v2, CVSS3object cvss_v3, double cvss_v2_base_score, double cvss_v3_base_score, Date published_date,
                      Date last_modified_date) {
 
@@ -97,7 +101,7 @@ public class CVEobject {
         this.data_version = data_version;
         this.meta_data_id = meta_data_id;
         this.meta_data_assigner = meta_data_assigner;
-        this.cwe_objs = cwe_objs;
+        this.cwe = cwe;
         this.references = references;
         this.descriptions = descriptions;
         this.cve_data_version = cve_data_version;
@@ -476,8 +480,11 @@ public class CVEobject {
         // Measuring, how long it will take to update the table in database
         long start_time = System.currentTimeMillis();
 
-        List<CAPECobject> capec_objs = CAPECobject.CAPECfileToArrayList(); // Getting CAPEC objects from file
-        List<CWEobject> cwe_objs = CWEobject.CWEfileToArraylist(capec_objs); // Getting CWE objects from file
+        List<CAPECobject> capec_objs = CAPECobject.CAPECfileToArrayList(); // Getting CAPEC objects from file -- NENE, ZLEPŠIT, N : M VZTAH - oddělat až dále pomocí setu!
+        System.out.println("CAPEC objects before connection: "+capec_objs.size()); //
+        List<CWEobject> cwe_objs = CWEobject.CWEfileToArraylist(capec_objs); // Getting CWE objects from file -- NENE, ZLEPŠIT, N : M VZTAH - oddělat až dále pomocí setu!
+        System.out.println("CAPEC objects after connection: "+capec_objs.size()); //
+        System.out.println("CWE objects before connection: "+cwe_objs.size()); //
 
         int display = 0;
 
@@ -486,10 +493,21 @@ public class CVEobject {
         // Creating connection and session
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class);
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class)
+                .addAnnotatedClass(CAPECattStepObj.class).addAnnotatedClass(CAPECobject.class).addAnnotatedClass(CAPECrelationObj.class)
+                .addAnnotatedClass(CAPECskillObj.class).addAnnotatedClass(CWEalterTermObj.class).addAnnotatedClass(CWEapplPlatfObj.class)
+                .addAnnotatedClass(CWEconseqObj.class).addAnnotatedClass(CWEdemExObj.class).addAnnotatedClass(CWEdetMethObj.class)
+                .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
+                .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
+                .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
+                .addAnnotatedClass(CWEweakOrdObj.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
+
+
+        ///
+
 
         // If the cveobject table is empty, the method doesn't empty the database
         Query q = session.createQuery("from cve");
@@ -676,7 +694,7 @@ public class CVEobject {
                 ", data_version='" + data_version + '\'' +
                 ", meta_data_id='" + meta_data_id + '\'' +
                 ", meta_data_assigner='" + meta_data_assigner + '\'' +
-                ", cwe_objs=" + cwe_objs +
+                ", cwe=" + cwe +
                 ", references=" + references +
                 ", descriptions=" + descriptions +
                 ", cve_data_version='" + cve_data_version + '\'' +
@@ -695,11 +713,11 @@ public class CVEobject {
         if (this == o) return true;
         if (!(o instanceof CVEobject)) return false;
         CVEobject cvEobject = (CVEobject) o;
-        return Double.compare(cvEobject.cvss_v2_base_score, cvss_v2_base_score) == 0 && Double.compare(cvEobject.cvss_v3_base_score, cvss_v3_base_score) == 0 && Objects.equals(meta_data_id, cvEobject.meta_data_id) && Objects.equals(data_type, cvEobject.data_type) && Objects.equals(data_format, cvEobject.data_format) && Objects.equals(data_version, cvEobject.data_version) && Objects.equals(meta_data_assigner, cvEobject.meta_data_assigner) && Objects.equals(cwe_objs, cvEobject.cwe_objs) && Objects.equals(references, cvEobject.references) && Objects.equals(descriptions, cvEobject.descriptions) && Objects.equals(cve_data_version, cvEobject.cve_data_version) && Objects.equals(cpe_nodes, cvEobject.cpe_nodes) && Objects.equals(cvss_v2, cvEobject.cvss_v2) && Objects.equals(cvss_v3, cvEobject.cvss_v3) && Objects.equals(published_date, cvEobject.published_date) && Objects.equals(last_modified_date, cvEobject.last_modified_date);
+        return Double.compare(cvEobject.cvss_v2_base_score, cvss_v2_base_score) == 0 && Double.compare(cvEobject.cvss_v3_base_score, cvss_v3_base_score) == 0 && Objects.equals(meta_data_id, cvEobject.meta_data_id) && Objects.equals(data_type, cvEobject.data_type) && Objects.equals(data_format, cvEobject.data_format) && Objects.equals(data_version, cvEobject.data_version) && Objects.equals(meta_data_assigner, cvEobject.meta_data_assigner) && Objects.equals(cwe, cvEobject.cwe) && Objects.equals(references, cvEobject.references) && Objects.equals(descriptions, cvEobject.descriptions) && Objects.equals(cve_data_version, cvEobject.cve_data_version) && Objects.equals(cpe_nodes, cvEobject.cpe_nodes) && Objects.equals(cvss_v2, cvEobject.cvss_v2) && Objects.equals(cvss_v3, cvEobject.cvss_v3) && Objects.equals(published_date, cvEobject.published_date) && Objects.equals(last_modified_date, cvEobject.last_modified_date);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(meta_data_id, data_type, data_format, data_version, meta_data_assigner, cwe_objs, references, descriptions, cve_data_version, cpe_nodes, cvss_v2, cvss_v3, cvss_v2_base_score, cvss_v3_base_score, published_date, last_modified_date);
+        return Objects.hash(meta_data_id, data_type, data_format, data_version, meta_data_assigner, cwe, references, descriptions, cve_data_version, cpe_nodes, cvss_v2, cvss_v3, cvss_v2_base_score, cvss_v3_base_score, published_date, last_modified_date);
     }
 }

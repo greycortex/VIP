@@ -27,8 +27,8 @@ public class CWEdemExObj {
     protected String intro_text;
     @OneToMany(mappedBy = "dem_ex")
     protected List<CWEexampCodeObj> dem_ex_ex_codes;
-    @Column(length = 8191)
-    @CollectionTable(name = "body_text", schema = "mitre")
+    @Column(name = "body_text")
+    @CollectionTable(name = "body_texts", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> dem_ex_body_texts;
     @OneToMany(mappedBy = "dem_ex")

@@ -45,25 +45,25 @@ public class CAPECobject {
     protected String typical_severity;
     @ManyToMany
     @CollectionTable(name = "cwe_capec", schema = "mitre")
-    protected List<CWEobject> rel_cwe;
-    @Column(length = 8191)
-    @CollectionTable(name = "mitigation", schema = "mitre")
+    protected List<CWEobject> cwe;
+    @Column(name = "mitigation")
+    @CollectionTable(name = "mitigations", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> mitigations;
-    @Column(length = 8191)
-    @CollectionTable(name = "prerequisite", schema = "mitre")
+    @Column(name = "prerequisite")
+    @CollectionTable(name = "prerequisites", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> prerequisites;
-    @Column(length = 8191)
-    @CollectionTable(name = "example", schema = "mitre")
+    @Column(name = "example")
+    @CollectionTable(name = "examples", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> examples;
-    @Column(length = 8191)
-    @CollectionTable(name = "resource", schema = "mitre")
+    @Column(name = "resource")
+    @CollectionTable(name = "resources", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> resources;
-    @Column(length = 8191)
-    @CollectionTable(name = "indicator", schema = "mitre")
+    @Column(name = "indicator")
+    @CollectionTable(name = "indicators", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> indicators;
     @OneToMany(mappedBy = "capec")
@@ -93,7 +93,7 @@ public class CAPECobject {
      * @param description             description of a specific attack pattern (CAPEC)
      * @param attack_likelihood       likelihood of attack attribute of a specific attack pattern (CAPEC)
      * @param typical_severity        typical severity attribute of a specific attack pattern (CAPEC)
-     * @param rel_cwe                 relating CWE weaknesses for a specific attack pattern (CAPEC)
+     * @param cwe                     relating CWE weaknesses for a specific attack pattern (CAPEC)
      * @param mitigations             mitigation attributes of a specific attack pattern (CAPEC)
      * @param prerequisites           prerequisite attributes of a specific attack pattern (CAPEC)
      * @param examples                example attributes of a specific attack pattern (CAPEC)
@@ -109,7 +109,7 @@ public class CAPECobject {
      * @param skills_required         skills required attribute of a specific CAPEC object - skill objects
      */
     public CAPECobject(String capec_id, String capec_name, String capec_abstraction, String capec_status, String description,
-                       String attack_likelihood, String typical_severity, List<CWEobject> rel_cwe, List<String> mitigations,
+                       String attack_likelihood, String typical_severity, List<CWEobject> cwe, List<String> mitigations,
                        List<CWEnoteObj> notes, List<CWEtaxMapObj> tax_maps, List<CWEalterTermObj> alter_terms,
                        List<CWEextRefRefObj> ext_ref_refs, List<CWEconseqObj> consequences,
                        List<CAPECattStepObj> attack_steps, List<CAPECrelationObj> related_patterns,
@@ -123,7 +123,7 @@ public class CAPECobject {
         this.description = description;
         this.attack_likelihood = attack_likelihood;
         this.typical_severity = typical_severity;
-        this.rel_cwe = rel_cwe;
+        this.cwe = cwe;
         this.mitigations = mitigations;
         this.prerequisites = prerequisites;
         this.examples = examples;
@@ -488,7 +488,7 @@ public class CAPECobject {
                 ", description='" + description + '\'' +
                 ", attack_likelihood='" + attack_likelihood + '\'' +
                 ", typical_severity='" + typical_severity + '\'' +
-                ", rel_cwe_ids=" + rel_cwe +
+                ", cwe=" + cwe +
                 ", mitigations=" + mitigations +
                 ", notes=" + notes +
                 ", tax_maps=" + tax_maps +
@@ -510,11 +510,11 @@ public class CAPECobject {
         if (this == o) return true;
         if (!(o instanceof CAPECobject)) return false;
         CAPECobject that = (CAPECobject) o;
-        return Objects.equals(capec_id, that.capec_id) && Objects.equals(capec_name, that.capec_name) && Objects.equals(capec_abstraction, that.capec_abstraction) && Objects.equals(capec_status, that.capec_status) && Objects.equals(description, that.description) && Objects.equals(attack_likelihood, that.attack_likelihood) && Objects.equals(typical_severity, that.typical_severity) && Objects.equals(rel_cwe, that.rel_cwe) && Objects.equals(mitigations, that.mitigations) && Objects.equals(prerequisites, that.prerequisites) && Objects.equals(examples, that.examples) && Objects.equals(resources, that.resources) && Objects.equals(indicators, that.indicators) && Objects.equals(notes, that.notes) && Objects.equals(tax_maps, that.tax_maps) && Objects.equals(alter_terms, that.alter_terms) && Objects.equals(ext_ref_refs, that.ext_ref_refs) && Objects.equals(consequences, that.consequences) && Objects.equals(related_patterns, that.related_patterns) && Objects.equals(attack_steps, that.attack_steps) && Objects.equals(skills_required, that.skills_required);
+        return Objects.equals(capec_id, that.capec_id) && Objects.equals(capec_name, that.capec_name) && Objects.equals(capec_abstraction, that.capec_abstraction) && Objects.equals(capec_status, that.capec_status) && Objects.equals(description, that.description) && Objects.equals(attack_likelihood, that.attack_likelihood) && Objects.equals(typical_severity, that.typical_severity) && Objects.equals(cwe, that.cwe) && Objects.equals(mitigations, that.mitigations) && Objects.equals(prerequisites, that.prerequisites) && Objects.equals(examples, that.examples) && Objects.equals(resources, that.resources) && Objects.equals(indicators, that.indicators) && Objects.equals(notes, that.notes) && Objects.equals(tax_maps, that.tax_maps) && Objects.equals(alter_terms, that.alter_terms) && Objects.equals(ext_ref_refs, that.ext_ref_refs) && Objects.equals(consequences, that.consequences) && Objects.equals(related_patterns, that.related_patterns) && Objects.equals(attack_steps, that.attack_steps) && Objects.equals(skills_required, that.skills_required);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood, typical_severity, rel_cwe, mitigations, prerequisites, examples, resources, indicators, notes, tax_maps, alter_terms, ext_ref_refs, consequences, related_patterns, attack_steps, skills_required);
+        return Objects.hash(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood, typical_severity, cwe, mitigations, prerequisites, examples, resources, indicators, notes, tax_maps, alter_terms, ext_ref_refs, consequences, related_patterns, attack_steps, skills_required);
     }
 }

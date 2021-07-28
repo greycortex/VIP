@@ -31,28 +31,10 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        //System.out.println("Welcome to the VIP application");
+        System.out.println("Welcome to the VIP application");
 
         //putIntoDatabase();
 
         //CPEobject.feedReconstr(); // -- Reconstructs CPE match feed file by using objects from the database
-
-
-        // Creating connection and session
-        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class)
-                .addAnnotatedClass(CAPECattStepObj.class).addAnnotatedClass(CAPECobject.class).addAnnotatedClass(CAPECrelationObj.class)
-                .addAnnotatedClass(CAPECskillObj.class).addAnnotatedClass(CWEalterTermObj.class).addAnnotatedClass(CWEapplPlatfObj.class)
-                .addAnnotatedClass(CWEconseqObj.class).addAnnotatedClass(CWEdemExObj.class).addAnnotatedClass(CWEdetMethObj.class)
-                .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
-                .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
-                .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
-                .addAnnotatedClass(CWEweakOrdObj.class);
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
-        SessionFactory sf = con.buildSessionFactory(reg);
-        Session session = sf.openSession();
-        session.close();
-        sf.close();
     }
 }
