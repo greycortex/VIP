@@ -17,6 +17,8 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
+import java.util.List;
+
 public class Test {
 
     public static void putIntoDatabase(){
@@ -33,7 +35,7 @@ public class Test {
     public static void main(String[] args) {
         System.out.println("Welcome to the VIP application");
 
-        //putIntoDatabase();
+        putIntoDatabase();
 
         //CPEobject.feedReconstr(); // -- Reconstructs CPE match feed file by using objects from the database
     }

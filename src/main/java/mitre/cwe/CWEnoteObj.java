@@ -26,6 +26,7 @@ public class CWEnoteObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String type;
+    @Column(length = 4095)
     protected String note_content;
     @ManyToOne
     protected CAPECobject capec;

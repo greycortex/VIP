@@ -24,7 +24,9 @@ public class CWEobsExObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String reference;
+    @Column(length = 4095)
     protected String description;
+    @Column(length = 4095)
     protected String link;
     @ManyToOne
     protected CWEobject cwe;

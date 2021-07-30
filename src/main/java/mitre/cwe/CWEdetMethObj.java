@@ -26,8 +26,10 @@ public class CWEdetMethObj {
     protected Long id;
     protected String method_id;
     protected String method;
+    @Column(length = 4095)
     protected String description;
     protected String effectiveness;
+    @Column(length = 4095)
     protected String effectiveness_notes;
     @ManyToOne
     protected CWEobject cwe;

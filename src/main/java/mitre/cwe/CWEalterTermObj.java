@@ -26,6 +26,7 @@ public class CWEalterTermObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String term;
+    @Column(length = 4095)
     protected String description;
     @ManyToOne
     protected CAPECobject capec;

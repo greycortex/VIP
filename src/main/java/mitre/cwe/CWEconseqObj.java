@@ -34,7 +34,7 @@ public class CWEconseqObj {
     @CollectionTable(name = "impacts", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> impacts;
-    @Column(name = "note")
+    @Column(name = "note", length = 4095)
     @CollectionTable(name = "consequence_notes", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> notes;

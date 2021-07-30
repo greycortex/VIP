@@ -26,8 +26,9 @@ public class CAPECattStepObj {
     protected Long id;
     protected String step;
     protected String phase;
+    @Column(length = 4095)
     protected String description;
-    @Column(name = "technique")
+    @Column(name = "technique", length = 2047)
     @CollectionTable(name = "techniques", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> techniques;

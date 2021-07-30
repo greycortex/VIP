@@ -24,6 +24,7 @@ public class CAPECskillObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String level;
+    @Column(length = 4095)
     protected String content;
     @ManyToOne
     protected CAPECobject capec;

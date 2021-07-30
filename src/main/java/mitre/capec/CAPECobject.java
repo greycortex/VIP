@@ -40,29 +40,30 @@ public class CAPECobject {
     protected String capec_name;
     protected String capec_abstraction;
     protected String capec_status;
+    @Column(length = 4095)
     protected String description;
     protected String attack_likelihood;
     protected String typical_severity;
     @ManyToMany
     @CollectionTable(name = "cwe_capec", schema = "mitre")
     protected List<CWEobject> cwe;
-    @Column(name = "mitigation")
+    @Column(name = "mitigation", length = 4095)
     @CollectionTable(name = "mitigations", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> mitigations;
-    @Column(name = "prerequisite")
+    @Column(name = "prerequisite", length = 4095)
     @CollectionTable(name = "prerequisites", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> prerequisites;
-    @Column(name = "example")
+    @Column(name = "example", length = 4095)
     @CollectionTable(name = "examples", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> examples;
-    @Column(name = "resource")
+    @Column(name = "resource", length = 4095)
     @CollectionTable(name = "resources", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> resources;
-    @Column(name = "indicator")
+    @Column(name = "indicator", length = 4095)
     @CollectionTable(name = "indicators", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> indicators;
@@ -142,6 +143,38 @@ public class CAPECobject {
 
     public String getCapec_id() {
         return capec_id;
+    }
+
+    public List<CWEnoteObj> getNotes() {
+        return notes;
+    }
+
+    public List<CWEtaxMapObj> getTax_maps() {
+        return tax_maps;
+    }
+
+    public List<CWEalterTermObj> getAlter_terms() {
+        return alter_terms;
+    }
+
+    public List<CWEextRefRefObj> getExt_ref_refs() {
+        return ext_ref_refs;
+    }
+
+    public List<CWEconseqObj> getConsequences() {
+        return consequences;
+    }
+
+    public List<CAPECrelationObj> getRelated_patterns() {
+        return related_patterns;
+    }
+
+    public List<CAPECattStepObj> getAttack_steps() {
+        return attack_steps;
+    }
+
+    public List<CAPECskillObj> getSkills_required() {
+        return skills_required;
     }
 
     /**
@@ -465,7 +498,7 @@ public class CAPECobject {
     // * @return CAPEC attack pattern object
     // */
     //public static CAPECobject getInstance(String capec_id, String capec_name, String capec_abstraction, String capec_status, String description,
-    //                                      String attack_likelihood, String typical_severity, List<String> rel_cwe,
+    //                                      String attack_likelihood, String typical_severity, List<CWEobject> cwe,
     //                                      List<String> mitigations, List<CWEnoteObj> notes, List<CWEtaxMapObj> tax_maps,
     //                                      List<CWEalterTermObj> alter_terms, List<CWEextRefRefObj> ext_ref_refs,
     //                                      List<CWEconseqObj> consequences, List<CAPECattStepObj> attack_steps,
@@ -474,7 +507,7 @@ public class CAPECobject {
     //                                      List<String> resources, List<String> indicators) {
 
     //    return new CAPECobject(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood,
-    //                           typical_severity, rel_cwe, mitigations, notes, tax_maps, alter_terms, ext_ref_refs, consequences,
+    //                           typical_severity, cwe, mitigations, notes, tax_maps, alter_terms, ext_ref_refs, consequences,
     //                           attack_steps, related_patterns, prerequisites, skills_required, examples, resources, indicators);
     //}
 
@@ -488,7 +521,7 @@ public class CAPECobject {
                 ", description='" + description + '\'' +
                 ", attack_likelihood='" + attack_likelihood + '\'' +
                 ", typical_severity='" + typical_severity + '\'' +
-                ", cwe=" + cwe +
+                ", related CWE objects=" + cwe +
                 ", mitigations=" + mitigations +
                 ", notes=" + notes +
                 ", tax_maps=" + tax_maps +

@@ -24,6 +24,7 @@ public class CWEweakOrdObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String ordinality;
+    @Column(length = 4095)
     protected String description;
     @ManyToOne
     protected CWEobject cwe;

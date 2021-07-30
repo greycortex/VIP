@@ -31,8 +31,10 @@ public class CWEpotMitObj {
     @ElementCollection(targetClass = String.class)
     protected List<String> phases;
     protected String strategy;
+    @Column(length = 4095)
     protected String description;
     protected String effectiveness;
+    @Column(length = 4095)
     protected String effectiveness_notes;
     @ManyToOne
     protected CWEobject cwe;

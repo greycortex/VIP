@@ -4,14 +4,14 @@ import javax.persistence.*;
 import java.util.Objects;
 
 /**
- * This class represents a CWE application platform object (type attribute, class attribute, name attribute, prevalence attribute)
+ * This class represents a CWE applicable platform object (type attribute, class attribute, name attribute, prevalence attribute)
  * <p>
- * //* It can create a CWE application platform object from given parameters and return it
+ * //* It can create a CWE applicable platform object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "application_platform")
-@Table(name="application_platform", schema = "mitre")
+@Entity(name = "applicable_platform")
+@Table(name="applicable_platform", schema = "mitre")
 public class CWEapplPlatfObj {
 
     public CWEapplPlatfObj() {} // default constructor
@@ -48,9 +48,9 @@ public class CWEapplPlatfObj {
     }
 
     ///**
-    // * This method's purpose is to create a CWE application platform object from given parameters and return it
+    // * This method's purpose is to create a CWE applicable platform object from given parameters and return it
     // *
-    // * @return CWE application platform object
+    // * @return CWE applicable platform object
     // */
     //public static CWEapplPlatfObj getInstance(String type, String platform_class, String name, String prevalence) {
 

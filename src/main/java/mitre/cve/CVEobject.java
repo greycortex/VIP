@@ -121,7 +121,7 @@ public class CVEobject {
      * @param cwe_objects existing CWE objects for search of the relating ones
      * @return all created CVE objects
      */
-    public static List<CVEobject> CVEjsonToObjects(String fileName, List<CWEobject> cwe_objects) { // https://nvd.nist.gov/vuln/data-feeds
+    public static List<CVEobject> CVEjsonToObjects(String fileName, List<CWEobject> cwe_objects, Set<CWEobject> cwes_to_remove) { // https://nvd.nist.gov/vuln/data-feeds
 
         // Empty List of CVE objects which will later on be filled and returned
         List<CVEobject> cve_objs = new ArrayList<>();
@@ -163,7 +163,6 @@ public class CVEobject {
                 JSONArray problemtype_data = (JSONArray) problemtype.get("problemtype_data");
                 Iterator<JSONObject> problem_iterator = problemtype_data.iterator();
                 List<CWEobject> cwe_objs_final = new ArrayList<>(); // problem_type_data - CWE objects
-                List<CWEobject> cwes_to_remove = new ArrayList<>(); // For removal from the original list
                 while (problem_iterator.hasNext()) {
                     JSONArray description = (JSONArray) problem_iterator.next().get("description");
                     Iterator<JSONObject> description_iterator = description.iterator();
@@ -179,7 +178,6 @@ public class CVEobject {
                         }
                     }
                 }
-                cwe_objects.removeAll(cwes_to_remove); // Removing connected CWEs from the original list
 
                 // Getting reference objects
                 JSONObject references = (JSONObject) cve.get("references");
@@ -480,17 +478,15 @@ public class CVEobject {
         // Measuring, how long it will take to update the table in database
         long start_time = System.currentTimeMillis();
 
-        List<CAPECobject> capec_objs = CAPECobject.CAPECfileToArrayList(); // Getting CAPEC objects from file -- NENE, ZLEPŠIT, N : M VZTAH - oddělat až dále pomocí setu!
-        System.out.println("CAPEC objects before connection: "+capec_objs.size()); //
-        List<CWEobject> cwe_objs = CWEobject.CWEfileToArraylist(capec_objs); // Getting CWE objects from file -- NENE, ZLEPŠIT, N : M VZTAH - oddělat až dále pomocí setu!
-        System.out.println("CAPEC objects after connection: "+capec_objs.size()); //
-        System.out.println("CWE objects before connection: "+cwe_objs.size()); //
+        List<CAPECobject> capec_objs = CAPECobject.CAPECfileToArrayList(); // Getting CAPEC objects from file
+        List<CWEobject> cwe_objs = CWEobject.CWEfileToArraylist(capec_objs); // Getting CWE objects from file
+        Set<CWEobject> cwes_to_remove = new LinkedHashSet<>(); // Set for removing connected CWE objects from original list for no data redundance in the database
 
-        int display = 0;
+        int refresh = 0; // Counting to ensure optimalization later on
 
         System.out.println("Actualization of objects in database started");
 
-        // Creating connection and session
+        // Creating connection, session factory and session
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                 .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class)
@@ -505,15 +501,12 @@ public class CVEobject {
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
 
-
-        ///
-
-
         // If the cveobject table is empty, the method doesn't empty the database
         Query q = session.createQuery("from cve");
         q.setMaxResults(10);
         if (q.getResultList().isEmpty()) {
             System.out.println("Database table empty, emptying not included");
+            // Closing session and session factory
             session.close();
             sf.close();
             CPEobject.putIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
@@ -521,21 +514,91 @@ public class CVEobject {
             // Creating connection, session factory and session
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                     .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                    .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class);
+                    .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class)
+                    .addAnnotatedClass(CAPECattStepObj.class).addAnnotatedClass(CAPECobject.class).addAnnotatedClass(CAPECrelationObj.class)
+                    .addAnnotatedClass(CAPECskillObj.class).addAnnotatedClass(CWEalterTermObj.class).addAnnotatedClass(CWEapplPlatfObj.class)
+                    .addAnnotatedClass(CWEconseqObj.class).addAnnotatedClass(CWEdemExObj.class).addAnnotatedClass(CWEdetMethObj.class)
+                    .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
+                    .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
+                    .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
+                    .addAnnotatedClass(CWEweakOrdObj.class);
             ServiceRegistry regg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
             SessionFactory sesf = conn.buildSessionFactory(regg);
             Session sessionc = sesf.openSession();
+            // Going through each file given in input
             for (String fileName : fileNames) {
                 // Taking objects returned by the CVEjsonToObjects() method
-                List<CVEobject> cve_objs = CVEjsonToObjects(fileName, cwe_objs);
+                List<CVEobject> cve_objs = CVEjsonToObjects(fileName, cwe_objs, cwes_to_remove);
                 // Beginning transaction
                 Transaction txv = sessionc.beginTransaction();
                 // Putting CVE object and all the objects connected to CVE into database
                 for (CVEobject obj : cve_objs) {
-                    display++;
+                    refresh++;
+                    // Putting CVSS v2 object into database
                     if (!(obj.cvss_v2 == null)) sessionc.save(obj.cvss_v2);
+                    // Putting CVSS v3 object into database
                     if (!(obj.cvss_v3 == null)) sessionc.save(obj.cvss_v3);
+                    // Putting related CWE and CAPEC objects into database
+                    for (CWEobject cwe : obj.cwe) {
+                        // Putting CWE object into database
+                        sessionc.save(cwe);
+                        // Putting CWE relation objects into database
+                        for (CWErelationObj rel: cwe.getRelations()) { sessionc.save(rel); }
+                        // Putting CWE applicable platform objects into database
+                        for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) { sessionc.save(appl); }
+                        // Putting CWE note objects into database
+                        for (CWEnoteObj note: cwe.getNotes()) { sessionc.save(note); }
+                        // Putting CWE introduction mode objects into database
+                        for (CWEintrModesObj intr: cwe.getIntr_modes()) { sessionc.save(intr); }
+                        // Putting CWE consequence objects into database
+                        for (CWEconseqObj conseq: cwe.getConsequences()) { sessionc.save(conseq); }
+                        // Putting CWE alternate terms objects into database
+                        for (CWEalterTermObj alter: cwe.getAlter_terms()) { sessionc.save(alter); }
+                        // Putting external reference reference objects into database
+                        for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                        // Putting CWE taxonomy mapping objects into database
+                        for (CWEtaxMapObj tax: cwe.getTax_maps()) { sessionc.save(tax); }
+                        // Putting CWE potential mitigation objects into database
+                        for (CWEpotMitObj pot: cwe.getPot_mits()) { sessionc.save(pot); }
+                        // Putting CWE weakness ordinality objects into database
+                        for (CWEweakOrdObj ord: cwe.getWeak_ords()) { sessionc.save(ord); }
+                        // Putting CWE demonstrative example objects into database
+                        for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                            sessionc.save(dem_ex);
+                            // Putting CWE CWE demonstrative example - example code objects into database
+                            for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) { sessionc.save(examp_code); }
+                            // Putting CWE CWE demonstrative example - external reference reference objects into database
+                            for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) { sessionc.save(ext_ref_ref); }
+                        }
+                        // Putting CWE observed example objects into database
+                        for (CWEobsExObj obs_ex: cwe.getObs_examples()) { sessionc.save(obs_ex); }
+                        // Putting CWE detection method objects into database
+                        for (CWEdetMethObj det_met: cwe.getDet_meths()) { sessionc.save(det_met); }
+                        // Putting related CAPEC objects into database
+                        for (CAPECobject capec : cwe.getCapec()) {
+                            // Putting related CAPEC object into database
+                            sessionc.save(capec);
+                            // Putting CAPEC note objects into database
+                            for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
+                            // Putting CAPEC taxonomy mapping objects into database
+                            for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
+                            // Putting CAPEC alternate term objects into database
+                            for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                            // Putting external reference reference objects into database
+                            for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                            // Putting CAPEC consequence objects into database
+                            for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
+                            // Putting CAPEC relation objects into database
+                            for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
+                            // Putting CAPEC attack step objects into database
+                            for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
+                            // Putting CAPEC skills required objects into database
+                            for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                        }
+                    }
+                    // Putting CVE object into database
                     sessionc.save(obj);
+                    // Putting CPE node objects into database
                     for (CPEnodeObject node_obj : obj.cpe_nodes) {
                         if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
                             for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
@@ -549,24 +612,28 @@ public class CVEobject {
                                     complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
                                     // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
                                     CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable());
+                                    // Putting CPE note to complex CPE object into database
                                     sessionc.save(node_to_compl_cpe);
+                                    // Putting complex CPE object into database
                                     sessionc.save(complex_cpe_obj);
                                 }
                             }
+                            // Putting CPE node object into database
                             node_obj.setCve_obj(obj);
                             sessionc.save(node_obj);
                         } else if (node_obj != null) {
+                            // Putting CPE node object into database
                             node_obj.setCve_obj(obj);
                             sessionc.save(node_obj);
                         }
                     }
                     for (ReferenceObject ref_obj : obj.references) {
-                        if (!(ref_obj == null)) {
-                            ref_obj.setCve_obj(obj);
-                            sessionc.save(ref_obj);
-                        }
+                        // Putting CVE reference object into database
+                        ref_obj.setCve_obj(obj);
+                        sessionc.save(ref_obj);
                     }
-                    if (display % 1000 == 0) {
+                    // Ensuring optimalization
+                    if (refresh % 250 == 0) {
                         txv.commit();
                         sessionc.close();
                         sessionc = sesf.openSession();
@@ -574,51 +641,258 @@ public class CVEobject {
                     }
                 }
                 // Ending transaction
-                txv.commit();
+                if (txv.isActive()) txv.commit();
             }
             // Ending session
-            sessionc.close();
+            if (sessionc.isOpen()) sessionc.close();
+
+            // removing connected CWE objects from original list for no data redundance in the database
+            cwe_objs.removeAll(cwes_to_remove);
+
+            // Opening session, beginning transaction
+            sessionc = sesf.openSession();
+            Transaction txv = sessionc.beginTransaction();
+
+            // Putting the rest of CWE and CAPEC objects related to them into database
+            for (CWEobject cwe : cwe_objs) {
+                // Putting CWE object into database
+                sessionc.save(cwe);
+                // Putting CWE relation objects into database
+                for (CWErelationObj rel: cwe.getRelations()) { sessionc.save(rel); }
+                // Putting CWE applicable platform objects into database
+                for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) { sessionc.save(appl); }
+                // Putting CWE note objects into database
+                for (CWEnoteObj note: cwe.getNotes()) { sessionc.save(note); }
+                // Putting CWE introduction mode objects into database
+                for (CWEintrModesObj intr: cwe.getIntr_modes()) { sessionc.save(intr); }
+                // Putting CWE consequence objects into database
+                for (CWEconseqObj conseq: cwe.getConsequences()) { sessionc.save(conseq); }
+                // Putting CWE alternate terms objects into database
+                for (CWEalterTermObj alter: cwe.getAlter_terms()) { sessionc.save(alter); }
+                // Putting external reference reference objects into database
+                for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                // Putting CWE taxonomy mapping objects into database
+                for (CWEtaxMapObj tax: cwe.getTax_maps()) { sessionc.save(tax); }
+                // Putting CWE potential mitigation objects into database
+                for (CWEpotMitObj pot: cwe.getPot_mits()) { sessionc.save(pot); }
+                // Putting CWE weakness ordinality objects into database
+                for (CWEweakOrdObj ord: cwe.getWeak_ords()) { sessionc.save(ord); }
+                // Putting CWE demonstrative example objects into database
+                for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                    sessionc.save(dem_ex);
+                    // Putting CWE CWE demonstrative example - example code objects into database
+                    for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) { sessionc.save(examp_code); }
+                    // Putting CWE CWE demonstrative example - external reference reference objects into database
+                    for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) { sessionc.save(ext_ref_ref); }
+                }
+                // Putting CWE observed example objects into database
+                for (CWEobsExObj obs_ex: cwe.getObs_examples()) { sessionc.save(obs_ex); }
+                // Putting CWE detection method objects into database
+                for (CWEdetMethObj det_met: cwe.getDet_meths()) { sessionc.save(det_met); }
+                // Putting related CAPEC objects into database
+                for (CAPECobject capec : cwe.getCapec()) {
+                    // Putting related CAPEC object into database
+                    sessionc.save(capec);
+                    // Putting CAPEC note objects into database
+                    for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
+                    // Putting CAPEC taxonomy mapping objects into database
+                    for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
+                    // Putting CAPEC alternate term objects into database
+                    for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                    // Putting external reference reference objects into database
+                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                    // Putting CAPEC consequence objects into database
+                    for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
+                    // Putting CAPEC relation objects into database
+                    for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
+                    // Putting CAPEC attack step objects into database
+                    for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
+                    // Putting CAPEC skills required objects into database
+                    for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                }
+            }
+
+            // Committing transaction
+            txv.commit();
+            // Beginning transaction
+            txv = sessionc.beginTransaction();
+
+            // Putting the rest of CAPEC objects into database
+            for (CAPECobject capec : capec_objs) {
+                // Putting related CAPEC object into database
+                sessionc.save(capec);
+                // Putting CAPEC note objects into database
+                for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
+                // Putting CAPEC taxonomy mapping objects into database
+                for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
+                // Putting CAPEC alternate term objects into database
+                for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                // Putting external reference reference objects into database
+                for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                // Putting CAPEC consequence objects into database
+                for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
+                // Putting CAPEC relation objects into database
+                for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
+                // Putting CAPEC attack step objects into database
+                for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
+                // Putting CAPEC skills required objects into database
+                for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+            }
+
+            // Committing transaction
+            txv.commit();
+            // Ending session
+            if (sessionc.isOpen()) sessionc.close();
             System.out.println("Actualization of CVE, CWE and CAPEC objects done");
         }
+
         // If the cveobject table isn't empty, the method does empty the database
         else {
             System.out.println("Database table not empty, emptying started");
             // Emptying database
             session.beginTransaction();
-            session.createSQLQuery("DROP TABLE IF EXISTS mitre.cpe_compl_cpe CASCADE;" +
+            session.createSQLQuery("DROP TABLE IF EXISTS mitre.affected_resources CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.alternate_term CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.applicable_platform CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.attack_step CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.bg_details CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.body_texts CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec_relation CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.consequence CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.consequence_notes CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cpe CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.node CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.node_compl_cpe CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cpe_compl_cpe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cve CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cve_descriptions CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cve_cwe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cvss2 CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cvss3 CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_capec CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_relation CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.demonstrative_examp CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.descriptions CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.detection_method CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.example_code CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.examples CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.exclude_ids CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.external_ref_ref CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.functional_areas CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.impacts CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.indicators CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.introduction CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.likelihoods CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.mitigations CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.node CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.node_compl_cpe CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.note CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.observed_example CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.phases CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.potential_mitigation CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.prerequisites CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.ref_tags CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.reference CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.ref_tags CASCADE;").executeUpdate();
+                    "DROP TABLE IF EXISTS mitre.resources CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.scopes CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.skill CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.taxonomy_mapping CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.techniques CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.weakness_ordinality CASCADE;").executeUpdate();
             session.getTransaction().commit();
+
+            // Closing session and session factory
             session.close();
             sf.close();
-            System.out.println("Database emptying done, filling of the database started");
-            // Putting CPE objects from match feed file into database again because of the emptying process
             CPEobject.putIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+            System.out.println("Actualization of CVE, CWE and CAPEC objects started");
             // Creating connection, session factory and session
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                     .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                    .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class);
+                    .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class)
+                    .addAnnotatedClass(CAPECattStepObj.class).addAnnotatedClass(CAPECobject.class).addAnnotatedClass(CAPECrelationObj.class)
+                    .addAnnotatedClass(CAPECskillObj.class).addAnnotatedClass(CWEalterTermObj.class).addAnnotatedClass(CWEapplPlatfObj.class)
+                    .addAnnotatedClass(CWEconseqObj.class).addAnnotatedClass(CWEdemExObj.class).addAnnotatedClass(CWEdetMethObj.class)
+                    .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
+                    .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
+                    .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
+                    .addAnnotatedClass(CWEweakOrdObj.class);
             ServiceRegistry regg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
             SessionFactory sesf = conn.buildSessionFactory(regg);
             Session sessionc = sesf.openSession();
+            // Going through each file given in input
             for (String fileName : fileNames) {
                 // Taking objects returned by the CVEjsonToObjects() method
-                List<CVEobject> cve_objs = CVEjsonToObjects(fileName, cwe_objs);
+                List<CVEobject> cve_objs = CVEjsonToObjects(fileName, cwe_objs, cwes_to_remove);
                 // Beginning transaction
-                Transaction trans = sessionc.beginTransaction();
+                Transaction txv = sessionc.beginTransaction();
                 // Putting CVE object and all the objects connected to CVE into database
                 for (CVEobject obj : cve_objs) {
-                    display++;
+                    refresh++;
+                    // Putting CVSS v2 object into database
                     if (!(obj.cvss_v2 == null)) sessionc.save(obj.cvss_v2);
+                    // Putting CVSS v3 object into database
                     if (!(obj.cvss_v3 == null)) sessionc.save(obj.cvss_v3);
+                    // Putting related CWE and CAPEC objects into database
+                    for (CWEobject cwe : obj.cwe) {
+                        // Putting CWE object into database
+                        sessionc.save(cwe);
+                        // Putting CWE relation objects into database
+                        for (CWErelationObj rel: cwe.getRelations()) { sessionc.save(rel); }
+                        // Putting CWE applicable platform objects into database
+                        for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) { sessionc.save(appl); }
+                        // Putting CWE note objects into database
+                        for (CWEnoteObj note: cwe.getNotes()) { sessionc.save(note); }
+                        // Putting CWE introduction mode objects into database
+                        for (CWEintrModesObj intr: cwe.getIntr_modes()) { sessionc.save(intr); }
+                        // Putting CWE consequence objects into database
+                        for (CWEconseqObj conseq: cwe.getConsequences()) { sessionc.save(conseq); }
+                        // Putting CWE alternate terms objects into database
+                        for (CWEalterTermObj alter: cwe.getAlter_terms()) { sessionc.save(alter); }
+                        // Putting external reference reference objects into database
+                        for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                        // Putting CWE taxonomy mapping objects into database
+                        for (CWEtaxMapObj tax: cwe.getTax_maps()) { sessionc.save(tax); }
+                        // Putting CWE potential mitigation objects into database
+                        for (CWEpotMitObj pot: cwe.getPot_mits()) { sessionc.save(pot); }
+                        // Putting CWE weakness ordinality objects into database
+                        for (CWEweakOrdObj ord: cwe.getWeak_ords()) { sessionc.save(ord); }
+                        // Putting CWE demonstrative example objects into database
+                        for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                            sessionc.save(dem_ex);
+                            // Putting CWE CWE demonstrative example - example code objects into database
+                            for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) { sessionc.save(examp_code); }
+                            // Putting CWE CWE demonstrative example - external reference reference objects into database
+                            for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) { sessionc.save(ext_ref_ref); }
+                        }
+                        // Putting CWE observed example objects into database
+                        for (CWEobsExObj obs_ex: cwe.getObs_examples()) { sessionc.save(obs_ex); }
+                        // Putting CWE detection method objects into database
+                        for (CWEdetMethObj det_met: cwe.getDet_meths()) { sessionc.save(det_met); }
+                        // Putting related CAPEC objects into database
+                        for (CAPECobject capec : cwe.getCapec()) {
+                            // Putting related CAPEC object into database
+                            sessionc.save(capec);
+                            // Putting CAPEC note objects into database
+                            for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
+                            // Putting CAPEC taxonomy mapping objects into database
+                            for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
+                            // Putting CAPEC alternate term objects into database
+                            for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                            // Putting external reference reference objects into database
+                            for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                            // Putting CAPEC consequence objects into database
+                            for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
+                            // Putting CAPEC relation objects into database
+                            for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
+                            // Putting CAPEC attack step objects into database
+                            for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
+                            // Putting CAPEC skills required objects into database
+                            for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                        }
+                    }
+                    // Putting CVE object into database
                     sessionc.save(obj);
+                    // Putting CPE node objects into database
                     for (CPEnodeObject node_obj : obj.cpe_nodes) {
                         if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
                             for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
@@ -632,41 +906,138 @@ public class CVEobject {
                                     complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
                                     // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
                                     CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable());
+                                    // Putting CPE note to complex CPE object into database
                                     sessionc.save(node_to_compl_cpe);
+                                    // Putting complex CPE object into database
                                     sessionc.save(complex_cpe_obj);
                                 }
                             }
+                            // Putting CPE node object into database
                             node_obj.setCve_obj(obj);
                             sessionc.save(node_obj);
                         } else if (node_obj != null) {
+                            // Putting CPE node object into database
                             node_obj.setCve_obj(obj);
                             sessionc.save(node_obj);
                         }
                     }
                     for (ReferenceObject ref_obj : obj.references) {
-                        if (!(ref_obj == null)) {
-                            ref_obj.setCve_obj(obj);
-                            sessionc.save(ref_obj);
-                        }
+                        // Putting CVE reference object into database
+                        ref_obj.setCve_obj(obj);
+                        sessionc.save(ref_obj);
                     }
-                    if (display % 1000 == 0) {
-                        trans.commit();
+                    // Ensuring optimalization
+                    if (refresh % 250 == 0) {
+                        txv.commit();
                         sessionc.close();
                         sessionc = sesf.openSession();
-                        trans = sessionc.beginTransaction();
+                        txv = sessionc.beginTransaction();
                     }
                 }
                 // Ending transaction
-                trans.commit();
+                if (txv.isActive()) txv.commit();
             }
-            // Ending session and session factory
+            // Ending session
             if (sessionc.isOpen()) sessionc.close();
-            if (sesf.isOpen()) sesf.close();
+
+            // vymazat connectnuté CWE, open session, transaction, nahrát zbylé CAPEC a CWE !!!
+            cwe_objs.removeAll(cwes_to_remove); // removing connected CWE objects from original list for no data redundance in the database
+            // Opening session, beginning transaction
+            sessionc = sesf.openSession();
+            Transaction txv = sessionc.beginTransaction();
+            // Putting the rest of CWE and CAPEC objects related to them into database
+            for (CWEobject cwe : cwe_objs) {
+                // Putting CWE object into database
+                sessionc.save(cwe);
+                // Putting CWE relation objects into database
+                for (CWErelationObj rel: cwe.getRelations()) { sessionc.save(rel); }
+                // Putting CWE applicable platform objects into database
+                for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) { sessionc.save(appl); }
+                // Putting CWE note objects into database
+                for (CWEnoteObj note: cwe.getNotes()) { sessionc.save(note); }
+                // Putting CWE introduction mode objects into database
+                for (CWEintrModesObj intr: cwe.getIntr_modes()) { sessionc.save(intr); }
+                // Putting CWE consequence objects into database
+                for (CWEconseqObj conseq: cwe.getConsequences()) { sessionc.save(conseq); }
+                // Putting CWE alternate terms objects into database
+                for (CWEalterTermObj alter: cwe.getAlter_terms()) { sessionc.save(alter); }
+                // Putting external reference reference objects into database
+                for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                // Putting CWE taxonomy mapping objects into database
+                for (CWEtaxMapObj tax: cwe.getTax_maps()) { sessionc.save(tax); }
+                // Putting CWE potential mitigation objects into database
+                for (CWEpotMitObj pot: cwe.getPot_mits()) { sessionc.save(pot); }
+                // Putting CWE weakness ordinality objects into database
+                for (CWEweakOrdObj ord: cwe.getWeak_ords()) { sessionc.save(ord); }
+                // Putting CWE demonstrative example objects into database
+                for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                    sessionc.save(dem_ex);
+                    // Putting CWE CWE demonstrative example - example code objects into database
+                    for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) { sessionc.save(examp_code); }
+                    // Putting CWE CWE demonstrative example - external reference reference objects into database
+                    for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) { sessionc.save(ext_ref_ref); }
+                }
+                // Putting CWE observed example objects into database
+                for (CWEobsExObj obs_ex: cwe.getObs_examples()) { sessionc.save(obs_ex); }
+                // Putting CWE detection method objects into database
+                for (CWEdetMethObj det_met: cwe.getDet_meths()) { sessionc.save(det_met); }
+                // Putting related CAPEC objects into database
+                for (CAPECobject capec : cwe.getCapec()) {
+                    // Putting related CAPEC object into database
+                    sessionc.save(capec);
+                    // Putting CAPEC note objects into database
+                    for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
+                    // Putting CAPEC taxonomy mapping objects into database
+                    for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
+                    // Putting CAPEC alternate term objects into database
+                    for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                    // Putting external reference reference objects into database
+                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                    // Putting CAPEC consequence objects into database
+                    for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
+                    // Putting CAPEC relation objects into database
+                    for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
+                    // Putting CAPEC attack step objects into database
+                    for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
+                    // Putting CAPEC skills required objects into database
+                    for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                }
+            }
+            // Committing transaction
+            txv.commit();
+            // Beginning transaction
+            txv = sessionc.beginTransaction();
+            // Putting the rest of CAPEC objects into database
+            for (CAPECobject capec : capec_objs) {
+                // Putting related CAPEC object into database
+                sessionc.save(capec);
+                // Putting CAPEC note objects into database
+                for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
+                // Putting CAPEC taxonomy mapping objects into database
+                for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
+                // Putting CAPEC alternate term objects into database
+                for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                // Putting external reference reference objects into database
+                for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
+                // Putting CAPEC consequence objects into database
+                for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
+                // Putting CAPEC relation objects into database
+                for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
+                // Putting CAPEC attack step objects into database
+                for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
+                // Putting CAPEC skills required objects into database
+                for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+            }
+            // Committing transaction
+            txv.commit();
+            // Ending session
+            if (sessionc.isOpen()) sessionc.close();
             System.out.println("Actualization of CVE, CWE and CAPEC objects done");
         }
+
         // If the session is opened at the end, it will be closed
         if (session.isOpen()) session.close();
-        // Closing session factory
+        // Closing session factory if its opened at the end
         if (sf.isOpen()) sf.close();
         if ((System.currentTimeMillis() - start_time) > 60000) System.out.println("Actualization of objects in database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 60000) + " minutes, files: " + Arrays.toString(fileNames));
         else System.out.println("Actualization of objects in database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 1000) + " seconds, files: " + Arrays.toString(fileNames));
@@ -678,11 +1049,11 @@ public class CVEobject {
     // * @return CVE object
     // */
     //public static CVEobject getInstance(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
-    //                                    List<CWEobject> cwe_objs, List<ReferenceObject> references, List<String> descriptions,
+    //                                    List<CWEobject> cwe, List<ReferenceObject> references, List<String> descriptions,
     //                                    String cve_data_version, List<CPEnodeObject> cpe_nodes, CVSS2object cvss_v2, CVSS3object cvss_v3,
     //                                    double cvss_v2_base_score, double cvss_v3_base_score, Date published_date, Date last_modified_date) {
 
-    //    return new CVEobject(data_type, data_format, data_version, meta_data_id, meta_data_assigner, cwe_objs, references,
+    //    return new CVEobject(data_type, data_format, data_version, meta_data_id, meta_data_assigner, cwe, references,
     //            descriptions, cve_data_version, cpe_nodes, cvss_v2, cvss_v3, cvss_v2_base_score, cvss_v3_base_score, published_date, last_modified_date);
     //}
 
@@ -694,7 +1065,7 @@ public class CVEobject {
                 ", data_version='" + data_version + '\'' +
                 ", meta_data_id='" + meta_data_id + '\'' +
                 ", meta_data_assigner='" + meta_data_assigner + '\'' +
-                ", cwe=" + cwe +
+                ", related_cwe_objects=" + cwe +
                 ", references=" + references +
                 ", descriptions=" + descriptions +
                 ", cve_data_version='" + cve_data_version + '\'' +

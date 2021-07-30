@@ -25,6 +25,7 @@ public class CWEexampCodeObj {
     protected Long id;
     protected String nature;
     protected String language;
+    @Column(length = 4095)
     protected String content;
     @ManyToOne
     protected CWEdemExObj dem_ex;

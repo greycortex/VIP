@@ -24,10 +24,11 @@ public class CWEdemExObj {
     @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
+    @Column(length = 1023)
     protected String intro_text;
     @OneToMany(mappedBy = "dem_ex")
     protected List<CWEexampCodeObj> dem_ex_ex_codes;
-    @Column(name = "body_text")
+    @Column(name = "body_text", length = 4095)
     @CollectionTable(name = "body_texts", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> dem_ex_body_texts;
@@ -52,6 +53,14 @@ public class CWEdemExObj {
         this.dem_ex_body_texts = dem_ex_body_texts;
         this.dem_ex_ext_ref_refs = dem_ex_ext_ref_refs;
 
+    }
+
+    public List<CWEexampCodeObj> getDem_ex_ex_codes() {
+        return dem_ex_ex_codes;
+    }
+
+    public List<CWEextRefRefObj> getDem_ex_ext_ref_refs() {
+        return dem_ex_ext_ref_refs;
     }
 
     ///**
