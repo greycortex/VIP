@@ -7,6 +7,8 @@ import java.util.Objects;
  * This class represents a CWE detection method object (method id attribute, method attribute, description attribute,
  * effectiveness attribute, effectiveness notes attribute)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CWE detection method object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

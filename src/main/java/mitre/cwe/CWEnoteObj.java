@@ -8,6 +8,8 @@ import java.util.Objects;
 /**
  * This class represents a CWE note object (type attribute, content of the note)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CWE note object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

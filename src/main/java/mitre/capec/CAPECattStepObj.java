@@ -7,6 +7,8 @@ import java.util.Objects;
 /**
  * This class represents an attack step object (step attribute, phase attribute, description attribute, technique attributes)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CAPEC attack step object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

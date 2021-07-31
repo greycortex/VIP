@@ -20,6 +20,8 @@ import java.util.*;
  * <p>
  * It can parse CWE weakness objects from given XML file
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * It also can create a CWE object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
@@ -226,7 +228,7 @@ public class CWEobject implements Serializable {
 
     /**
      * This method's purpose is to parse and create a List of CWE weakness objects from given XML file
-     * which contains them
+     * which contains them and to make connections with the right CAPEC objects
      * <p>
      * It uses DOM XML parser
      * <p>

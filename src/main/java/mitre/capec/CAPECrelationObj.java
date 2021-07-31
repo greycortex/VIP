@@ -7,6 +7,8 @@ import java.util.Objects;
 /**
  * This class represents a CAPEC relation object (nature attribute, CAPEC code (ID) of related CAPEC attack pattern, exclude IDs)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CAPEC relation object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

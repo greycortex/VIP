@@ -6,6 +6,8 @@ import java.util.Objects;
 /**
  * This class represents a CWE relation object (nature attribute, CWE code (ID) of related CWE, view_id attribute, ordinal attribute)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CWE relation object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

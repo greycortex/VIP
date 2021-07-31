@@ -8,6 +8,8 @@ import java.util.Objects;
 /**
  * This class represents a CWE external reference reference object (ID attribute, section attribute)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CWE external reference reference object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

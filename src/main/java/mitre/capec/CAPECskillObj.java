@@ -6,6 +6,8 @@ import java.util.Objects;
 /**
  * This class represents a CAPEC skill object (level attribute, skill info)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CAPEC skill object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

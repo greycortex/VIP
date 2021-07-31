@@ -22,8 +22,9 @@ import java.util.Objects;
  * This class represents a CAPEC attack pattern object (CAPEC ID, name, abstraction attribute, status, ...)
  * <p>
  * It can parse CAPEC attack pattern objects from given XML file
- * <p>
  * It uses DOM XML parser
+ * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
  * <p>
  * It can also create a CAPEC attack pattern object from given parameters and return it
  *

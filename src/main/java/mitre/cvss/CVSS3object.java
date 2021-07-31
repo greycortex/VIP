@@ -10,7 +10,7 @@ import java.util.Objects;
  * This class represents a CVSS v3 object (Base score metrics, ...)
  * <p>
  * It can create a CVSS v3 (base metric v3) object from given parameters and return it
- * It can also be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
  *
  * @author Tomas Bozek (XarfNao)
  */

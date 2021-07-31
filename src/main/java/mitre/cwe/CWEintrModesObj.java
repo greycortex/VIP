@@ -6,6 +6,8 @@ import java.util.Objects;
 /**
  * This class represents a CWE introduction (from modes of introduction) object (phase attribute, note attribute)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CWE introduction object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

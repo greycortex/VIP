@@ -7,8 +7,9 @@ import java.util.Objects;
 /**
  * This class represents a reference object which can be found in CVE object
  * <p>
- *  Its purpose is to create reference objects which are then put into CVE objects
- *  It can also be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
+ * //* It can create a reference object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */

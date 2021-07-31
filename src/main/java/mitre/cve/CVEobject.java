@@ -30,9 +30,10 @@ import java.io.*;
 import java.util.Date;
 
 /**
- * This class represents a CVE object (CPE matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE attributes, ...)
+ * This class represents a CVE object (CPE matches (CPE objects), CVSS V2 (base metric v2) attributes, CVSS V3 (base metric v2) attributes, CWE, ...)
  * <p>
- * It can create and return all CVE objects from JSON file (input) and put them into database including updates
+ * It can create and return all CVE objects from JSON file (input)
+ * It can also put CVE, CWE and CAPEC objects and objects related to them into database including updates
  * <p>
  * It also can create CVE object from given parameters and return it
  *
@@ -119,9 +120,10 @@ public class CVEobject {
      *
      * @param fileName path to the .json file with CVE objects
      * @param cwe_objects existing CWE objects for search of the relating ones
+     * @param cwes_to_remove set of all CWE objects to remove from the list later on for optimalization
      * @return all created CVE objects
      */
-    public static List<CVEobject> CVEjsonToObjects(String fileName, List<CWEobject> cwe_objects, Set<CWEobject> cwes_to_remove) { // https://nvd.nist.gov/vuln/data-feeds
+    public static List<CVEobject> CVEjsonToObjects(String fileName, List<CWEobject> cwe_objects, Set<CWEobject> cwes_to_remove) { // https://nvd.nist.gov/vuln/data-feeds - fileName
 
         // Empty List of CVE objects which will later on be filled and returned
         List<CVEobject> cve_objs = new ArrayList<>();
@@ -470,7 +472,7 @@ public class CVEobject {
     }
 
     /**
-     * This method's purpose is to put all given CVE objects into database or to update them - easy thanks to meta_data_id attribute
+     * This method's purpose is to put all given CVE, CWE and CAPEC objects and related objects into database or to update them
      *
      * @param fileNames paths to .json files with CVE objects
      */

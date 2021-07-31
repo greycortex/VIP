@@ -6,6 +6,8 @@ import java.util.Objects;
 /**
  * This class represents a CWE demonstrative example - example code object (nature attribute, language attribute, content)
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * //* It can create a CWE demonstrative example - example code object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)

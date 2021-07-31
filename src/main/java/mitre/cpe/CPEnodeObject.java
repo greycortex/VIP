@@ -10,7 +10,7 @@ import java.util.Objects;
  * This class represents a CPE node object (cpe_matches, vulnerable attributes of specific CPE objects, ...)
  * <p>
  * It can create a CPE node object and return it, its used in CVE objects
- * It can also be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
  * <p>
  * @author Tomas Bozek (XarfNao)
  */

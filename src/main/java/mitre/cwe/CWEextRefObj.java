@@ -78,7 +78,7 @@ public class CWEextRefObj {
      * If it can't find any informations, it returns these attributes as null values
      *
      * @param file path to an XML file which will be parsed from
-     * @return CWE external reference objects
+     * @return list of parsed CWE external reference objects
      */
     public static List<CWEextRefObj> CWEextRefToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
