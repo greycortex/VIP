@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -30,7 +31,7 @@ import java.util.Objects;
  */
 @Entity(name = "capec")
 @Table(name="capec", schema = "mitre")
-public class CAPECobject {
+public class CAPECobject implements Serializable {
 
     public CAPECobject() { } // default constructor
 
@@ -40,30 +41,29 @@ public class CAPECobject {
     protected String capec_name;
     protected String capec_abstraction;
     protected String capec_status;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String description;
     protected String attack_likelihood;
     protected String typical_severity;
-    @ManyToMany
-    @CollectionTable(name = "cwe_capec", schema = "mitre")
+    @ManyToMany(mappedBy = "capec")
     protected List<CWEobject> cwe;
-    @Column(name = "mitigation", length = 4095)
+    @Column(name = "mitigation", length = 8191)
     @CollectionTable(name = "mitigations", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> mitigations;
-    @Column(name = "prerequisite", length = 4095)
+    @Column(name = "prerequisite", length = 8191)
     @CollectionTable(name = "prerequisites", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> prerequisites;
-    @Column(name = "example", length = 4095)
+    @Column(name = "example", length = 8191)
     @CollectionTable(name = "examples", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> examples;
-    @Column(name = "resource", length = 4095)
+    @Column(name = "resource", length = 8191)
     @CollectionTable(name = "resources", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> resources;
-    @Column(name = "indicator", length = 4095)
+    @Column(name = "indicator", length = 8191)
     @CollectionTable(name = "indicators", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> indicators;

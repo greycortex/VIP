@@ -12,6 +12,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -25,7 +26,7 @@ import java.util.*;
  */
 @Entity(name = "cwe")
 @Table(name="cwe", schema = "mitre")
-public class CWEobject {
+public class CWEobject implements Serializable {
 
     public CWEobject() {} // default constructor
 
@@ -36,7 +37,7 @@ public class CWEobject {
     protected String abstraction;
     protected String structure;
     protected String status;
-    @Column(length = 1023)
+    @Column(length = 8191)
     protected String description;
     @Column(length = 8191)
     protected String ext_description;
@@ -45,11 +46,12 @@ public class CWEobject {
     protected List<CWErelationObj> relations;
     @OneToMany(mappedBy = "cwe")
     protected List<CWEapplPlatfObj> appl_platform_objs;
-    @Column(name = "bg_detail", length = 4095)
+    @Column(name = "bg_detail", length = 8191)
     @CollectionTable(name = "bg_details", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> bg_details;
-    @ManyToMany(mappedBy = "cwe")
+    @ManyToMany
+    @CollectionTable(name = "cwe_capec", schema = "mitre")
     protected List<CAPECobject> capec;
     @OneToMany(mappedBy = "cwe")
     protected List<CWEnoteObj> notes;

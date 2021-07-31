@@ -48,6 +48,10 @@ public class CAPECrelationObj {
 
     }
 
+    public void setCapec(CAPECobject capec) {
+        this.capec = capec;
+    }
+
     ///**
     // * This method's purpose is to create a CAPEC relation object from given parameters and return it
     // *

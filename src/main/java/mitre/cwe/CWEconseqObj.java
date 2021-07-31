@@ -34,7 +34,7 @@ public class CWEconseqObj {
     @CollectionTable(name = "impacts", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> impacts;
-    @Column(name = "note", length = 4095)
+    @Column(name = "note", length = 8191)
     @CollectionTable(name = "consequence_notes", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> notes;
@@ -63,6 +63,14 @@ public class CWEconseqObj {
         this.notes = notes;
         this.likelihoods = likelihoods;
 
+    }
+
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
+    }
+
+    public void setCapec(CAPECobject capec) {
+        this.capec = capec;
     }
 
     ///**

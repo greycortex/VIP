@@ -47,6 +47,18 @@ public class CWEextRefRefObj {
 
     }
 
+    public void setCapec(CAPECobject capec) {
+        this.capec = capec;
+    }
+
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
+    }
+
+    public void setDem_ex(CWEdemExObj dem_ex) {
+        this.dem_ex = dem_ex;
+    }
+
     ///**
     // * This method's purpose is to create a CWE external reference reference object from given parameters and return it
     // *

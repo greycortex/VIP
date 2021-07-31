@@ -26,9 +26,9 @@ public class CAPECattStepObj {
     protected Long id;
     protected String step;
     protected String phase;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String description;
-    @Column(name = "technique", length = 2047)
+    @Column(name = "technique", length = 8191)
     @CollectionTable(name = "techniques", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> techniques;
@@ -50,6 +50,10 @@ public class CAPECattStepObj {
         this.description = description;
         this.techniques = techniques;
 
+    }
+
+    public void setCapec(CAPECobject capec) {
+        this.capec = capec;
     }
 
     ///**

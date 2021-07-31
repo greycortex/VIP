@@ -26,7 +26,7 @@ public class CWEnoteObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String type;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String note_content;
     @ManyToOne
     protected CAPECobject capec;
@@ -44,6 +44,14 @@ public class CWEnoteObj {
         this.type = type;
         this.note_content = note_content;
 
+    }
+
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
+    }
+
+    public void setCapec(CAPECobject capec) {
+        this.capec = capec;
     }
 
     ///**

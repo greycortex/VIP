@@ -47,6 +47,10 @@ public class CWErelationObj {
 
     }
 
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
+    }
+
     ///**
     // * This method's purpose is to create a CWE relation object from given parameters and return it
     // *

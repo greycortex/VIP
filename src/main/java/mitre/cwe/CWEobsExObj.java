@@ -24,9 +24,9 @@ public class CWEobsExObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String reference;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String description;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String link;
     @ManyToOne
     protected CWEobject cwe;
@@ -44,6 +44,10 @@ public class CWEobsExObj {
         this.description = description;
         this.link = link;
 
+    }
+
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
     }
 
     ///**

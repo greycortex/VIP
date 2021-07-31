@@ -51,6 +51,14 @@ public class CWEtaxMapObj {
 
     }
 
+    public void setCapec(CAPECobject capec) {
+        this.capec = capec;
+    }
+
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
+    }
+
     ///**
     // * This method's purpose is to create a CWE taxonomy mapping object from given parameters and return it
     // *

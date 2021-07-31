@@ -24,7 +24,7 @@ public class CAPECskillObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String level;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String content;
     @ManyToOne
     protected CAPECobject capec;
@@ -40,6 +40,10 @@ public class CAPECskillObj {
         this.level = level;
         this.content = content;
 
+    }
+
+    public void setCapec(CAPECobject capec) {
+        this.capec = capec;
     }
 
     ///**

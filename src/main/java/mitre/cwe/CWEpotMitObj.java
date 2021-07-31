@@ -31,10 +31,10 @@ public class CWEpotMitObj {
     @ElementCollection(targetClass = String.class)
     protected List<String> phases;
     protected String strategy;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String description;
     protected String effectiveness;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String effectiveness_notes;
     @ManyToOne
     protected CWEobject cwe;
@@ -59,6 +59,10 @@ public class CWEpotMitObj {
         this.effectiveness = effectiveness;
         this.effectiveness_notes = effectiveness_notes;
 
+    }
+
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
     }
 
     ///**

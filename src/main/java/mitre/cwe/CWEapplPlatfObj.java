@@ -47,6 +47,10 @@ public class CWEapplPlatfObj {
 
     }
 
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
+    }
+
     ///**
     // * This method's purpose is to create a CWE applicable platform object from given parameters and return it
     // *

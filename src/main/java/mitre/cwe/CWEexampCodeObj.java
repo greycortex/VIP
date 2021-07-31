@@ -25,7 +25,7 @@ public class CWEexampCodeObj {
     protected Long id;
     protected String nature;
     protected String language;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String content;
     @ManyToOne
     protected CWEdemExObj dem_ex;
@@ -43,6 +43,10 @@ public class CWEexampCodeObj {
         this.language = language;
         this.content = content;
 
+    }
+
+    public void setDem_ex(CWEdemExObj dem_ex) {
+        this.dem_ex = dem_ex;
     }
 
     ///**

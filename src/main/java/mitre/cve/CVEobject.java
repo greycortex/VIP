@@ -509,6 +509,7 @@ public class CVEobject {
             // Closing session and session factory
             session.close();
             sf.close();
+            // Putting CPE objects from CPE match feed file into database
             CPEobject.putIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
             System.out.println("Actualization of CVE, CWE and CAPEC objects started");
             // Creating connection, session factory and session
@@ -538,64 +539,161 @@ public class CVEobject {
                     if (!(obj.cvss_v2 == null)) sessionc.save(obj.cvss_v2);
                     // Putting CVSS v3 object into database
                     if (!(obj.cvss_v3 == null)) sessionc.save(obj.cvss_v3);
+                    // Creating List for CWE removal from connections to prevent data redundance
+                    List<CWEobject> cwe_to_remove = new ArrayList<>();
+                    // Creating List for CWE connecting
+                    List<CWEobject> cwes_to_add = new ArrayList<>();
                     // Putting related CWE and CAPEC objects into database
                     for (CWEobject cwe : obj.cwe) {
-                        // Putting CWE object into database
-                        sessionc.save(cwe);
-                        // Putting CWE relation objects into database
-                        for (CWErelationObj rel: cwe.getRelations()) { sessionc.save(rel); }
-                        // Putting CWE applicable platform objects into database
-                        for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) { sessionc.save(appl); }
-                        // Putting CWE note objects into database
-                        for (CWEnoteObj note: cwe.getNotes()) { sessionc.save(note); }
-                        // Putting CWE introduction mode objects into database
-                        for (CWEintrModesObj intr: cwe.getIntr_modes()) { sessionc.save(intr); }
-                        // Putting CWE consequence objects into database
-                        for (CWEconseqObj conseq: cwe.getConsequences()) { sessionc.save(conseq); }
-                        // Putting CWE alternate terms objects into database
-                        for (CWEalterTermObj alter: cwe.getAlter_terms()) { sessionc.save(alter); }
-                        // Putting external reference reference objects into database
-                        for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                        // Putting CWE taxonomy mapping objects into database
-                        for (CWEtaxMapObj tax: cwe.getTax_maps()) { sessionc.save(tax); }
-                        // Putting CWE potential mitigation objects into database
-                        for (CWEpotMitObj pot: cwe.getPot_mits()) { sessionc.save(pot); }
-                        // Putting CWE weakness ordinality objects into database
-                        for (CWEweakOrdObj ord: cwe.getWeak_ords()) { sessionc.save(ord); }
-                        // Putting CWE demonstrative example objects into database
-                        for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
-                            sessionc.save(dem_ex);
-                            // Putting CWE CWE demonstrative example - example code objects into database
-                            for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) { sessionc.save(examp_code); }
-                            // Putting CWE CWE demonstrative example - external reference reference objects into database
-                            for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) { sessionc.save(ext_ref_ref); }
-                        }
-                        // Putting CWE observed example objects into database
-                        for (CWEobsExObj obs_ex: cwe.getObs_examples()) { sessionc.save(obs_ex); }
-                        // Putting CWE detection method objects into database
-                        for (CWEdetMethObj det_met: cwe.getDet_meths()) { sessionc.save(det_met); }
-                        // Putting related CAPEC objects into database
-                        for (CAPECobject capec : cwe.getCapec()) {
-                            // Putting related CAPEC object into database
-                            sessionc.save(capec);
-                            // Putting CAPEC note objects into database
-                            for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
-                            // Putting CAPEC taxonomy mapping objects into database
-                            for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
-                            // Putting CAPEC alternate term objects into database
-                            for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                        // If the CWE already exists in the database, only the connection between CWE and CVE will be made
+                        if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
+                            CWEobject cwe_to_add = (CWEobject) sessionc.get(CWEobject.class, cwe.getCode_id());
+                            cwe_to_remove.add(cwe);
+                            cwes_to_add.add(cwe_to_add);
+                        } else {
+                            // Creating List for CAPEC removal from connections to prevent data redundance
+                            List<CAPECobject> capec_to_remove = new ArrayList<>();
+                            // Creating List for CAPEC connecting
+                            List<CAPECobject> capecs_to_add = new ArrayList<>();
+                            // Putting related CAPEC objects into database
+                            for (CAPECobject capec : cwe.getCapec()) {
+                                // If the CAPEC already exists in the database, only the connection between CAPEC and CWE will be made
+                                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
+                                    CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                                    capec_to_remove.add(capec);
+                                    capecs_to_add.add(capec_to_add);
+                                } else {
+                                    // Putting related CAPEC object into database
+                                    sessionc.save(capec);
+                                    // Putting CAPEC note objects into database
+                                    for (CWEnoteObj note: capec.getNotes()) {
+                                        note.setCapec(capec);
+                                        sessionc.save(note);
+                                    }
+                                    // Putting CAPEC taxonomy mapping objects into database
+                                    for (CWEtaxMapObj tax: capec.getTax_maps()) {
+                                        tax.setCapec(capec);
+                                        sessionc.save(tax);
+                                    }
+                                    // Putting CAPEC alternate term objects into database
+                                    for (CWEalterTermObj alter: capec.getAlter_terms()) {
+                                        alter.setCapec(capec);
+                                        sessionc.save(alter);
+                                    }
+                                    // Putting external reference reference objects into database
+                                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) {
+                                        ext_ref_ref.setCapec(capec);
+                                        sessionc.save(ext_ref_ref);
+                                    }
+                                    // Putting CAPEC consequence objects into database
+                                    for (CWEconseqObj conseq: capec.getConsequences()) {
+                                        conseq.setCapec(capec);
+                                        sessionc.save(conseq);
+                                    }
+                                    // Putting CAPEC relation objects into database
+                                    for (CAPECrelationObj relation: capec.getRelated_patterns()) {
+                                        relation.setCapec(capec);
+                                        sessionc.save(relation);
+                                    }
+                                    // Putting CAPEC attack step objects into database
+                                    for (CAPECattStepObj att_step: capec.getAttack_steps()) {
+                                        att_step.setCapec(capec);
+                                        sessionc.save(att_step);
+                                    }
+                                    // Putting CAPEC skills required objects into database
+                                    for (CAPECskillObj skill: capec.getSkills_required()) {
+                                        skill.setCapec(capec);
+                                        sessionc.save(skill);
+                                    }
+                                }
+                            }
+                            // CAPEC removal from connections to prevent data redundance
+                            cwe.getCapec().removeAll(capec_to_remove);
+                            // CAPEC connecting
+                            cwe.getCapec().addAll(capecs_to_add);
+                            // Putting CWE object into database
+                            sessionc.save(cwe);
+                            // Putting CWE relation objects into database
+                            for (CWErelationObj rel: cwe.getRelations()) {
+                                rel.setCwe(cwe);
+                                sessionc.save(rel);
+                            }
+                            // Putting CWE applicable platform objects into database
+                            for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) {
+                                appl.setCwe(cwe);
+                                sessionc.save(appl);
+                            }
+                            // Putting CWE note objects into database
+                            for (CWEnoteObj note: cwe.getNotes()) {
+                                note.setCwe(cwe);
+                                sessionc.save(note);
+                            }
+                            // Putting CWE introduction mode objects into database
+                            for (CWEintrModesObj intr: cwe.getIntr_modes()) {
+                                intr.setCwe(cwe);
+                                sessionc.save(intr);
+                            }
+                            // Putting CWE consequence objects into database
+                            for (CWEconseqObj conseq: cwe.getConsequences()) {
+                                conseq.setCwe(cwe);
+                                sessionc.save(conseq);
+                            }
+                            // Putting CWE alternate terms objects into database
+                            for (CWEalterTermObj alter: cwe.getAlter_terms()) {
+                                alter.setCwe(cwe);
+                                sessionc.save(alter);
+                            }
                             // Putting external reference reference objects into database
-                            for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                            // Putting CAPEC consequence objects into database
-                            for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
-                            // Putting CAPEC relation objects into database
-                            for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
-                            // Putting CAPEC attack step objects into database
-                            for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
-                            // Putting CAPEC skills required objects into database
-                            for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                            for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) {
+                                ext_ref_ref.setCwe(cwe);
+                                sessionc.save(ext_ref_ref);
+                            }
+                            // Putting CWE taxonomy mapping objects into database
+                            for (CWEtaxMapObj tax: cwe.getTax_maps()) {
+                                tax.setCwe(cwe);
+                                sessionc.save(tax);
+                            }
+                            // Putting CWE potential mitigation objects into database
+                            for (CWEpotMitObj pot: cwe.getPot_mits()) {
+                                pot.setCwe(cwe);
+                                sessionc.save(pot);
+                            }
+                            // Putting CWE weakness ordinality objects into database
+                            for (CWEweakOrdObj ord: cwe.getWeak_ords()) {
+                                ord.setCwe(cwe);
+                                sessionc.save(ord);
+                            }
+                            // Putting CWE demonstrative example objects into database
+                            for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                                dem_ex.setCwe(cwe);
+                                sessionc.save(dem_ex);
+                                // Putting CWE CWE demonstrative example - example code objects into database
+                                for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) {
+                                    examp_code.setDem_ex(dem_ex);
+                                    sessionc.save(examp_code);
+                                }
+                                // Putting CWE CWE demonstrative example - external reference reference objects into database
+                                for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) {
+                                    ext_ref_ref.setDem_ex(dem_ex);
+                                    sessionc.save(ext_ref_ref);
+                                }
+                            }
+                            // Putting CWE observed example objects into database
+                            for (CWEobsExObj obs_ex: cwe.getObs_examples()) {
+                                obs_ex.setCwe(cwe);
+                                sessionc.save(obs_ex);
+                            }
+                            // Putting CWE detection method objects into database
+                            for (CWEdetMethObj det_met: cwe.getDet_meths()) {
+                                det_met.setCwe(cwe);
+                                sessionc.save(det_met);
+                            }
                         }
                     }
+                    // CWE removal from connections to prevent data redundance
+                    obj.cwe.removeAll(cwe_to_remove);
+                    // CWE connecting
+                    obj.cwe.addAll(cwes_to_add);
                     // Putting CVE object into database
                     sessionc.save(obj);
                     // Putting CPE node objects into database
@@ -646,7 +744,7 @@ public class CVEobject {
             // Ending session
             if (sessionc.isOpen()) sessionc.close();
 
-            // removing connected CWE objects from original list for no data redundance in the database
+            // Removing connected CWE objects from original list for no data redundance in the database
             cwe_objs.removeAll(cwes_to_remove);
 
             // Opening session, beginning transaction
@@ -655,60 +753,144 @@ public class CVEobject {
 
             // Putting the rest of CWE and CAPEC objects related to them into database
             for (CWEobject cwe : cwe_objs) {
-                // Putting CWE object into database
-                sessionc.save(cwe);
-                // Putting CWE relation objects into database
-                for (CWErelationObj rel: cwe.getRelations()) { sessionc.save(rel); }
-                // Putting CWE applicable platform objects into database
-                for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) { sessionc.save(appl); }
-                // Putting CWE note objects into database
-                for (CWEnoteObj note: cwe.getNotes()) { sessionc.save(note); }
-                // Putting CWE introduction mode objects into database
-                for (CWEintrModesObj intr: cwe.getIntr_modes()) { sessionc.save(intr); }
-                // Putting CWE consequence objects into database
-                for (CWEconseqObj conseq: cwe.getConsequences()) { sessionc.save(conseq); }
-                // Putting CWE alternate terms objects into database
-                for (CWEalterTermObj alter: cwe.getAlter_terms()) { sessionc.save(alter); }
-                // Putting external reference reference objects into database
-                for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                // Putting CWE taxonomy mapping objects into database
-                for (CWEtaxMapObj tax: cwe.getTax_maps()) { sessionc.save(tax); }
-                // Putting CWE potential mitigation objects into database
-                for (CWEpotMitObj pot: cwe.getPot_mits()) { sessionc.save(pot); }
-                // Putting CWE weakness ordinality objects into database
-                for (CWEweakOrdObj ord: cwe.getWeak_ords()) { sessionc.save(ord); }
-                // Putting CWE demonstrative example objects into database
-                for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
-                    sessionc.save(dem_ex);
-                    // Putting CWE CWE demonstrative example - example code objects into database
-                    for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) { sessionc.save(examp_code); }
-                    // Putting CWE CWE demonstrative example - external reference reference objects into database
-                    for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) { sessionc.save(ext_ref_ref); }
-                }
-                // Putting CWE observed example objects into database
-                for (CWEobsExObj obs_ex: cwe.getObs_examples()) { sessionc.save(obs_ex); }
-                // Putting CWE detection method objects into database
-                for (CWEdetMethObj det_met: cwe.getDet_meths()) { sessionc.save(det_met); }
-                // Putting related CAPEC objects into database
-                for (CAPECobject capec : cwe.getCapec()) {
-                    // Putting related CAPEC object into database
-                    sessionc.save(capec);
-                    // Putting CAPEC note objects into database
-                    for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
-                    // Putting CAPEC taxonomy mapping objects into database
-                    for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
-                    // Putting CAPEC alternate term objects into database
-                    for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                if (sessionc.get(CWEobject.class, cwe.getCode_id()) == null) {
+                    // Creating List for CAPEC removal from connections to prevent data redundance
+                    List<CAPECobject> capec_to_remove = new ArrayList<>();
+                    // Creating List for CAPEC connecting
+                    List<CAPECobject> capecs_to_add = new ArrayList<>();
+                    // Putting related CAPEC objects into database
+                    for (CAPECobject capec : cwe.getCapec()) {
+                        // If the CAPEC already exists in the database, only the connection between CAPEC and CWE will be made
+                        if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
+                            CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                            capec_to_remove.add(capec);
+                            capecs_to_add.add(capec_to_add);
+                        } else {
+                            // Putting related CAPEC object into database
+                            sessionc.save(capec);
+                            // Putting CAPEC note objects into database
+                            for (CWEnoteObj note: capec.getNotes()) {
+                                note.setCapec(capec);
+                                sessionc.save(note);
+                            }
+                            // Putting CAPEC taxonomy mapping objects into database
+                            for (CWEtaxMapObj tax: capec.getTax_maps()) {
+                                tax.setCapec(capec);
+                                sessionc.save(tax);
+                            }
+                            // Putting CAPEC alternate term objects into database
+                            for (CWEalterTermObj alter: capec.getAlter_terms()) {
+                                alter.setCapec(capec);
+                                sessionc.save(alter);
+                            }
+                            // Putting external reference reference objects into database
+                            for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) {
+                                ext_ref_ref.setCapec(capec);
+                                sessionc.save(ext_ref_ref);
+                            }
+                            // Putting CAPEC consequence objects into database
+                            for (CWEconseqObj conseq: capec.getConsequences()) {
+                                conseq.setCapec(capec);
+                                sessionc.save(conseq);
+                            }
+                            // Putting CAPEC relation objects into database
+                            for (CAPECrelationObj relation: capec.getRelated_patterns()) {
+                                relation.setCapec(capec);
+                                sessionc.save(relation);
+                            }
+                            // Putting CAPEC attack step objects into database
+                            for (CAPECattStepObj att_step: capec.getAttack_steps()) {
+                                att_step.setCapec(capec);
+                                sessionc.save(att_step);
+                            }
+                            // Putting CAPEC skills required objects into database
+                            for (CAPECskillObj skill: capec.getSkills_required()) {
+                                skill.setCapec(capec);
+                                sessionc.save(skill);
+                            }
+                        }
+                    }
+                    // CAPEC removal from connections to prevent data redundance
+                    cwe.getCapec().removeAll(capec_to_remove);
+                    // CAPEC connecting
+                    cwe.getCapec().addAll(capecs_to_add);
+                    // Putting CWE object into database
+                    sessionc.save(cwe);
+                    // Putting CWE relation objects into database
+                    for (CWErelationObj rel: cwe.getRelations()) {
+                        rel.setCwe(cwe);
+                        sessionc.save(rel);
+                    }
+                    // Putting CWE applicable platform objects into database
+                    for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) {
+                        appl.setCwe(cwe);
+                        sessionc.save(appl);
+                    }
+                    // Putting CWE note objects into database
+                    for (CWEnoteObj note: cwe.getNotes()) {
+                        note.setCwe(cwe);
+                        sessionc.save(note);
+                    }
+                    // Putting CWE introduction mode objects into database
+                    for (CWEintrModesObj intr: cwe.getIntr_modes()) {
+                        intr.setCwe(cwe);
+                        sessionc.save(intr);
+                    }
+                    // Putting CWE consequence objects into database
+                    for (CWEconseqObj conseq: cwe.getConsequences()) {
+                        conseq.setCwe(cwe);
+                        sessionc.save(conseq);
+                    }
+                    // Putting CWE alternate terms objects into database
+                    for (CWEalterTermObj alter: cwe.getAlter_terms()) {
+                        alter.setCwe(cwe);
+                        sessionc.save(alter);
+                    }
                     // Putting external reference reference objects into database
-                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                    // Putting CAPEC consequence objects into database
-                    for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
-                    // Putting CAPEC relation objects into database
-                    for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
-                    // Putting CAPEC attack step objects into database
-                    for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
-                    // Putting CAPEC skills required objects into database
-                    for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                    for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) {
+                        ext_ref_ref.setCwe(cwe);
+                        sessionc.save(ext_ref_ref);
+                    }
+                    // Putting CWE taxonomy mapping objects into database
+                    for (CWEtaxMapObj tax: cwe.getTax_maps()) {
+                        tax.setCwe(cwe);
+                        sessionc.save(tax);
+                    }
+                    // Putting CWE potential mitigation objects into database
+                    for (CWEpotMitObj pot: cwe.getPot_mits()) {
+                        pot.setCwe(cwe);
+                        sessionc.save(pot);
+                    }
+                    // Putting CWE weakness ordinality objects into database
+                    for (CWEweakOrdObj ord: cwe.getWeak_ords()) {
+                        ord.setCwe(cwe);
+                        sessionc.save(ord);
+                    }
+                    // Putting CWE demonstrative example objects into database
+                    for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                        dem_ex.setCwe(cwe);
+                        sessionc.save(dem_ex);
+                        // Putting CWE CWE demonstrative example - example code objects into database
+                        for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) {
+                            examp_code.setDem_ex(dem_ex);
+                            sessionc.save(examp_code);
+                        }
+                        // Putting CWE CWE demonstrative example - external reference reference objects into database
+                        for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) {
+                            ext_ref_ref.setDem_ex(dem_ex);
+                            sessionc.save(ext_ref_ref);
+                        }
+                    }
+                    // Putting CWE observed example objects into database
+                    for (CWEobsExObj obs_ex: cwe.getObs_examples()) {
+                        obs_ex.setCwe(cwe);
+                        sessionc.save(obs_ex);
+                    }
+                    // Putting CWE detection method objects into database
+                    for (CWEdetMethObj det_met: cwe.getDet_meths()) {
+                        det_met.setCwe(cwe);
+                        sessionc.save(det_met);
+                    }
                 }
             }
 
@@ -719,24 +901,50 @@ public class CVEobject {
 
             // Putting the rest of CAPEC objects into database
             for (CAPECobject capec : capec_objs) {
-                // Putting related CAPEC object into database
-                sessionc.save(capec);
-                // Putting CAPEC note objects into database
-                for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
-                // Putting CAPEC taxonomy mapping objects into database
-                for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
-                // Putting CAPEC alternate term objects into database
-                for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
-                // Putting external reference reference objects into database
-                for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                // Putting CAPEC consequence objects into database
-                for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
-                // Putting CAPEC relation objects into database
-                for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
-                // Putting CAPEC attack step objects into database
-                for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
-                // Putting CAPEC skills required objects into database
-                for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) == null) {
+                    // Putting related CAPEC object into database
+                    sessionc.save(capec);
+                    // Putting CAPEC note objects into database
+                    for (CWEnoteObj note: capec.getNotes()) {
+                        note.setCapec(capec);
+                        sessionc.save(note);
+                    }
+                    // Putting CAPEC taxonomy mapping objects into database
+                    for (CWEtaxMapObj tax: capec.getTax_maps()) {
+                        tax.setCapec(capec);
+                        sessionc.save(tax);
+                    }
+                    // Putting CAPEC alternate term objects into database
+                    for (CWEalterTermObj alter: capec.getAlter_terms()) {
+                        alter.setCapec(capec);
+                        sessionc.save(alter);
+                    }
+                    // Putting external reference reference objects into database
+                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) {
+                        ext_ref_ref.setCapec(capec);
+                        sessionc.save(ext_ref_ref);
+                    }
+                    // Putting CAPEC consequence objects into database
+                    for (CWEconseqObj conseq: capec.getConsequences()) {
+                        conseq.setCapec(capec);
+                        sessionc.save(conseq);
+                    }
+                    // Putting CAPEC relation objects into database
+                    for (CAPECrelationObj relation: capec.getRelated_patterns()) {
+                        relation.setCapec(capec);
+                        sessionc.save(relation);
+                    }
+                    // Putting CAPEC attack step objects into database
+                    for (CAPECattStepObj att_step: capec.getAttack_steps()) {
+                        att_step.setCapec(capec);
+                        sessionc.save(att_step);
+                    }
+                    // Putting CAPEC skills required objects into database
+                    for (CAPECskillObj skill: capec.getSkills_required()) {
+                        skill.setCapec(capec);
+                        sessionc.save(skill);
+                    }
+                }
             }
 
             // Committing transaction
@@ -748,7 +956,7 @@ public class CVEobject {
 
         // If the cveobject table isn't empty, the method does empty the database
         else {
-            System.out.println("Database table not empty, emptying started");
+            System.out.println("Database table not empty, emptying database");
             // Emptying database
             session.beginTransaction();
             session.createSQLQuery("DROP TABLE IF EXISTS mitre.affected_resources CASCADE;" +
@@ -803,6 +1011,7 @@ public class CVEobject {
             // Closing session and session factory
             session.close();
             sf.close();
+            // Putting CPE objects from CPE match feed file into database
             CPEobject.putIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
             System.out.println("Actualization of CVE, CWE and CAPEC objects started");
             // Creating connection, session factory and session
@@ -832,64 +1041,161 @@ public class CVEobject {
                     if (!(obj.cvss_v2 == null)) sessionc.save(obj.cvss_v2);
                     // Putting CVSS v3 object into database
                     if (!(obj.cvss_v3 == null)) sessionc.save(obj.cvss_v3);
+                    // Creating List for CWE removal from connections to prevent data redundance
+                    List<CWEobject> cwe_to_remove = new ArrayList<>();
+                    // Creating List for CWE connecting
+                    List<CWEobject> cwes_to_add = new ArrayList<>();
                     // Putting related CWE and CAPEC objects into database
                     for (CWEobject cwe : obj.cwe) {
-                        // Putting CWE object into database
-                        sessionc.save(cwe);
-                        // Putting CWE relation objects into database
-                        for (CWErelationObj rel: cwe.getRelations()) { sessionc.save(rel); }
-                        // Putting CWE applicable platform objects into database
-                        for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) { sessionc.save(appl); }
-                        // Putting CWE note objects into database
-                        for (CWEnoteObj note: cwe.getNotes()) { sessionc.save(note); }
-                        // Putting CWE introduction mode objects into database
-                        for (CWEintrModesObj intr: cwe.getIntr_modes()) { sessionc.save(intr); }
-                        // Putting CWE consequence objects into database
-                        for (CWEconseqObj conseq: cwe.getConsequences()) { sessionc.save(conseq); }
-                        // Putting CWE alternate terms objects into database
-                        for (CWEalterTermObj alter: cwe.getAlter_terms()) { sessionc.save(alter); }
-                        // Putting external reference reference objects into database
-                        for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                        // Putting CWE taxonomy mapping objects into database
-                        for (CWEtaxMapObj tax: cwe.getTax_maps()) { sessionc.save(tax); }
-                        // Putting CWE potential mitigation objects into database
-                        for (CWEpotMitObj pot: cwe.getPot_mits()) { sessionc.save(pot); }
-                        // Putting CWE weakness ordinality objects into database
-                        for (CWEweakOrdObj ord: cwe.getWeak_ords()) { sessionc.save(ord); }
-                        // Putting CWE demonstrative example objects into database
-                        for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
-                            sessionc.save(dem_ex);
-                            // Putting CWE CWE demonstrative example - example code objects into database
-                            for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) { sessionc.save(examp_code); }
-                            // Putting CWE CWE demonstrative example - external reference reference objects into database
-                            for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) { sessionc.save(ext_ref_ref); }
-                        }
-                        // Putting CWE observed example objects into database
-                        for (CWEobsExObj obs_ex: cwe.getObs_examples()) { sessionc.save(obs_ex); }
-                        // Putting CWE detection method objects into database
-                        for (CWEdetMethObj det_met: cwe.getDet_meths()) { sessionc.save(det_met); }
-                        // Putting related CAPEC objects into database
-                        for (CAPECobject capec : cwe.getCapec()) {
-                            // Putting related CAPEC object into database
-                            sessionc.save(capec);
-                            // Putting CAPEC note objects into database
-                            for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
-                            // Putting CAPEC taxonomy mapping objects into database
-                            for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
-                            // Putting CAPEC alternate term objects into database
-                            for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                        // If the CWE already exists in the database, only the connection between CWE and CVE will be made
+                        if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
+                            CWEobject cwe_to_add = (CWEobject) sessionc.get(CWEobject.class, cwe.getCode_id());
+                            cwe_to_remove.add(cwe);
+                            cwes_to_add.add(cwe_to_add);
+                        } else {
+                            // Creating List for CAPEC removal from connections to prevent data redundance
+                            List<CAPECobject> capec_to_remove = new ArrayList<>();
+                            // Creating List for CAPEC connecting
+                            List<CAPECobject> capecs_to_add = new ArrayList<>();
+                            // Putting related CAPEC objects into database
+                            for (CAPECobject capec : cwe.getCapec()) {
+                                // If the CAPEC already exists in the database, only the connection between CAPEC and CWE will be made
+                                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
+                                    CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                                    capec_to_remove.add(capec);
+                                    capecs_to_add.add(capec_to_add);
+                                } else {
+                                    // Putting related CAPEC object into database
+                                    sessionc.save(capec);
+                                    // Putting CAPEC note objects into database
+                                    for (CWEnoteObj note: capec.getNotes()) {
+                                        note.setCapec(capec);
+                                        sessionc.save(note);
+                                    }
+                                    // Putting CAPEC taxonomy mapping objects into database
+                                    for (CWEtaxMapObj tax: capec.getTax_maps()) {
+                                        tax.setCapec(capec);
+                                        sessionc.save(tax);
+                                    }
+                                    // Putting CAPEC alternate term objects into database
+                                    for (CWEalterTermObj alter: capec.getAlter_terms()) {
+                                        alter.setCapec(capec);
+                                        sessionc.save(alter);
+                                    }
+                                    // Putting external reference reference objects into database
+                                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) {
+                                        ext_ref_ref.setCapec(capec);
+                                        sessionc.save(ext_ref_ref);
+                                    }
+                                    // Putting CAPEC consequence objects into database
+                                    for (CWEconseqObj conseq: capec.getConsequences()) {
+                                        conseq.setCapec(capec);
+                                        sessionc.save(conseq);
+                                    }
+                                    // Putting CAPEC relation objects into database
+                                    for (CAPECrelationObj relation: capec.getRelated_patterns()) {
+                                        relation.setCapec(capec);
+                                        sessionc.save(relation);
+                                    }
+                                    // Putting CAPEC attack step objects into database
+                                    for (CAPECattStepObj att_step: capec.getAttack_steps()) {
+                                        att_step.setCapec(capec);
+                                        sessionc.save(att_step);
+                                    }
+                                    // Putting CAPEC skills required objects into database
+                                    for (CAPECskillObj skill: capec.getSkills_required()) {
+                                        skill.setCapec(capec);
+                                        sessionc.save(skill);
+                                    }
+                                }
+                            }
+                            // CAPEC removal from connections to prevent data redundance
+                            cwe.getCapec().removeAll(capec_to_remove);
+                            // CAPEC connecting
+                            cwe.getCapec().addAll(capecs_to_add);
+                            // Putting CWE object into database
+                            sessionc.save(cwe);
+                            // Putting CWE relation objects into database
+                            for (CWErelationObj rel: cwe.getRelations()) {
+                                rel.setCwe(cwe);
+                                sessionc.save(rel);
+                            }
+                            // Putting CWE applicable platform objects into database
+                            for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) {
+                                appl.setCwe(cwe);
+                                sessionc.save(appl);
+                            }
+                            // Putting CWE note objects into database
+                            for (CWEnoteObj note: cwe.getNotes()) {
+                                note.setCwe(cwe);
+                                sessionc.save(note);
+                            }
+                            // Putting CWE introduction mode objects into database
+                            for (CWEintrModesObj intr: cwe.getIntr_modes()) {
+                                intr.setCwe(cwe);
+                                sessionc.save(intr);
+                            }
+                            // Putting CWE consequence objects into database
+                            for (CWEconseqObj conseq: cwe.getConsequences()) {
+                                conseq.setCwe(cwe);
+                                sessionc.save(conseq);
+                            }
+                            // Putting CWE alternate terms objects into database
+                            for (CWEalterTermObj alter: cwe.getAlter_terms()) {
+                                alter.setCwe(cwe);
+                                sessionc.save(alter);
+                            }
                             // Putting external reference reference objects into database
-                            for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                            // Putting CAPEC consequence objects into database
-                            for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
-                            // Putting CAPEC relation objects into database
-                            for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
-                            // Putting CAPEC attack step objects into database
-                            for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
-                            // Putting CAPEC skills required objects into database
-                            for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                            for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) {
+                                ext_ref_ref.setCwe(cwe);
+                                sessionc.save(ext_ref_ref);
+                            }
+                            // Putting CWE taxonomy mapping objects into database
+                            for (CWEtaxMapObj tax: cwe.getTax_maps()) {
+                                tax.setCwe(cwe);
+                                sessionc.save(tax);
+                            }
+                            // Putting CWE potential mitigation objects into database
+                            for (CWEpotMitObj pot: cwe.getPot_mits()) {
+                                pot.setCwe(cwe);
+                                sessionc.save(pot);
+                            }
+                            // Putting CWE weakness ordinality objects into database
+                            for (CWEweakOrdObj ord: cwe.getWeak_ords()) {
+                                ord.setCwe(cwe);
+                                sessionc.save(ord);
+                            }
+                            // Putting CWE demonstrative example objects into database
+                            for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                                dem_ex.setCwe(cwe);
+                                sessionc.save(dem_ex);
+                                // Putting CWE CWE demonstrative example - example code objects into database
+                                for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) {
+                                    examp_code.setDem_ex(dem_ex);
+                                    sessionc.save(examp_code);
+                                }
+                                // Putting CWE CWE demonstrative example - external reference reference objects into database
+                                for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) {
+                                    ext_ref_ref.setDem_ex(dem_ex);
+                                    sessionc.save(ext_ref_ref);
+                                }
+                            }
+                            // Putting CWE observed example objects into database
+                            for (CWEobsExObj obs_ex: cwe.getObs_examples()) {
+                                obs_ex.setCwe(cwe);
+                                sessionc.save(obs_ex);
+                            }
+                            // Putting CWE detection method objects into database
+                            for (CWEdetMethObj det_met: cwe.getDet_meths()) {
+                                det_met.setCwe(cwe);
+                                sessionc.save(det_met);
+                            }
                         }
                     }
+                    // CWE removal from connections to prevent data redundance
+                    obj.cwe.removeAll(cwe_to_remove);
+                    // CWE connecting
+                    obj.cwe.addAll(cwes_to_add);
                     // Putting CVE object into database
                     sessionc.save(obj);
                     // Putting CPE node objects into database
@@ -940,94 +1246,209 @@ public class CVEobject {
             // Ending session
             if (sessionc.isOpen()) sessionc.close();
 
-            // vymazat connectnuté CWE, open session, transaction, nahrát zbylé CAPEC a CWE !!!
-            cwe_objs.removeAll(cwes_to_remove); // removing connected CWE objects from original list for no data redundance in the database
+            // Removing connected CWE objects from original list for no data redundance in the database
+            cwe_objs.removeAll(cwes_to_remove);
+
             // Opening session, beginning transaction
             sessionc = sesf.openSession();
             Transaction txv = sessionc.beginTransaction();
+
             // Putting the rest of CWE and CAPEC objects related to them into database
             for (CWEobject cwe : cwe_objs) {
-                // Putting CWE object into database
-                sessionc.save(cwe);
-                // Putting CWE relation objects into database
-                for (CWErelationObj rel: cwe.getRelations()) { sessionc.save(rel); }
-                // Putting CWE applicable platform objects into database
-                for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) { sessionc.save(appl); }
-                // Putting CWE note objects into database
-                for (CWEnoteObj note: cwe.getNotes()) { sessionc.save(note); }
-                // Putting CWE introduction mode objects into database
-                for (CWEintrModesObj intr: cwe.getIntr_modes()) { sessionc.save(intr); }
-                // Putting CWE consequence objects into database
-                for (CWEconseqObj conseq: cwe.getConsequences()) { sessionc.save(conseq); }
-                // Putting CWE alternate terms objects into database
-                for (CWEalterTermObj alter: cwe.getAlter_terms()) { sessionc.save(alter); }
-                // Putting external reference reference objects into database
-                for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                // Putting CWE taxonomy mapping objects into database
-                for (CWEtaxMapObj tax: cwe.getTax_maps()) { sessionc.save(tax); }
-                // Putting CWE potential mitigation objects into database
-                for (CWEpotMitObj pot: cwe.getPot_mits()) { sessionc.save(pot); }
-                // Putting CWE weakness ordinality objects into database
-                for (CWEweakOrdObj ord: cwe.getWeak_ords()) { sessionc.save(ord); }
-                // Putting CWE demonstrative example objects into database
-                for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
-                    sessionc.save(dem_ex);
-                    // Putting CWE CWE demonstrative example - example code objects into database
-                    for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) { sessionc.save(examp_code); }
-                    // Putting CWE CWE demonstrative example - external reference reference objects into database
-                    for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) { sessionc.save(ext_ref_ref); }
-                }
-                // Putting CWE observed example objects into database
-                for (CWEobsExObj obs_ex: cwe.getObs_examples()) { sessionc.save(obs_ex); }
-                // Putting CWE detection method objects into database
-                for (CWEdetMethObj det_met: cwe.getDet_meths()) { sessionc.save(det_met); }
-                // Putting related CAPEC objects into database
-                for (CAPECobject capec : cwe.getCapec()) {
-                    // Putting related CAPEC object into database
-                    sessionc.save(capec);
-                    // Putting CAPEC note objects into database
-                    for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
-                    // Putting CAPEC taxonomy mapping objects into database
-                    for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
-                    // Putting CAPEC alternate term objects into database
-                    for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
+                if (sessionc.get(CWEobject.class, cwe.getCode_id()) == null) {
+                    // Creating List for CAPEC removal from connections to prevent data redundance
+                    List<CAPECobject> capec_to_remove = new ArrayList<>();
+                    // Creating List for CAPEC connecting
+                    List<CAPECobject> capecs_to_add = new ArrayList<>();
+                    // Putting related CAPEC objects into database
+                    for (CAPECobject capec : cwe.getCapec()) {
+                        // If the CAPEC already exists in the database, only the connection between CAPEC and CWE will be made
+                        if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
+                            CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                            capec_to_remove.add(capec);
+                            capecs_to_add.add(capec_to_add);
+                        } else {
+                            // Putting related CAPEC object into database
+                            sessionc.save(capec);
+                            // Putting CAPEC note objects into database
+                            for (CWEnoteObj note: capec.getNotes()) {
+                                note.setCapec(capec);
+                                sessionc.save(note);
+                            }
+                            // Putting CAPEC taxonomy mapping objects into database
+                            for (CWEtaxMapObj tax: capec.getTax_maps()) {
+                                tax.setCapec(capec);
+                                sessionc.save(tax);
+                            }
+                            // Putting CAPEC alternate term objects into database
+                            for (CWEalterTermObj alter: capec.getAlter_terms()) {
+                                alter.setCapec(capec);
+                                sessionc.save(alter);
+                            }
+                            // Putting external reference reference objects into database
+                            for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) {
+                                ext_ref_ref.setCapec(capec);
+                                sessionc.save(ext_ref_ref);
+                            }
+                            // Putting CAPEC consequence objects into database
+                            for (CWEconseqObj conseq: capec.getConsequences()) {
+                                conseq.setCapec(capec);
+                                sessionc.save(conseq);
+                            }
+                            // Putting CAPEC relation objects into database
+                            for (CAPECrelationObj relation: capec.getRelated_patterns()) {
+                                relation.setCapec(capec);
+                                sessionc.save(relation);
+                            }
+                            // Putting CAPEC attack step objects into database
+                            for (CAPECattStepObj att_step: capec.getAttack_steps()) {
+                                att_step.setCapec(capec);
+                                sessionc.save(att_step);
+                            }
+                            // Putting CAPEC skills required objects into database
+                            for (CAPECskillObj skill: capec.getSkills_required()) {
+                                skill.setCapec(capec);
+                                sessionc.save(skill);
+                            }
+                        }
+                    }
+                    // CAPEC removal from connections to prevent data redundance
+                    cwe.getCapec().removeAll(capec_to_remove);
+                    // CAPEC connecting
+                    cwe.getCapec().addAll(capecs_to_add);
+                    // Putting CWE object into database
+                    sessionc.save(cwe);
+                    // Putting CWE relation objects into database
+                    for (CWErelationObj rel: cwe.getRelations()) {
+                        rel.setCwe(cwe);
+                        sessionc.save(rel);
+                    }
+                    // Putting CWE applicable platform objects into database
+                    for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) {
+                        appl.setCwe(cwe);
+                        sessionc.save(appl);
+                    }
+                    // Putting CWE note objects into database
+                    for (CWEnoteObj note: cwe.getNotes()) {
+                        note.setCwe(cwe);
+                        sessionc.save(note);
+                    }
+                    // Putting CWE introduction mode objects into database
+                    for (CWEintrModesObj intr: cwe.getIntr_modes()) {
+                        intr.setCwe(cwe);
+                        sessionc.save(intr);
+                    }
+                    // Putting CWE consequence objects into database
+                    for (CWEconseqObj conseq: cwe.getConsequences()) {
+                        conseq.setCwe(cwe);
+                        sessionc.save(conseq);
+                    }
+                    // Putting CWE alternate terms objects into database
+                    for (CWEalterTermObj alter: cwe.getAlter_terms()) {
+                        alter.setCwe(cwe);
+                        sessionc.save(alter);
+                    }
                     // Putting external reference reference objects into database
-                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                    // Putting CAPEC consequence objects into database
-                    for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
-                    // Putting CAPEC relation objects into database
-                    for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
-                    // Putting CAPEC attack step objects into database
-                    for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
-                    // Putting CAPEC skills required objects into database
-                    for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                    for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) {
+                        ext_ref_ref.setCwe(cwe);
+                        sessionc.save(ext_ref_ref);
+                    }
+                    // Putting CWE taxonomy mapping objects into database
+                    for (CWEtaxMapObj tax: cwe.getTax_maps()) {
+                        tax.setCwe(cwe);
+                        sessionc.save(tax);
+                    }
+                    // Putting CWE potential mitigation objects into database
+                    for (CWEpotMitObj pot: cwe.getPot_mits()) {
+                        pot.setCwe(cwe);
+                        sessionc.save(pot);
+                    }
+                    // Putting CWE weakness ordinality objects into database
+                    for (CWEweakOrdObj ord: cwe.getWeak_ords()) {
+                        ord.setCwe(cwe);
+                        sessionc.save(ord);
+                    }
+                    // Putting CWE demonstrative example objects into database
+                    for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                        dem_ex.setCwe(cwe);
+                        sessionc.save(dem_ex);
+                        // Putting CWE CWE demonstrative example - example code objects into database
+                        for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) {
+                            examp_code.setDem_ex(dem_ex);
+                            sessionc.save(examp_code);
+                        }
+                        // Putting CWE CWE demonstrative example - external reference reference objects into database
+                        for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) {
+                            ext_ref_ref.setDem_ex(dem_ex);
+                            sessionc.save(ext_ref_ref);
+                        }
+                    }
+                    // Putting CWE observed example objects into database
+                    for (CWEobsExObj obs_ex: cwe.getObs_examples()) {
+                        obs_ex.setCwe(cwe);
+                        sessionc.save(obs_ex);
+                    }
+                    // Putting CWE detection method objects into database
+                    for (CWEdetMethObj det_met: cwe.getDet_meths()) {
+                        det_met.setCwe(cwe);
+                        sessionc.save(det_met);
+                    }
                 }
             }
+
             // Committing transaction
             txv.commit();
             // Beginning transaction
             txv = sessionc.beginTransaction();
+
             // Putting the rest of CAPEC objects into database
             for (CAPECobject capec : capec_objs) {
-                // Putting related CAPEC object into database
-                sessionc.save(capec);
-                // Putting CAPEC note objects into database
-                for (CWEnoteObj note: capec.getNotes()) { sessionc.save(note); }
-                // Putting CAPEC taxonomy mapping objects into database
-                for (CWEtaxMapObj tax: capec.getTax_maps()) { sessionc.save(tax); }
-                // Putting CAPEC alternate term objects into database
-                for (CWEalterTermObj alter: capec.getAlter_terms()) { sessionc.save(alter); }
-                // Putting external reference reference objects into database
-                for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) { sessionc.save(ext_ref_ref); }
-                // Putting CAPEC consequence objects into database
-                for (CWEconseqObj conseq: capec.getConsequences()) { sessionc.save(conseq); }
-                // Putting CAPEC relation objects into database
-                for (CAPECrelationObj relation: capec.getRelated_patterns()) { sessionc.save(relation); }
-                // Putting CAPEC attack step objects into database
-                for (CAPECattStepObj att_step: capec.getAttack_steps()) { sessionc.save(att_step); }
-                // Putting CAPEC skills required objects into database
-                for (CAPECskillObj skill: capec.getSkills_required()) { sessionc.save(skill); }
+                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) == null) {
+                    // Putting related CAPEC object into database
+                    sessionc.save(capec);
+                    // Putting CAPEC note objects into database
+                    for (CWEnoteObj note: capec.getNotes()) {
+                        note.setCapec(capec);
+                        sessionc.save(note);
+                    }
+                    // Putting CAPEC taxonomy mapping objects into database
+                    for (CWEtaxMapObj tax: capec.getTax_maps()) {
+                        tax.setCapec(capec);
+                        sessionc.save(tax);
+                    }
+                    // Putting CAPEC alternate term objects into database
+                    for (CWEalterTermObj alter: capec.getAlter_terms()) {
+                        alter.setCapec(capec);
+                        sessionc.save(alter);
+                    }
+                    // Putting external reference reference objects into database
+                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) {
+                        ext_ref_ref.setCapec(capec);
+                        sessionc.save(ext_ref_ref);
+                    }
+                    // Putting CAPEC consequence objects into database
+                    for (CWEconseqObj conseq: capec.getConsequences()) {
+                        conseq.setCapec(capec);
+                        sessionc.save(conseq);
+                    }
+                    // Putting CAPEC relation objects into database
+                    for (CAPECrelationObj relation: capec.getRelated_patterns()) {
+                        relation.setCapec(capec);
+                        sessionc.save(relation);
+                    }
+                    // Putting CAPEC attack step objects into database
+                    for (CAPECattStepObj att_step: capec.getAttack_steps()) {
+                        att_step.setCapec(capec);
+                        sessionc.save(att_step);
+                    }
+                    // Putting CAPEC skills required objects into database
+                    for (CAPECskillObj skill: capec.getSkills_required()) {
+                        skill.setCapec(capec);
+                        sessionc.save(skill);
+                    }
+                }
             }
+
             // Committing transaction
             txv.commit();
             // Ending session

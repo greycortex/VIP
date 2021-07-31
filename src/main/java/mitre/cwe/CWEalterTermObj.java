@@ -26,7 +26,7 @@ public class CWEalterTermObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String term;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String description;
     @ManyToOne
     protected CAPECobject capec;
@@ -44,6 +44,14 @@ public class CWEalterTermObj {
         this.term = term;
         this.description = description;
 
+    }
+
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
+    }
+
+    public void setCapec(CAPECobject capec) {
+        this.capec = capec;
     }
 
     ///**

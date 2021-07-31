@@ -24,7 +24,7 @@ public class CWEintrModesObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     protected String phase;
-    @Column(length = 4095)
+    @Column(length = 8191)
     protected String note;
     @ManyToOne
     protected CWEobject cwe;
@@ -40,6 +40,10 @@ public class CWEintrModesObj {
         this.phase = phase;
         this.note = note;
 
+    }
+
+    public void setCwe(CWEobject cwe) {
+        this.cwe = cwe;
     }
 
     ///**
