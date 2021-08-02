@@ -13,8 +13,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "attack_step")
-@Table(name="attack_step", schema = "mitre")
+@Entity(name = "capec_attack_step")
+@Table(name="capec_attack_step", schema = "mitre")
 public class CAPECattStepObj {
 
     public CAPECattStepObj() { } // default constructor
@@ -31,7 +31,7 @@ public class CAPECattStepObj {
     @Column(length = 8191)
     protected String description;
     @Column(name = "technique", length = 8191)
-    @CollectionTable(name = "techniques", schema = "mitre")
+    @CollectionTable(name = "att_step_techniques", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> techniques;
     @ManyToOne

@@ -13,8 +13,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "detection_method")
-@Table(name="detection_method", schema = "mitre")
+@Entity(name = "cwe_detection_method")
+@Table(name="cwe_detection_method", schema = "mitre")
 public class CWEdetMethObj {
 
     public CWEdetMethObj() {} // default constructor

@@ -12,8 +12,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "applicable_platform")
-@Table(name="applicable_platform", schema = "mitre")
+@Entity(name = "cwe_applicable_platform")
+@Table(name="cwe_applicable_platform", schema = "mitre")
 public class CWEapplPlatfObj {
 
     public CWEapplPlatfObj() {} // default constructor

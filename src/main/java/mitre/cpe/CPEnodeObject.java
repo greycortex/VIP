@@ -14,8 +14,8 @@ import java.util.Objects;
  * <p>
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "node")
-@Table(name="node", schema = "mitre")
+@Entity(name = "cve_node")
+@Table(name="cve_node", schema = "mitre")
 public class CPEnodeObject {
 
     public CPEnodeObject() { } // default constructor

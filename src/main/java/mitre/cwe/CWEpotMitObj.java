@@ -14,8 +14,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "potential_mitigation")
-@Table(name="potential_mitigation", schema = "mitre")
+@Entity(name = "cwe_potential_mitigation")
+@Table(name="cwe_potential_mitigation", schema = "mitre")
 public class CWEpotMitObj {
 
     public CWEpotMitObj() {} // default constructor
@@ -29,7 +29,7 @@ public class CWEpotMitObj {
     protected Long id;
     protected String mitigation_id;
     @Column(name = "phase")
-    @CollectionTable(name = "phases", schema = "mitre")
+    @CollectionTable(name = "pot_mit_phases", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> phases;
     protected String strategy;

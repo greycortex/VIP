@@ -9,8 +9,8 @@ import java.util.Objects;
  * <p>
  * @author Thomas Bozek (XarfNao)
  */
-@Entity(name = "node_compl_cpe")
-@Table(name = "node_compl_cpe", schema = "mitre")
+@Entity(name = "cve_node_compl_cpe")
+@Table(name = "cve_node_compl_cpe", schema = "mitre")
 public class CPEnodeToComplex {
 
     public CPEnodeToComplex() { } // Default constructor

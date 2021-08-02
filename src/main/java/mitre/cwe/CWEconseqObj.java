@@ -29,19 +29,19 @@ public class CWEconseqObj {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
     @Column(name = "scope")
-    @CollectionTable(name = "scopes", schema = "mitre")
+    @CollectionTable(name = "conseq_scopes", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> scopes;
     @Column(name = "impact")
-    @CollectionTable(name = "impacts", schema = "mitre")
+    @CollectionTable(name = "conseq_impacts", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> impacts;
     @Column(name = "note", length = 8191)
-    @CollectionTable(name = "consequence_notes", schema = "mitre")
+    @CollectionTable(name = "conseq_notes", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> notes;
     @Column(name = "likelihood")
-    @CollectionTable(name = "likelihoods", schema = "mitre")
+    @CollectionTable(name = "conseq_likelihoods", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> likelihoods;
     @ManyToOne

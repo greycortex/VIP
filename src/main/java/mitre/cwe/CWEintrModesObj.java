@@ -12,8 +12,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "introduction")
-@Table(name="introduction", schema = "mitre")
+@Entity(name = "cwe_introduction")
+@Table(name="cwe_introduction", schema = "mitre")
 public class CWEintrModesObj {
 
     public CWEintrModesObj() {} // default constructor

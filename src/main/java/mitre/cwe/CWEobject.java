@@ -49,7 +49,7 @@ public class CWEobject implements Serializable {
     @OneToMany(mappedBy = "cwe")
     protected List<CWEapplPlatfObj> appl_platform_objs;
     @Column(name = "bg_detail", length = 8191)
-    @CollectionTable(name = "bg_details", schema = "mitre")
+    @CollectionTable(name = "cwe_bg_details", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> bg_details;
     @ManyToMany
@@ -78,11 +78,11 @@ public class CWEobject implements Serializable {
     @OneToMany(mappedBy = "cwe")
     protected List<CWEdetMethObj> det_meths;
     @Column(name = "affected_resource")
-    @CollectionTable(name = "affected_resources", schema = "mitre")
+    @CollectionTable(name = "cwe_affected_resources", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> affected_resources;
     @Column(name = "functional_area")
-    @CollectionTable(name = "functional_areas", schema = "mitre")
+    @CollectionTable(name = "cwe_functional_areas", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> functional_areas;
     @ManyToMany(mappedBy = "cwe")

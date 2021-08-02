@@ -13,8 +13,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "reference")
-@Table(name="reference", schema = "mitre")
+@Entity(name = "cve_reference")
+@Table(name="cve_reference", schema = "mitre")
 public class ReferenceObject {
 
     public ReferenceObject() { } // default constructor

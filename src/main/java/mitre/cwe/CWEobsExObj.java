@@ -12,8 +12,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "observed_example")
-@Table(name="observed_example", schema = "mitre")
+@Entity(name = "cwe_observed_example")
+@Table(name="cwe_observed_example", schema = "mitre")
 public class CWEobsExObj {
 
     public CWEobsExObj() {} // deafult constructor

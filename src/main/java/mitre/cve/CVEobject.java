@@ -58,7 +58,7 @@ public class CVEobject {
     @OneToMany(mappedBy = "cve")
     protected List<ReferenceObject> references;
     @Column(length = 8191, name = "description")
-    @CollectionTable(name = "descriptions", schema = "mitre")
+    @CollectionTable(name = "cve_descriptions", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> descriptions;
     protected String cve_data_version;

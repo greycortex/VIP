@@ -49,23 +49,23 @@ public class CAPECobject implements Serializable {
     @ManyToMany(mappedBy = "capec")
     protected List<CWEobject> cwe;
     @Column(name = "mitigation", length = 8191)
-    @CollectionTable(name = "mitigations", schema = "mitre")
+    @CollectionTable(name = "capec_mitigations", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> mitigations;
     @Column(name = "prerequisite", length = 8191)
-    @CollectionTable(name = "prerequisites", schema = "mitre")
+    @CollectionTable(name = "capec_prerequisites", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> prerequisites;
     @Column(name = "example", length = 8191)
-    @CollectionTable(name = "examples", schema = "mitre")
+    @CollectionTable(name = "capec_examples", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> examples;
     @Column(name = "resource", length = 8191)
-    @CollectionTable(name = "resources", schema = "mitre")
+    @CollectionTable(name = "capec_resources", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> resources;
     @Column(name = "indicator", length = 8191)
-    @CollectionTable(name = "indicators", schema = "mitre")
+    @CollectionTable(name = "capec_indicators", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> indicators;
     @OneToMany(mappedBy = "capec")

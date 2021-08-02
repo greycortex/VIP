@@ -12,8 +12,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "skill")
-@Table(name="skill", schema = "mitre")
+@Entity(name = "capec_skill")
+@Table(name="capec_skill", schema = "mitre")
 public class CAPECskillObj {
 
     public CAPECskillObj() {} // default constructor

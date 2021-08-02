@@ -12,8 +12,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "example_code")
-@Table(name="example_code", schema = "mitre")
+@Entity(name = "dem_ex_example_code")
+@Table(name="dem_ex_example_code", schema = "mitre")
 public class CWEexampCodeObj {
 
     public CWEexampCodeObj() {} // default constructor

@@ -12,8 +12,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "weakness_ordinality")
-@Table(name="weakness_ordinality", schema = "mitre")
+@Entity(name = "cwe_weakness_ordinality")
+@Table(name="cwe_weakness_ordinality", schema = "mitre")
 public class CWEweakOrdObj {
 
     public CWEweakOrdObj() {} // default constructor

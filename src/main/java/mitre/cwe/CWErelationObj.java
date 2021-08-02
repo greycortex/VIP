@@ -12,8 +12,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "cwe_relation")
-@Table(name="cwe_relation", schema = "mitre")
+@Entity(name = "related_weakness")
+@Table(name="related_weakness", schema = "mitre")
 public class CWErelationObj {
 
     public CWErelationObj() {} // default constructor

@@ -13,8 +13,8 @@ import java.util.Objects;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity(name = "capec_relation")
-@Table(name="capec_relation", schema = "mitre")
+@Entity(name = "related_attack_pattern")
+@Table(name="related_attack_pattern", schema = "mitre")
 public class CAPECrelationObj {
 
     public CAPECrelationObj() { } // default constructor
@@ -29,7 +29,7 @@ public class CAPECrelationObj {
     protected String nature;
     protected String related_capec_id;
     @Column(name = "exclude_id")
-    @CollectionTable(name = "exclude_ids", schema = "mitre")
+    @CollectionTable(name = "rel_capec_exclude_ids", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> exclude_ids;
     @ManyToOne
