@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * This class represents a CWE category object (CWE category id, category name attribute, category status attribute,
@@ -73,9 +74,10 @@ public class CWEcategoryObj {
      * If it can't find any informations, it returns these attributes as null values
      *
      * @param file path to an XML file which will be parsed from
+     * @param ext_refs existing External Reference objects for search of the relating ones
      * @return list of parsed CWE category objects
      */
-    public static List<CWEcategoryObj> CWEcategoryToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
+    public static List<CWEcategoryObj> CWEcategoryToArrayList(String file, List<CWEextRefObj> ext_refs) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         List<CWEcategoryObj> category_objs = new ArrayList<>(); // creating empty List for it to be filled with CWE category objects
@@ -138,10 +140,10 @@ public class CWEcategoryObj {
                                                 String cat_view_id = null;
                                                 NamedNodeMap cat_relation_attr = category_relation_nodes.item(g).getAttributes();
 
-                                                if (file == "exclude/capec_latest.xml"){
+                                                if (file.equals("exclude/capec_latest.xml")){
                                                     cat_capec_id = cat_relation_attr.getNamedItem("CAPEC_ID").getNodeValue(); // getting CAPEC ID attribute - relationship (member) object
 
-                                                } else if (file == "exclude/cwec_v4.2.xml"){
+                                                } else if (file.equals("exclude/cwec_v4.5.xml")){
                                                     cat_cwe_id = cat_relation_attr.getNamedItem("CWE_ID").getNodeValue(); // getting CWE ID attribute - relationship (member) object
                                                     cat_view_id = cat_relation_attr.getNamedItem("View_ID").getNodeValue(); // getting view ID attribute - relationship (member) object
                                                 }
@@ -156,14 +158,27 @@ public class CWEcategoryObj {
                                         for (int g = 0; g < category_reference_nodes.getLength(); g++) {
                                             if (category_reference_nodes.item(g).getNodeName().equals("Reference")) {
                                                 NamedNodeMap cat_reference_attr = category_reference_nodes.item(g).getAttributes();
-                                                String cat_ext_ref_id = cat_reference_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ext. ref. ID attribute - external reference reference object
+
+                                                String cat_ext_ref_id = null;
+                                                if (file.equals("exclude/capec_latest.xml")) {
+                                                    cat_ext_ref_id = "CAPEC-" + cat_reference_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ext. ref. ID attribute - external reference reference object
+                                                } else if (file.equals("exclude/cwec_v4.5.xml")) {
+                                                    cat_ext_ref_id = "CWE-" + cat_reference_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ext. ref. ID attribute - external reference reference object
+                                                }
 
                                                 String cat_ext_ref_section = null;
                                                 if (cat_reference_attr.getNamedItem("Section") != null) {
                                                     cat_ext_ref_section = cat_reference_attr.getNamedItem("Section").getNodeValue(); // getting section attribute - external reference reference object
                                                 }
 
-                                                cat_category_ext_ref_refs.add(new CWEextRefRefObj(cat_ext_ref_id, cat_ext_ref_section)); // creating new external reference reference object
+                                                CWEextRefRefObj ext_ref_ref_local = new CWEextRefRefObj(null, cat_ext_ref_section); // creating new external reference reference object
+                                                for (CWEextRefObj ext_ref_local : ext_refs) {
+                                                    if (ext_ref_local.getReference_id().equals(cat_ext_ref_id)) {
+                                                        ext_ref_ref_local.setExt_ref(ext_ref_local); // Making connection between External Reference object and External Reference Reference object
+                                                    }
+                                                }
+
+                                                cat_category_ext_ref_refs.add(ext_ref_ref_local);
                                             }
                                         }
 

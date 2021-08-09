@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * This class represents a CAPEC attack pattern object (CAPEC ID, name, abstraction attribute, status, ...)
@@ -187,9 +188,10 @@ public class CAPECobject implements Serializable {
      * It goes through file that contains latest list of CAPEC attack patterns,
      * parses them and returns them in a List
      *
+     * @param ext_refs existing External Reference objects for search of the relating ones
      * @return List of CAPEC attack pattern objects from given XML file
      */
-    public static List<CAPECobject> CAPECfileToArrayList(){
+    public static List<CAPECobject> CAPECfileToArrayList(List<CWEextRefObj> ext_refs){
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         List<CAPECobject> capec_objs = new ArrayList<>(); // empty List which will be filled with CAPEC attack pattern objects later on
@@ -305,14 +307,21 @@ public class CAPECobject implements Serializable {
                                         for (int w = 0; w < ext_ref_nodes.getLength(); w++) {
                                             if (ext_ref_nodes.item(w).getNodeName().equals("Reference")) {
                                                 NamedNodeMap ext_ref_attr = ext_ref_nodes.item(w).getAttributes();
-                                                String ext_ref_id = ext_ref_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ID attribute - external reference reference object
+                                                String ext_ref_id = "CAPEC-" + ext_ref_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ID attribute - external reference reference object
 
                                                 String ext_ref_section = null;
                                                 if (ext_ref_attr.getNamedItem("Section") != null) {
                                                     ext_ref_section = ext_ref_attr.getNamedItem("Section").getNodeValue(); // getting section attribute - external reference reference object
                                                 }
 
-                                                pattern_ext_ref_refs.add(new CWEextRefRefObj(ext_ref_id, ext_ref_section)); // creating external reference reference object
+                                                CWEextRefRefObj ext_ref_ref_local = new CWEextRefRefObj(null, ext_ref_section); // Creating external reference reference object
+                                                for (CWEextRefObj ext_ref_local : ext_refs) {
+                                                    if (ext_ref_local.getReference_id().equals(ext_ref_id)) {
+                                                        ext_ref_ref_local.setExt_ref(ext_ref_local); // Making connection between External Reference object and External Reference Reference object
+                                                    }
+                                                }
+
+                                                pattern_ext_ref_refs.add(ext_ref_ref_local);
                                             }
                                         }
 

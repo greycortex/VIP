@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * This class represents a CWE view object (CWE view ID, name attribute, type attribute, status attribute,
@@ -79,9 +80,10 @@ public class CWEviewObj {
      * If it can't find any informations, it returns these attributes as null values
      *
      * @param file path to an XML file which will be parsed from
+     * @param ext_refs existing CWE External Reference objects for search of the relating ones
      * @return list of parsed CWE view objects
      */
-    public static List<CWEviewObj> CWEviewToArrayList(String file) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
+    public static List<CWEviewObj> CWEviewToArrayList(String file, List<CWEextRefObj> ext_refs) { // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip or https://capec.mitre.org/data/xml/capec_latest.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         List<CWEviewObj> view_objs = new ArrayList<>(); // creating empty List for it to be filled with CWE view objects
@@ -145,10 +147,10 @@ public class CWEviewObj {
                                                 String view_capec_id = null;
                                                 NamedNodeMap view_relation_attr = view_relation_nodes.item(g).getAttributes();
 
-                                                if (file == "exclude/capec_latest.xml"){
+                                                if (file.equals("exclude/capec_latest.xml")){
                                                     view_capec_id = view_relation_attr.getNamedItem("CAPEC_ID").getNodeValue(); // getting CAPEC ID attribute - relationship (member) object
 
-                                                } else if (file == "exclude/cwec_v4.2.xml"){
+                                                } else if (file.equals("exclude/cwec_v4.5.xml")){
                                                     view_cwe_id = view_relation_attr.getNamedItem("CWE_ID").getNodeValue(); // getting CWE ID attribute - relationship (member) object
                                                     view_view_view_id = view_relation_attr.getNamedItem("View_ID").getNodeValue(); // getting view ID attribute - relationship (member) object
                                                 }
@@ -188,15 +190,26 @@ public class CWEviewObj {
                                             if (view_reference_nodes.item(g).getNodeName().equals("Reference")) {
                                                 NamedNodeMap view_reference_attr = view_reference_nodes.item(g).getAttributes();
 
-                                                // getting external reference ID attribute - external reference reference object
-                                                String view_ext_ref_id = view_reference_attr.getNamedItem("External_Reference_ID").getNodeValue();
+                                                String view_ext_ref_id = null;
+                                                if (file.equals("exclude/capec_latest.xml")) {
+                                                    view_ext_ref_id = "CAPEC-" + view_reference_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting external reference ID attribute - external reference reference object
+                                                } else if (file.equals("exclude/cwec_v4.5.xml")) {
+                                                    view_ext_ref_id = "CWE-" + view_reference_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting external reference ID attribute - external reference reference object
+                                                }
 
                                                 String view_ext_ref_section = null;
                                                 if (view_reference_attr.getNamedItem("Section") != null) {
                                                     view_ext_ref_section = view_reference_attr.getNamedItem("Section").getNodeValue(); // getting section attribute - external reference reference object
                                                 }
 
-                                                view_view_ext_refs.add(new CWEextRefRefObj(view_ext_ref_id, view_ext_ref_section)); // creating new external reference reference object
+                                                CWEextRefRefObj ext_ref_ref_local = new CWEextRefRefObj(null, view_ext_ref_section); // creating new external reference reference object
+                                                for (CWEextRefObj ext_ref_local : ext_refs) {
+                                                    if (ext_ref_local.getReference_id().equals(view_ext_ref_id)) {
+                                                        ext_ref_ref_local.setExt_ref(ext_ref_local); // Making connection between External Reference object and External Reference Reference object
+                                                    }
+                                                }
+
+                                                view_view_ext_refs.add(ext_ref_ref_local);
                                             }
                                         }
 

@@ -6,11 +6,13 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.persistence.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,22 +26,35 @@ import java.util.Objects;
  * <p>
  * //* It can create a CWE external reference object from given parameters and return it
  * <p>
+ * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * <p>
  * It also can go through file with CWE weaknesses or CAPEC objects, find external reference objects, parse them into
  * CWE external reference objects and return them
  *
  * @author Tomas Bozek (XarfNao)
  */
-public class CWEextRefObj {
+@Entity(name = "external_reference")
+@Table(name="external_reference", schema = "mitre")
+public class CWEextRefObj implements Serializable {
 
+    public CWEextRefObj () { } // default constructor
+
+    @Id
+    @Column(unique = true, name = "id")
     protected String reference_id;
     protected String title;
     protected String url;
     protected String publication;
     protected String publisher;
     protected String edition;
+    @Column(name = "author")
+    @CollectionTable(name = "ext_ref_authors", schema = "mitre")
+    @ElementCollection(targetClass = String.class)
     protected List<String> authors;
     protected Date publication_date;
     protected Date url_date;
+    @OneToMany(mappedBy = "ext_ref")
+    protected List<CWEextRefRefObj> ext_ref_refs;
 
     /**
      * Copies constructor
@@ -67,6 +82,10 @@ public class CWEextRefObj {
         this.publication_date = publication_date;
         this.url_date = url_date;
 
+    }
+
+    public String getReference_id() {
+        return reference_id;
     }
 
     /**
@@ -100,7 +119,14 @@ public class CWEextRefObj {
                             NodeList ext_refs_specific_nodes = ext_refs_nodes.item(y).getChildNodes();
 
                             NamedNodeMap ext_ref_attr = ext_refs_nodes.item(y).getAttributes();
-                            String ext_ref_id = ext_ref_attr.getNamedItem("Reference_ID").getNodeValue(); // getting reference id attribute
+                            String ext_ref_id = null;
+
+                            if (file.equals("exclude/cwec_v4.5.xml")) {
+                                ext_ref_id = "CWE-" + ext_ref_attr.getNamedItem("Reference_ID").getNodeValue(); // getting reference id attribute
+                            }
+                            else if (file.equals("exclude/capec_latest.xml")) {
+                                ext_ref_id = "CAPEC-" + ext_ref_attr.getNamedItem("Reference_ID").getNodeValue(); // getting reference id attribute
+                            }
 
                             String ext_ref_title = null;
                             String ext_ref_url = null;
@@ -216,11 +242,11 @@ public class CWEextRefObj {
         if (this == o) return true;
         if (!(o instanceof CWEextRefObj)) return false;
         CWEextRefObj that = (CWEextRefObj) o;
-        return Objects.equals(reference_id, that.reference_id) && Objects.equals(title, that.title) && Objects.equals(url, that.url) && Objects.equals(publication, that.publication) && Objects.equals(publisher, that.publisher) && Objects.equals(edition, that.edition) && Objects.equals(authors, that.authors) && Objects.equals(publication_date, that.publication_date) && Objects.equals(url_date, that.url_date);
+        return Objects.equals(reference_id, that.reference_id) && Objects.equals(title, that.title) && Objects.equals(url, that.url) && Objects.equals(publication, that.publication) && Objects.equals(publisher, that.publisher) && Objects.equals(edition, that.edition) && Objects.equals(authors, that.authors) && Objects.equals(publication_date, that.publication_date) && Objects.equals(url_date, that.url_date) && Objects.equals(ext_ref_refs, that.ext_ref_refs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(reference_id, title, url, publication, publisher, edition, authors, publication_date, url_date);
+        return Objects.hash(reference_id, title, url, publication, publisher, edition, authors, publication_date, url_date, ext_ref_refs);
     }
 }

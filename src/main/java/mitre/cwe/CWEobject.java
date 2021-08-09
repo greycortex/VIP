@@ -236,13 +236,13 @@ public class CWEobject implements Serializable {
      * parses them and returns them in a List
      *
      * @param capec_objs existing CAPEC objects for search of the relating ones
+     * @param ext_refs existing CWE External Reference objects for search of the relating ones
      * @return List of CWE weakness objects from given XML file
      */
-    public static List<CWEobject> CWEfileToArraylist(List<CAPECobject> capec_objs) {
+    public static List<CWEobject> CWEfileToArraylist(List<CAPECobject> capec_objs, List<CWEextRefObj> ext_refs) {
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         List<CWEobject> cwe_objs = new ArrayList<>(); // empty List which will be filled with CWE weakness objects later on
-        Set<CAPECobject> capecs_to_remove = new LinkedHashSet<>(); // Set for removing connected CAPEC objects from the input List later on
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -452,13 +452,21 @@ public class CWEobject implements Serializable {
                                         for (int w = 0; w < ext_ref_nodes.getLength(); w++) {
                                             if (ext_ref_nodes.item(w).getNodeName().equals("Reference")) {
                                                 NamedNodeMap ext_ref_attr = ext_ref_nodes.item(w).getAttributes();
-                                                String cwe_ext_ref_id = ext_ref_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ID attribute - external reference reference object
+                                                String cwe_ext_ref_id = "CWE-" + ext_ref_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ID attribute - external reference reference object
 
                                                 String cwe_ext_ref_section = null;
                                                 if (ext_ref_attr.getNamedItem("Section") != null) {
                                                     cwe_ext_ref_section = ext_ref_attr.getNamedItem("Section").getNodeValue(); // getting section attribute - external reference reference object
                                                 }
-                                                cwe_ext_ref_refs.add(new CWEextRefRefObj(cwe_ext_ref_id, cwe_ext_ref_section)); // creating external reference reference object
+
+                                                CWEextRefRefObj ext_ref_ref_local = new CWEextRefRefObj(null, cwe_ext_ref_section); // Creating external reference reference object
+                                                for (CWEextRefObj ext_ref_local : ext_refs) {
+                                                    if (ext_ref_local.getReference_id().equals(cwe_ext_ref_id)) {
+                                                        ext_ref_ref_local.setExt_ref(ext_ref_local); // Making connection between External Reference object and External Reference Reference object
+                                                    }
+                                                }
+
+                                                cwe_ext_ref_refs.add(ext_ref_ref_local);
                                             }
                                         }
 
@@ -587,14 +595,21 @@ public class CWEobject implements Serializable {
                                                         for (int w = 0; w < ext_ref_ref_nodes.getLength(); w++) {
                                                             if (ext_ref_ref_nodes.item(w).getNodeName().equals("Reference")) {
                                                                 NamedNodeMap ext_ref_attr = ext_ref_ref_nodes.item(w).getAttributes();
-                                                                String dem_ext_ref_id = ext_ref_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ID attribute - external reference reference object - demonstrative example object
+                                                                String dem_ext_ref_id = "CWE-" + ext_ref_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ID attribute - external reference reference object - demonstrative example object
 
                                                                 String dem_ext_ref_section = null;
                                                                 if (ext_ref_attr.getNamedItem("Section") != null) {
                                                                     dem_ext_ref_section = ext_ref_attr.getNamedItem("Section").getNodeValue(); // getting section attribute - external reference reference object - demonstrative example object
                                                                 }
 
-                                                                dem_ex_ext_ref_refs.add(new CWEextRefRefObj(dem_ext_ref_id, dem_ext_ref_section)); // creating external reference reference object - demonstrative example object
+                                                                CWEextRefRefObj ext_ref_ref_local = new CWEextRefRefObj(null, dem_ext_ref_section); // Creating external reference reference object
+                                                                for (CWEextRefObj ext_ref_local : ext_refs) {
+                                                                    if (ext_ref_local.getReference_id().equals(dem_ext_ref_id)) {
+                                                                        ext_ref_ref_local.setExt_ref(ext_ref_local); // Making connection between External Reference object and External Reference Reference object
+                                                                    }
+                                                                }
+
+                                                                dem_ex_ext_ref_refs.add(ext_ref_ref_local); // creating external reference reference object - demonstrative example object
                                                             }
                                                         }
                                                     }
@@ -674,7 +689,6 @@ public class CWEobject implements Serializable {
                                                 for (int p = 0; p < capec_objs.size(); p++){
                                                     if (capec_objs.get(p).getCapec_id().equals(rel_attack_patt_id)){
                                                         cwe_rel_attack_patterns.add(capec_objs.get(p));
-                                                        capecs_to_remove.add(capec_objs.get(p)); // Removing connected CAPEC object from the original list
                                                     }
                                                 }
                                             }
@@ -710,8 +724,6 @@ public class CWEobject implements Serializable {
                             }
                         }
                     }
-
-                    capec_objs.removeAll(capecs_to_remove); // Removing all connected CAPEC objects from the original list
                 }
             }
         } catch (SAXException | IOException | ParserConfigurationException ex) {

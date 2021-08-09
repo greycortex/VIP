@@ -302,7 +302,7 @@ public class CPEobject implements Serializable {
                 .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
                 .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
                 .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
-                .addAnnotatedClass(CWEweakOrdObj.class);
+                .addAnnotatedClass(CWEweakOrdObj.class).addAnnotatedClass(CWEextRefObj.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating transaction, session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);
@@ -432,7 +432,7 @@ public class CPEobject implements Serializable {
                 .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
                 .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
                 .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
-                .addAnnotatedClass(CWEweakOrdObj.class);
+                .addAnnotatedClass(CWEweakOrdObj.class).addAnnotatedClass(CWEextRefObj.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);
@@ -615,7 +615,7 @@ public class CPEobject implements Serializable {
                 .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
                 .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
                 .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
-                .addAnnotatedClass(CWEweakOrdObj.class);
+                .addAnnotatedClass(CWEweakOrdObj.class).addAnnotatedClass(CWEextRefObj.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating session and session factory
         SessionFactory sf = con.buildSessionFactory(reg);
