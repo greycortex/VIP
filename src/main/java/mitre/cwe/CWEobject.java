@@ -87,6 +87,8 @@ public class CWEobject implements Serializable {
     protected List<String> functional_areas;
     @ManyToMany(mappedBy = "cwe")
     protected List<CVEobject> cve;
+    @OneToMany(mappedBy = "related_cwe")
+    protected List<CWErelationObj> relations_related;
 
 
     /**
@@ -776,7 +778,7 @@ public class CWEobject implements Serializable {
                 ", dem_examples=" + dem_examples +
                 ", obs_examples=" + obs_examples +
                 ", det_meths=" + det_meths +
-                ", related attack patterns=" + capec +
+                ", related_attack_patterns=" + capec +
                 ", affected_resources=" + affected_resources +
                 ", functional_areas=" + functional_areas +
                 '}';
@@ -787,11 +789,11 @@ public class CWEobject implements Serializable {
         if (this == o) return true;
         if (!(o instanceof CWEobject)) return false;
         CWEobject cwEobject = (CWEobject) o;
-        return Objects.equals(code_id, cwEobject.code_id) && Objects.equals(name, cwEobject.name) && Objects.equals(abstraction, cwEobject.abstraction) && Objects.equals(structure, cwEobject.structure) && Objects.equals(status, cwEobject.status) && Objects.equals(description, cwEobject.description) && Objects.equals(ext_description, cwEobject.ext_description) && Objects.equals(exploit_likelihood, cwEobject.exploit_likelihood) && Objects.equals(relations, cwEobject.relations) && Objects.equals(appl_platform_objs, cwEobject.appl_platform_objs) && Objects.equals(bg_details, cwEobject.bg_details) && Objects.equals(capec, cwEobject.capec) && Objects.equals(notes, cwEobject.notes) && Objects.equals(intr_modes, cwEobject.intr_modes) && Objects.equals(consequences, cwEobject.consequences) && Objects.equals(alter_terms, cwEobject.alter_terms) && Objects.equals(ext_ref_refs, cwEobject.ext_ref_refs) && Objects.equals(tax_maps, cwEobject.tax_maps) && Objects.equals(pot_mits, cwEobject.pot_mits) && Objects.equals(weak_ords, cwEobject.weak_ords) && Objects.equals(dem_examples, cwEobject.dem_examples) && Objects.equals(obs_examples, cwEobject.obs_examples) && Objects.equals(det_meths, cwEobject.det_meths) && Objects.equals(affected_resources, cwEobject.affected_resources) && Objects.equals(functional_areas, cwEobject.functional_areas) && Objects.equals(cve, cwEobject.cve);
+        return Objects.equals(code_id, cwEobject.code_id) && Objects.equals(name, cwEobject.name) && Objects.equals(abstraction, cwEobject.abstraction) && Objects.equals(structure, cwEobject.structure) && Objects.equals(status, cwEobject.status) && Objects.equals(description, cwEobject.description) && Objects.equals(ext_description, cwEobject.ext_description) && Objects.equals(exploit_likelihood, cwEobject.exploit_likelihood) && Objects.equals(relations, cwEobject.relations) && Objects.equals(appl_platform_objs, cwEobject.appl_platform_objs) && Objects.equals(bg_details, cwEobject.bg_details) && Objects.equals(capec, cwEobject.capec) && Objects.equals(notes, cwEobject.notes) && Objects.equals(intr_modes, cwEobject.intr_modes) && Objects.equals(consequences, cwEobject.consequences) && Objects.equals(alter_terms, cwEobject.alter_terms) && Objects.equals(ext_ref_refs, cwEobject.ext_ref_refs) && Objects.equals(tax_maps, cwEobject.tax_maps) && Objects.equals(pot_mits, cwEobject.pot_mits) && Objects.equals(weak_ords, cwEobject.weak_ords) && Objects.equals(dem_examples, cwEobject.dem_examples) && Objects.equals(obs_examples, cwEobject.obs_examples) && Objects.equals(det_meths, cwEobject.det_meths) && Objects.equals(affected_resources, cwEobject.affected_resources) && Objects.equals(functional_areas, cwEobject.functional_areas) && Objects.equals(cve, cwEobject.cve) && Objects.equals(relations_related, cwEobject.relations_related);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code_id, name, abstraction, structure, status, description, ext_description, exploit_likelihood, relations, appl_platform_objs, bg_details, capec, notes, intr_modes, consequences, alter_terms, ext_ref_refs, tax_maps, pot_mits, weak_ords, dem_examples, obs_examples, det_meths, affected_resources, functional_areas, cve);
+        return Objects.hash(code_id, name, abstraction, structure, status, description, ext_description, exploit_likelihood, relations, appl_platform_objs, bg_details, capec, notes, intr_modes, consequences, alter_terms, ext_ref_refs, tax_maps, pot_mits, weak_ords, dem_examples, obs_examples, det_meths, affected_resources, functional_areas, cve, relations_related);
     }
 }

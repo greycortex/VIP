@@ -85,6 +85,8 @@ public class CAPECobject implements Serializable {
     protected List<CAPECattStepObj> attack_steps;
     @OneToMany(mappedBy = "capec")
     protected List<CAPECskillObj> skills_required;
+    @OneToMany(mappedBy = "related_capec")
+    protected List<CAPECrelationObj> relations_related;
 
     /**
      * Copies constructor
@@ -531,7 +533,7 @@ public class CAPECobject implements Serializable {
                 ", description='" + description + '\'' +
                 ", attack_likelihood='" + attack_likelihood + '\'' +
                 ", typical_severity='" + typical_severity + '\'' +
-                ", related CWE objects=" + cwe +
+                ", related_CWE_objects=" + cwe +
                 ", mitigations=" + mitigations +
                 ", notes=" + notes +
                 ", tax_maps=" + tax_maps +
@@ -553,11 +555,11 @@ public class CAPECobject implements Serializable {
         if (this == o) return true;
         if (!(o instanceof CAPECobject)) return false;
         CAPECobject that = (CAPECobject) o;
-        return Objects.equals(capec_id, that.capec_id) && Objects.equals(capec_name, that.capec_name) && Objects.equals(capec_abstraction, that.capec_abstraction) && Objects.equals(capec_status, that.capec_status) && Objects.equals(description, that.description) && Objects.equals(attack_likelihood, that.attack_likelihood) && Objects.equals(typical_severity, that.typical_severity) && Objects.equals(cwe, that.cwe) && Objects.equals(mitigations, that.mitigations) && Objects.equals(prerequisites, that.prerequisites) && Objects.equals(examples, that.examples) && Objects.equals(resources, that.resources) && Objects.equals(indicators, that.indicators) && Objects.equals(notes, that.notes) && Objects.equals(tax_maps, that.tax_maps) && Objects.equals(alter_terms, that.alter_terms) && Objects.equals(ext_ref_refs, that.ext_ref_refs) && Objects.equals(consequences, that.consequences) && Objects.equals(related_patterns, that.related_patterns) && Objects.equals(attack_steps, that.attack_steps) && Objects.equals(skills_required, that.skills_required);
+        return Objects.equals(capec_id, that.capec_id) && Objects.equals(capec_name, that.capec_name) && Objects.equals(capec_abstraction, that.capec_abstraction) && Objects.equals(capec_status, that.capec_status) && Objects.equals(description, that.description) && Objects.equals(attack_likelihood, that.attack_likelihood) && Objects.equals(typical_severity, that.typical_severity) && Objects.equals(cwe, that.cwe) && Objects.equals(mitigations, that.mitigations) && Objects.equals(prerequisites, that.prerequisites) && Objects.equals(examples, that.examples) && Objects.equals(resources, that.resources) && Objects.equals(indicators, that.indicators) && Objects.equals(notes, that.notes) && Objects.equals(tax_maps, that.tax_maps) && Objects.equals(alter_terms, that.alter_terms) && Objects.equals(ext_ref_refs, that.ext_ref_refs) && Objects.equals(consequences, that.consequences) && Objects.equals(related_patterns, that.related_patterns) && Objects.equals(attack_steps, that.attack_steps) && Objects.equals(skills_required, that.skills_required) && Objects.equals(relations_related, that.relations_related);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood, typical_severity, cwe, mitigations, prerequisites, examples, resources, indicators, notes, tax_maps, alter_terms, ext_ref_refs, consequences, related_patterns, attack_steps, skills_required);
+        return Objects.hash(capec_id, capec_name, capec_abstraction, capec_status, description, attack_likelihood, typical_severity, cwe, mitigations, prerequisites, examples, resources, indicators, notes, tax_maps, alter_terms, ext_ref_refs, consequences, related_patterns, attack_steps, skills_required, relations_related);
     }
 }

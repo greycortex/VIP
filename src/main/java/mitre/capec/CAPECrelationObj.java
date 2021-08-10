@@ -26,7 +26,9 @@ public class CAPECrelationObj {
     @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
+    @Column
     protected String nature;
+    @Transient
     protected String related_capec_id;
     @Column(name = "exclude_id")
     @CollectionTable(name = "rel_capec_exclude_ids", schema = "mitre")
@@ -34,6 +36,8 @@ public class CAPECrelationObj {
     protected List<String> exclude_ids;
     @ManyToOne
     protected CAPECobject capec;
+    @ManyToOne
+    protected CAPECobject related_capec;
 
     /**
      * Copies constructor
@@ -48,6 +52,14 @@ public class CAPECrelationObj {
         this.related_capec_id = related_capec_id;
         this.exclude_ids = exclude_ids;
 
+    }
+
+    public String getRelated_capec_id() {
+        return related_capec_id;
+    }
+
+    public void setRelated_capec(CAPECobject related_capec) {
+        this.related_capec = related_capec;
     }
 
     public void setCapec(CAPECobject capec) {
@@ -78,11 +90,11 @@ public class CAPECrelationObj {
         if (this == o) return true;
         if (!(o instanceof CAPECrelationObj)) return false;
         CAPECrelationObj that = (CAPECrelationObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(nature, that.nature) && Objects.equals(related_capec_id, that.related_capec_id) && Objects.equals(exclude_ids, that.exclude_ids) && Objects.equals(capec, that.capec);
+        return Objects.equals(id, that.id) && Objects.equals(nature, that.nature) && Objects.equals(related_capec_id, that.related_capec_id) && Objects.equals(exclude_ids, that.exclude_ids) && Objects.equals(capec, that.capec) && Objects.equals(related_capec, that.related_capec);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nature, related_capec_id, exclude_ids, capec);
+        return Objects.hash(id, nature, related_capec_id, exclude_ids, capec, related_capec);
     }
 }

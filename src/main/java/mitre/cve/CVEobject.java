@@ -529,37 +529,44 @@ public class CVEobject {
             Session sessionc = sesf.openSession();
             Transaction txv = sessionc.beginTransaction();
 
+            // Putting External Reference objects into database
             for (CWEextRefObj ext_ref : external_refs) {
-                sessionc.save(ext_ref); // Putting External Reference objects into database
+                sessionc.save(ext_ref);
+            }
+
+            // Putting CAPEC objects into database
+            for (CAPECobject capec : capec_objs) {
+                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) == null) {
+                    // Putting CAPEC object into database
+                    sessionc.save(capec);
+                }
             }
             // Committing transaction
             txv.commit();
             // Beginning transaction
             txv = sessionc.beginTransaction();
 
-            // Putting the rest of CAPEC objects into database
+            // Putting related objects of CAPEC objects into database
             for (CAPECobject capec : capec_objs) {
-                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) == null) {
-                    // Putting related CAPEC object into database
-                    sessionc.save(capec);
+                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
                     // Putting CAPEC note objects into database
-                    for (CWEnoteObj note: capec.getNotes()) {
+                    for (CWEnoteObj note : capec.getNotes()) {
                         note.setCapec(capec);
                         sessionc.save(note);
                     }
                     // Putting CAPEC taxonomy mapping objects into database
-                    for (CWEtaxMapObj tax: capec.getTax_maps()) {
+                    for (CWEtaxMapObj tax : capec.getTax_maps()) {
                         tax.setCapec(capec);
                         sessionc.save(tax);
                     }
                     // Putting CAPEC alternate term objects into database
-                    for (CWEalterTermObj alter: capec.getAlter_terms()) {
+                    for (CWEalterTermObj alter : capec.getAlter_terms()) {
                         alter.setCapec(capec);
                         sessionc.save(alter);
                     }
                     // Putting external reference reference objects into database
-                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) {
-                        if (ext_ref_ref.getExt_ref() != null){
+                    for (CWEextRefRefObj ext_ref_ref : capec.getExt_ref_refs()) {
+                        if (ext_ref_ref.getExt_ref() != null) {
                             CWEextRefObj ext_ref_to_set = (CWEextRefObj) sessionc.get(CWEextRefObj.class, ext_ref_ref.getExt_ref().getReference_id());
                             ext_ref_ref.setExt_ref(ext_ref_to_set);
                             ext_ref_ref.setCapec(capec);
@@ -567,22 +574,26 @@ public class CVEobject {
                         }
                     }
                     // Putting CAPEC consequence objects into database
-                    for (CWEconseqObj conseq: capec.getConsequences()) {
+                    for (CWEconseqObj conseq : capec.getConsequences()) {
                         conseq.setCapec(capec);
                         sessionc.save(conseq);
                     }
                     // Putting CAPEC relation objects into database
-                    for (CAPECrelationObj relation: capec.getRelated_patterns()) {
-                        relation.setCapec(capec);
-                        sessionc.save(relation);
+                    for (CAPECrelationObj relation : capec.getRelated_patterns()) {
+                        if (sessionc.get(CAPECobject.class, relation.getRelated_capec_id()) != null) {
+                            CAPECobject related_capec = (CAPECobject) sessionc.get(CAPECobject.class, relation.getRelated_capec_id());
+                            relation.setRelated_capec(related_capec);
+                            relation.setCapec(capec);
+                            sessionc.save(relation);
+                        }
                     }
                     // Putting CAPEC attack step objects into database
-                    for (CAPECattStepObj att_step: capec.getAttack_steps()) {
+                    for (CAPECattStepObj att_step : capec.getAttack_steps()) {
                         att_step.setCapec(capec);
                         sessionc.save(att_step);
                     }
                     // Putting CAPEC skills required objects into database
-                    for (CAPECskillObj skill: capec.getSkills_required()) {
+                    for (CAPECskillObj skill : capec.getSkills_required()) {
                         skill.setCapec(capec);
                         sessionc.save(skill);
                     }
@@ -593,14 +604,14 @@ public class CVEobject {
             // Beginning transaction
             txv = sessionc.beginTransaction();
 
-            // Putting the rest of CWE and CAPEC objects related to them into database
+            // Putting CWE objects into database
             for (CWEobject cwe : cwe_objs) {
                 if (sessionc.get(CWEobject.class, cwe.getCode_id()) == null) {
                     // Creating List for CAPEC connecting
                     List<CAPECobject> capecs_to_add = new ArrayList<>();
-                    // Putting related CAPEC objects into database
+                    // Connecting related CAPEC objects
                     for (CAPECobject capec : cwe.getCapec()) {
-                        // If the CAPEC already exists in the database, only the connection between CAPEC and CWE will be made
+                        // Connection between CAPEC and CWE will be made
                         if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
                             CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
                             capecs_to_add.add(capec_to_add);
@@ -610,10 +621,23 @@ public class CVEobject {
                     cwe.getCapec().addAll(capecs_to_add);
                     // Putting CWE object into database
                     sessionc.save(cwe);
+                }
+            }
+            // Committing transaction
+            txv.commit();
+            // Beginning transaction
+            txv = sessionc.beginTransaction();
+
+            for (CWEobject cwe : cwe_objs) {
+                if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
                     // Putting CWE relation objects into database
                     for (CWErelationObj rel: cwe.getRelations()) {
-                        rel.setCwe(cwe);
-                        sessionc.save(rel);
+                        if (sessionc.get(CWEobject.class, rel.getRelated_cwe_id()) != null) {
+                            CWEobject related_cwe = (CWEobject) sessionc.get(CWEobject.class, rel.getRelated_cwe_id());
+                            rel.setRelated_cwe(related_cwe);
+                            rel.setCwe(cwe);
+                            sessionc.save(rel);
+                        }
                     }
                     // Putting CWE applicable platform objects into database
                     for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) {
@@ -780,55 +804,55 @@ public class CVEobject {
             System.out.println("Database table not empty, emptying database");
             // Emptying database
             session.beginTransaction();
-            session.createSQLQuery("DROP TABLE IF EXISTS mitre.affected_resources CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.alternate_term CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.applicable_platform CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.attack_step CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.bg_details CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.body_texts CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.capec CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.capec_relation CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.consequence CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.consequence_notes CASCADE;" +
+            session.createSQLQuery("DROP TABLE IF EXISTS mitre.cpe_compl_cpe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cpe CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cpe_compl_cpe CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cve_node CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cve_node_compl_cpe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cve CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cve_cwe CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cve_descriptions CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cvss2 CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cvss3 CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cve_reference CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.ref_tags CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_affected_resources CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.alternate_term CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_applicable_platform CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec_attack_step CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_bg_details CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.dem_ex_body_texts CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.related_attack_pattern CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.consequence CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cwe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.cwe_capec CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.cwe_relation CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.related_weakness CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.demonstrative_examp CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.descriptions CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.detection_method CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.example_code CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.examples CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.exclude_ids CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_detection_method CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec_examples CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.dem_ex_example_code CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.rel_capec_exclude_ids CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.external_ref_ref CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.functional_areas CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.impacts CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.indicators CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.introduction CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.likelihoods CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.mitigations CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.node CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.node_compl_cpe CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_functional_areas CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.conseq_impacts CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec_indicators CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_introduction CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.conseq_likelihoods CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec_mitigations CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.note CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.observed_example CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.phases CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.potential_mitigation CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.prerequisites CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.ref_tags CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.reference CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.resources CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.scopes CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.skill CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_observed_example CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.pot_mit_phases CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_potential_mitigation CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec_prerequisites CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.conseq_scopes CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec_skill CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.capec_resources CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.taxonomy_mapping CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.techniques CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.att_step_techniques CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cwe_weakness_ordinality CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.conseq_notes CASCADE;" +
+                    "DROP TABLE IF EXISTS mitre.cve_cwe CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.external_reference CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.ext_ref_authors CASCADE;" +
-                    "DROP TABLE IF EXISTS mitre.weakness_ordinality CASCADE;").executeUpdate();
+                    "DROP TABLE IF EXISTS mitre.ext_ref_authors CASCADE;").executeUpdate();
             session.getTransaction().commit();
 
             // Closing session and session factory
@@ -853,36 +877,43 @@ public class CVEobject {
             Session sessionc = sesf.openSession();
             Transaction txv = sessionc.beginTransaction();
 
+            // Putting External Reference objects into database
             for (CWEextRefObj ext_ref : external_refs) {
-                sessionc.save(ext_ref); // Putting External Reference objects into database
+                sessionc.save(ext_ref);
+            }
+
+            // Putting CAPEC objects into database
+            for (CAPECobject capec : capec_objs) {
+                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) == null) {
+                    // Putting CAPEC object into database
+                    sessionc.save(capec);
+                }
             }
             // Committing transaction
             txv.commit();
             // Beginning transaction
             txv = sessionc.beginTransaction();
 
-            // Putting the rest of CAPEC objects into database
+            // Putting related objects of CAPEC objects into database
             for (CAPECobject capec : capec_objs) {
-                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) == null) {
-                    // Putting related CAPEC object into database
-                    sessionc.save(capec);
+                if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
                     // Putting CAPEC note objects into database
-                    for (CWEnoteObj note: capec.getNotes()) {
+                    for (CWEnoteObj note : capec.getNotes()) {
                         note.setCapec(capec);
                         sessionc.save(note);
                     }
                     // Putting CAPEC taxonomy mapping objects into database
-                    for (CWEtaxMapObj tax: capec.getTax_maps()) {
+                    for (CWEtaxMapObj tax : capec.getTax_maps()) {
                         tax.setCapec(capec);
                         sessionc.save(tax);
                     }
                     // Putting CAPEC alternate term objects into database
-                    for (CWEalterTermObj alter: capec.getAlter_terms()) {
+                    for (CWEalterTermObj alter : capec.getAlter_terms()) {
                         alter.setCapec(capec);
                         sessionc.save(alter);
                     }
                     // Putting external reference reference objects into database
-                    for (CWEextRefRefObj ext_ref_ref: capec.getExt_ref_refs()) {
+                    for (CWEextRefRefObj ext_ref_ref : capec.getExt_ref_refs()) {
                         if (ext_ref_ref.getExt_ref() != null) {
                             CWEextRefObj ext_ref_to_set = (CWEextRefObj) sessionc.get(CWEextRefObj.class, ext_ref_ref.getExt_ref().getReference_id());
                             ext_ref_ref.setExt_ref(ext_ref_to_set);
@@ -891,22 +922,26 @@ public class CVEobject {
                         }
                     }
                     // Putting CAPEC consequence objects into database
-                    for (CWEconseqObj conseq: capec.getConsequences()) {
+                    for (CWEconseqObj conseq : capec.getConsequences()) {
                         conseq.setCapec(capec);
                         sessionc.save(conseq);
                     }
                     // Putting CAPEC relation objects into database
-                    for (CAPECrelationObj relation: capec.getRelated_patterns()) {
-                        relation.setCapec(capec);
-                        sessionc.save(relation);
+                    for (CAPECrelationObj relation : capec.getRelated_patterns()) {
+                        if (sessionc.get(CAPECobject.class, relation.getRelated_capec_id()) != null) {
+                            CAPECobject related_capec = (CAPECobject) sessionc.get(CAPECobject.class, relation.getRelated_capec_id());
+                            relation.setRelated_capec(related_capec);
+                            relation.setCapec(capec);
+                            sessionc.save(relation);
+                        }
                     }
                     // Putting CAPEC attack step objects into database
-                    for (CAPECattStepObj att_step: capec.getAttack_steps()) {
+                    for (CAPECattStepObj att_step : capec.getAttack_steps()) {
                         att_step.setCapec(capec);
                         sessionc.save(att_step);
                     }
                     // Putting CAPEC skills required objects into database
-                    for (CAPECskillObj skill: capec.getSkills_required()) {
+                    for (CAPECskillObj skill : capec.getSkills_required()) {
                         skill.setCapec(capec);
                         sessionc.save(skill);
                     }
@@ -917,14 +952,14 @@ public class CVEobject {
             // Beginning transaction
             txv = sessionc.beginTransaction();
 
-            // Putting the rest of CWE and CAPEC objects related to them into database
+            // Putting CWE objects into database
             for (CWEobject cwe : cwe_objs) {
                 if (sessionc.get(CWEobject.class, cwe.getCode_id()) == null) {
                     // Creating List for CAPEC connecting
                     List<CAPECobject> capecs_to_add = new ArrayList<>();
-                    // Putting related CAPEC objects into database
+                    // Connecting related CAPEC objects
                     for (CAPECobject capec : cwe.getCapec()) {
-                        // If the CAPEC already exists in the database, only the connection between CAPEC and CWE will be made
+                        // Connection between CAPEC and CWE will be made
                         if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
                             CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
                             capecs_to_add.add(capec_to_add);
@@ -934,10 +969,23 @@ public class CVEobject {
                     cwe.getCapec().addAll(capecs_to_add);
                     // Putting CWE object into database
                     sessionc.save(cwe);
+                }
+            }
+            // Committing transaction
+            txv.commit();
+            // Beginning transaction
+            txv = sessionc.beginTransaction();
+
+            for (CWEobject cwe : cwe_objs) {
+                if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
                     // Putting CWE relation objects into database
                     for (CWErelationObj rel: cwe.getRelations()) {
-                        rel.setCwe(cwe);
-                        sessionc.save(rel);
+                        if (sessionc.get(CWEobject.class, rel.getRelated_cwe_id()) != null) {
+                            CWEobject related_cwe = (CWEobject) sessionc.get(CWEobject.class, rel.getRelated_cwe_id());
+                            rel.setRelated_cwe(related_cwe);
+                            rel.setCwe(cwe);
+                            sessionc.save(rel);
+                        }
                     }
                     // Putting CWE applicable platform objects into database
                     for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) {

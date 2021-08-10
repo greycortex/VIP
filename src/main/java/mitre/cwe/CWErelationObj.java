@@ -25,12 +25,18 @@ public class CWErelationObj {
     @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
+    @Column
     protected String nature;
+    @Transient
     protected String related_cwe_id;
+    @Column
     protected String view_id;
+    @Column
     protected String ordinal;
     @ManyToOne
     protected CWEobject cwe;
+    @ManyToOne
+    protected CWEobject related_cwe;
 
     /**
      * Copies constructor
@@ -47,6 +53,14 @@ public class CWErelationObj {
         this.view_id = view_id;
         this.ordinal = ordinal;
 
+    }
+
+    public String getRelated_cwe_id() {
+        return related_cwe_id;
+    }
+
+    public void setRelated_cwe(CWEobject related_cwe) {
+        this.related_cwe = related_cwe;
     }
 
     public void setCwe(CWEobject cwe) {
@@ -78,11 +92,11 @@ public class CWErelationObj {
         if (this == o) return true;
         if (!(o instanceof CWErelationObj)) return false;
         CWErelationObj that = (CWErelationObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(nature, that.nature) && Objects.equals(related_cwe_id, that.related_cwe_id) && Objects.equals(view_id, that.view_id) && Objects.equals(ordinal, that.ordinal) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(id, that.id) && Objects.equals(nature, that.nature) && Objects.equals(related_cwe_id, that.related_cwe_id) && Objects.equals(view_id, that.view_id) && Objects.equals(ordinal, that.ordinal) && Objects.equals(cwe, that.cwe) && Objects.equals(related_cwe, that.related_cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nature, related_cwe_id, view_id, ordinal, cwe);
+        return Objects.hash(id, nature, related_cwe_id, view_id, ordinal, cwe, related_cwe);
     }
 }
