@@ -32,10 +32,17 @@ public class Test {
         CVEobject.putIntoDatabase(fileNames);
     }
 
+    // Quickly updating CVE, CPE, CWE and CAPEC data in the database
+    public static void quickUpdate(){
+        CVEobject.quickUpdate("exclude/nvdcve-1.1-modified.json");
+    }
+
     public static void main(String[] args) {
         System.out.println("Welcome to the VIP application");
 
-        putIntoDatabase();
+        //putIntoDatabase();
+
+        quickUpdate(); // --- its slow for now
 
         //CPEobject.feedReconstr(); // -- Reconstructs CPE match feed file by using objects from the database
     }

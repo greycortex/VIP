@@ -156,6 +156,10 @@ public class CWEobject implements Serializable {
 
     }
 
+    public void setCapec(List<CAPECobject> capec) {
+        this.capec = capec;
+    }
+
     public String getCode_id() {
         return code_id;
     }

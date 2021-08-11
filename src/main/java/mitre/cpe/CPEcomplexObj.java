@@ -38,32 +38,8 @@ public class CPEcomplexObj extends CPEobject {
         this.cpe = cpe;
     }
 
-    public List<CPEnodeToComplex> getNode_to_compl() {
-        return node_to_compl;
-    }
-
-    public void setNode_to_compl(List<CPEnodeToComplex> node_to_compl) {
-        this.node_to_compl = node_to_compl;
-    }
-
     public Boolean getVulnerable() {
         return vulnerable;
-    }
-
-    public String getVersion_start_excluding() {
-        return version_start_excluding;
-    }
-
-    public String getVersion_end_excluding() {
-        return version_end_excluding;
-    }
-
-    public String getVersion_start_including() {
-        return version_start_including;
-    }
-
-    public String getVersion_end_including() {
-        return version_end_including;
     }
 
     /**

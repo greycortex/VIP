@@ -14,6 +14,7 @@ import mitre.cwe.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
@@ -41,7 +42,7 @@ import java.util.Date;
  */
 @Entity(name = "cve")
 @Table(name="cve", schema = "mitre")
-public class CVEobject {
+public class CVEobject implements Serializable{
 
     public CVEobject() { } // default constructor
 
@@ -55,21 +56,21 @@ public class CVEobject {
     @ManyToMany
     @CollectionTable(name = "cve_cwe", schema = "mitre")
     protected List<CWEobject> cwe;
-    @OneToMany(mappedBy = "cve")
+    @OneToMany(mappedBy = "cve", cascade = CascadeType.REMOVE)
     protected List<ReferenceObject> references;
     @Column(length = 8191, name = "description")
     @CollectionTable(name = "cve_descriptions", schema = "mitre")
     @ElementCollection(targetClass = String.class)
     protected List<String> descriptions;
     protected String cve_data_version;
-    @OneToMany(mappedBy = "cve")
+    @OneToMany(mappedBy = "cve", cascade = CascadeType.REMOVE)
     protected List<CPEnodeObject> cpe_nodes;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     protected CVSS2object cvss_v2;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     protected CVSS3object cvss_v3;
-    protected double cvss_v2_base_score;
-    protected double cvss_v3_base_score;
+    protected Double cvss_v2_base_score;
+    protected Double cvss_v3_base_score;
     protected Date published_date;
     protected Date last_modified_date;
 
@@ -94,7 +95,7 @@ public class CVEobject {
      */
     public CVEobject(String data_type, String data_format, String data_version, String meta_data_id, String meta_data_assigner,
                      List<CWEobject> cwe, List<ReferenceObject> references, List<String> descriptions, String cve_data_version, List<CPEnodeObject> cpe_nodes,
-                     CVSS2object cvss_v2, CVSS3object cvss_v3, double cvss_v2_base_score, double cvss_v3_base_score, Date published_date,
+                     CVSS2object cvss_v2, CVSS3object cvss_v3, Double cvss_v2_base_score, Double cvss_v3_base_score, Date published_date,
                      Date last_modified_date) {
 
         this.data_type = data_type;
@@ -223,13 +224,13 @@ public class CVEobject {
                     JSONObject node = nodes_iterator.next();
                     String first_op = (String) node.get("operator");
 
-                    if (!(node.get("negate") == null)) first_op = "N" + first_op;
+                    if (node.get("negate") != null) first_op = "N" + first_op;
 
-                    if (node.get("children") != null) { // More complex structure
+                    JSONArray children = (JSONArray) node.get("children");
+                    if (!children.isEmpty()) { // More complex structure
                         CPEnodeObject parent_node_obj = new CPEnodeObject(null, first_op, null);
                         cpe_nodes_final.add(parent_node_obj); // new parent CPE node object added
 
-                        JSONArray children = (JSONArray) node.get("children");
                         Iterator<JSONObject> children_iterator = children.iterator();
 
                         while (children_iterator.hasNext()) {
@@ -238,7 +239,7 @@ public class CVEobject {
                             JSONObject child = children_iterator.next();
 
                             String child_oper = (String) child.get("operator");
-                            if (!(child.get("negate") == null)) child_oper = "N" + child_oper;
+                            if (child.get("negate") != null) child_oper = "N" + child_oper;
 
                             JSONArray cpe_match = (JSONArray) child.get("cpe_match");
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
@@ -263,7 +264,7 @@ public class CVEobject {
                         JSONArray cpe_match = (JSONArray) node.get("cpe_match");
                         List<CPEcomplexObj> cpe_complex_objs = new ArrayList<>(); // complex CPE objects - CPE node object
 
-                        if (cpe_match != null) {
+                        if (!cpe_match.isEmpty()) {
                             Iterator<JSONObject> cpe_iterator = cpe_match.iterator();
                             while (cpe_iterator.hasNext()) {
                                 JSONObject cpe_match_specific = cpe_iterator.next();
@@ -287,7 +288,7 @@ public class CVEobject {
 
                 // Getting CVSS v3 (base metric v3) object
                 CVSS3object cvss_v3_final = null; // cvss_v3
-                double base_score_v3_final = 0.0;  // base_score_v3
+                Double base_score_v3_final = null;  // base_score_v3
                 if (impact.get("baseMetricV3") == null) ;
                 else {
                     JSONObject base_metric_v3 = (JSONObject) impact.get("baseMetricV3");
@@ -348,7 +349,7 @@ public class CVEobject {
 
                 // Getting CVSS v2 (base metric v2) object
                 CVSS2object cvss_v2_final = null; // cvss_v3
-                double base_score_v2_final = 0.0;  // base_score_v3
+                Double base_score_v2_final = null;  // base_score_v3
                 if (impact.get("baseMetricV2") == null) ;
                 else {
                     JSONObject base_metric_v2 = (JSONObject) impact.get("baseMetricV2");
@@ -470,12 +471,154 @@ public class CVEobject {
     }
 
     /**
+     * This method's purpose is to quickly update CVE, CPE, CWE and CAPEC data in the database
+     *
+     * @param fileName path to .json file with CVE objects - "modified" file containing recently changed data
+     */
+    public static void quickUpdate (String fileName) {
+
+        // Measuring, how long it will take to update the database
+        long start_time = System.currentTimeMillis();
+        System.out.println("Actualization of objects in the database started");
+
+        // Counting to ensure optimalization
+        int refresh = 0;
+
+        // Creating connection
+        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
+                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
+                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class)
+                .addAnnotatedClass(CAPECattStepObj.class).addAnnotatedClass(CAPECobject.class).addAnnotatedClass(CAPECrelationObj.class)
+                .addAnnotatedClass(CAPECskillObj.class).addAnnotatedClass(CWEalterTermObj.class).addAnnotatedClass(CWEapplPlatfObj.class)
+                .addAnnotatedClass(CWEconseqObj.class).addAnnotatedClass(CWEdemExObj.class).addAnnotatedClass(CWEdetMethObj.class)
+                .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
+                .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
+                .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
+                .addAnnotatedClass(CWEweakOrdObj.class).addAnnotatedClass(CWEextRefObj.class);
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
+        // Creating session and session factory
+        SessionFactory sf = con.buildSessionFactory(reg);
+        Session session = sf.openSession();
+        Transaction txv = session.beginTransaction();
+
+        // Taking all CWE objects from the database
+        Query cwe_q = session.createQuery("from cwe");
+
+        // list of CWE objects from database
+        List<CWEobject> cwe_objs = (List<CWEobject>) cwe_q.getResultList();
+
+        // Commiting transaction and beginning it again
+        txv.commit();
+        txv = session.beginTransaction();
+        System.out.println("CWE objects pulled from the database for connection later on");
+
+        // Taking objects returned by the CVEjsonToObjects() method from "modified" file
+        List<CVEobject> cve_objs = CVEjsonToObjects(fileName, cwe_objs);
+        System.out.println("CVE objects from the 'modified' file parsed");
+
+        // Deleting all existing but not up-to-date CVE objects from database
+        for (CVEobject cve : cve_objs) {
+            refresh++;
+            // Ensuring optimalization
+            if (refresh % 250 == 0) {
+                txv.commit();
+                session.close();
+                session = sf.openSession();
+                txv = session.beginTransaction();
+            }
+            CVEobject cve_from_db = session.get(CVEobject.class, cve.meta_data_id);
+            if (cve_from_db != null) {
+                session.delete(cve_from_db);
+            }
+        }
+        System.out.println("Existing but not up-to-date CVE data removed from the database");
+        // Commiting transaction and beginning it again
+        txv.commit();
+        txv = session.beginTransaction();
+
+        // Putting all CVE objects from "modified" file with relations into database
+        for (CVEobject cve : cve_objs) {
+            refresh++;
+            // Ensuring optimalization
+            if (refresh % 250 == 0) {
+                txv.commit();
+                session.close();
+                session = sf.openSession();
+                txv = session.beginTransaction();
+            }
+            // Putting CVSS v2 object into database
+            if (!(cve.cvss_v2 == null)) session.save(cve.cvss_v2);
+            // Putting CVSS v3 object into database
+            if (!(cve.cvss_v3 == null)) session.save(cve.cvss_v3);
+            // Creating List for CWE connecting
+            List<CWEobject> cwes_to_add = new ArrayList<>();
+            // Putting related CWE and CAPEC objects into database
+            for (CWEobject cwe : cve.cwe) {
+                // Connection between CWE and CVE will be made
+                CWEobject cwe_to_add = (CWEobject) session.get(CWEobject.class, cwe.getCode_id());
+                cwes_to_add.add(cwe_to_add);
+            }
+            // CWE connecting
+            cve.cwe = new ArrayList<>();
+            cve.cwe.addAll(cwes_to_add);
+            // Putting CVE object into database
+            session.save(cve);
+            // Putting CPE node objects into database
+            for (CPEnodeObject node_obj : cve.cpe_nodes) {
+                if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
+                    // Putting CPE node object into database
+                    node_obj.setCve_obj(cve);
+                    session.save(node_obj);
+                    for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
+                        if (complex_cpe_obj != null) {
+                            complex_cpe_obj.setCpe_objs(new ArrayList<>());
+                            Serializable cpe_spec_id = complex_cpe_obj.getCpe_id();
+                            // If the relating CPE doesn't exist in the database, it will be created
+                            CPEobject cpe_to_add = (CPEobject) session.get(CPEobject.class, cpe_spec_id);
+                            if (cpe_to_add == null) {
+                                cpe_to_add = CPEobject.cpeUriToObject(complex_cpe_obj.getCpe_id());
+                                session.save(cpe_to_add);
+                            }
+                            // Connecting the right specific CPE object to the specific complex CPE object
+                            complex_cpe_obj.getCpe_objs().add(cpe_to_add);
+                            UUID uuid = UUID.randomUUID();
+                            complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
+                            // Putting complex CPE object into database
+                            session.save(complex_cpe_obj);
+                            // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
+                            CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((cve.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, cve.meta_data_id, complex_cpe_obj.getVulnerable());
+                            // Putting CPE note to complex CPE object into database
+                            session.save(node_to_compl_cpe);
+                        }
+                    }
+                } else if (node_obj != null) {
+                    // Putting CPE node object into database
+                    node_obj.setCve_obj(cve);
+                    session.save(node_obj);
+                }
+            }
+            for (ReferenceObject ref_obj : cve.references) {
+                // Putting CVE reference object into database
+                ref_obj.setCve_obj(cve);
+                session.save(ref_obj);
+            }
+        }
+        // Committing transaction if its active, closing session and session factory if its opened at the end
+        if (txv.isActive()) txv.commit();
+        if (session.isOpen()) session.close();
+        if (sf.isOpen()) sf.close();
+        System.out.println("Up-to-date CVE data put into the database");
+        if ((System.currentTimeMillis() - start_time) > 60000) System.out.println("Actualization of objects in the database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 60000) + " minutes");
+        else System.out.println("Actualization of objects in the database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 1000) + " seconds");
+    }
+
+    /**
      * This method's purpose is to put all given CVE, CWE and CAPEC objects and related objects into database or to update them
      *
      * @param fileNames paths to .json files with CVE objects
      */
     public static void putIntoDatabase (String[] fileNames) {
-        // Measuring, how long it will take to update the table in database
+        // Measuring, how long it will take to update the database
         long start_time = System.currentTimeMillis();
 
         List<CWEextRefObj> external_refs = CWEextRefObj.CWEextRefToArrayList("exclude/cwec_v4.5.xml"); // Getting External Reference objects from the first file
@@ -485,7 +628,7 @@ public class CVEobject {
 
         int refresh = 0; // Counting to ensure optimalization later on
 
-        System.out.println("Actualization of objects in database started");
+        System.out.println("Actualization of objects in the database started");
 
         // Creating connection, session factory and session
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
@@ -506,7 +649,7 @@ public class CVEobject {
         Query q = session.createQuery("from cve");
         q.setMaxResults(10);
         if (q.getResultList().isEmpty()) {
-            System.out.println("Database table empty, emptying not included");
+            System.out.println("Database table empty, emptying is not included");
             // Closing session and session factory
             session.close();
             sf.close();
@@ -580,8 +723,8 @@ public class CVEobject {
                     }
                     // Putting CAPEC relation objects into database
                     for (CAPECrelationObj relation : capec.getRelated_patterns()) {
-                        if (sessionc.get(CAPECobject.class, relation.getRelated_capec_id()) != null) {
-                            CAPECobject related_capec = (CAPECobject) sessionc.get(CAPECobject.class, relation.getRelated_capec_id());
+                        CAPECobject related_capec = (CAPECobject) sessionc.get(CAPECobject.class, relation.getRelated_capec_id());
+                        if (related_capec != null) {
                             relation.setRelated_capec(related_capec);
                             relation.setCapec(capec);
                             sessionc.save(relation);
@@ -601,6 +744,7 @@ public class CVEobject {
             }
             // Committing transaction
             txv.commit();
+            System.out.println("CAPEC data were put into the database");
             // Beginning transaction
             txv = sessionc.beginTransaction();
 
@@ -612,12 +756,13 @@ public class CVEobject {
                     // Connecting related CAPEC objects
                     for (CAPECobject capec : cwe.getCapec()) {
                         // Connection between CAPEC and CWE will be made
-                        if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
-                            CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                        CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                        if (capec_to_add != null) {
                             capecs_to_add.add(capec_to_add);
                         }
                     }
                     // CAPEC connecting
+                    cwe.setCapec(new ArrayList<>());
                     cwe.getCapec().addAll(capecs_to_add);
                     // Putting CWE object into database
                     sessionc.save(cwe);
@@ -632,8 +777,8 @@ public class CVEobject {
                 if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
                     // Putting CWE relation objects into database
                     for (CWErelationObj rel: cwe.getRelations()) {
-                        if (sessionc.get(CWEobject.class, rel.getRelated_cwe_id()) != null) {
-                            CWEobject related_cwe = (CWEobject) sessionc.get(CWEobject.class, rel.getRelated_cwe_id());
+                        CWEobject related_cwe = (CWEobject) sessionc.get(CWEobject.class, rel.getRelated_cwe_id());
+                        if (related_cwe != null) {
                             rel.setRelated_cwe(related_cwe);
                             rel.setCwe(cwe);
                             sessionc.save(rel);
@@ -721,6 +866,7 @@ public class CVEobject {
             }
             // Committing transaction
             txv.commit();
+            System.out.println("CWE data were put into the database");
 
             // Going through each file given in input
             for (String fileName : fileNames) {
@@ -739,21 +885,25 @@ public class CVEobject {
                     List<CWEobject> cwes_to_add = new ArrayList<>();
                     // Putting related CWE and CAPEC objects into database
                     for (CWEobject cwe : obj.cwe) {
-                        // If the CWE already exists in the database, only the connection between CWE and CVE will be made
-                        if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
-                            CWEobject cwe_to_add = (CWEobject) sessionc.get(CWEobject.class, cwe.getCode_id());
+                        // Connection between CWE and CVE will be made
+                        CWEobject cwe_to_add = (CWEobject) sessionc.get(CWEobject.class, cwe.getCode_id());
+                        if (cwe_to_add != null) {
                             cwes_to_add.add(cwe_to_add);
                         }
                     }
                     // CWE connecting
+                    obj.cwe = new ArrayList<>();
                     obj.cwe.addAll(cwes_to_add);
                     // Putting CVE object into database
                     sessionc.save(obj);
                     // Putting CPE node objects into database
                     for (CPEnodeObject node_obj : obj.cpe_nodes) {
                         if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
+                            // Putting CPE node object into database
+                            node_obj.setCve_obj(obj);
+                            sessionc.save(node_obj);
                             for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
-                                if (!(complex_cpe_obj == null)) {
+                                if (complex_cpe_obj != null) {
                                     complex_cpe_obj.setCpe_objs(new ArrayList<>());
                                     Serializable cpe_spec_id = complex_cpe_obj.getCpe_id();
                                     CPEobject cpe_to_add = (CPEobject) sessionc.get(CPEobject.class, cpe_spec_id);
@@ -761,17 +911,14 @@ public class CVEobject {
                                     complex_cpe_obj.getCpe_objs().add(cpe_to_add);
                                     UUID uuid = UUID.randomUUID();
                                     complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
-                                    // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
-                                    CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable());
-                                    // Putting CPE note to complex CPE object into database
-                                    sessionc.save(node_to_compl_cpe);
                                     // Putting complex CPE object into database
                                     sessionc.save(complex_cpe_obj);
+                                    // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
+                                    CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable());
+                                    // Putting CPE node to complex CPE object into database
+                                    sessionc.save(node_to_compl_cpe);
                                 }
                             }
-                            // Putting CPE node object into database
-                            node_obj.setCve_obj(obj);
-                            sessionc.save(node_obj);
                         } else if (node_obj != null) {
                             // Putting CPE node object into database
                             node_obj.setCve_obj(obj);
@@ -793,6 +940,7 @@ public class CVEobject {
                 }
                 // Ending transaction
                 if (txv.isActive()) txv.commit();
+                System.out.println("CVE data from file '" + fileName + "' were put into the database");
             }
             // Ending session
             if (sessionc.isOpen()) sessionc.close();
@@ -928,8 +1076,8 @@ public class CVEobject {
                     }
                     // Putting CAPEC relation objects into database
                     for (CAPECrelationObj relation : capec.getRelated_patterns()) {
-                        if (sessionc.get(CAPECobject.class, relation.getRelated_capec_id()) != null) {
-                            CAPECobject related_capec = (CAPECobject) sessionc.get(CAPECobject.class, relation.getRelated_capec_id());
+                        CAPECobject related_capec = (CAPECobject) sessionc.get(CAPECobject.class, relation.getRelated_capec_id());
+                        if (related_capec != null) {
                             relation.setRelated_capec(related_capec);
                             relation.setCapec(capec);
                             sessionc.save(relation);
@@ -949,6 +1097,7 @@ public class CVEobject {
             }
             // Committing transaction
             txv.commit();
+            System.out.println("CAPEC data were put into the database");
             // Beginning transaction
             txv = sessionc.beginTransaction();
 
@@ -960,12 +1109,13 @@ public class CVEobject {
                     // Connecting related CAPEC objects
                     for (CAPECobject capec : cwe.getCapec()) {
                         // Connection between CAPEC and CWE will be made
-                        if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
-                            CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                        CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                        if (capec_to_add != null) {
                             capecs_to_add.add(capec_to_add);
                         }
                     }
                     // CAPEC connecting
+                    cwe.setCapec(new ArrayList<>());
                     cwe.getCapec().addAll(capecs_to_add);
                     // Putting CWE object into database
                     sessionc.save(cwe);
@@ -980,8 +1130,8 @@ public class CVEobject {
                 if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
                     // Putting CWE relation objects into database
                     for (CWErelationObj rel: cwe.getRelations()) {
-                        if (sessionc.get(CWEobject.class, rel.getRelated_cwe_id()) != null) {
-                            CWEobject related_cwe = (CWEobject) sessionc.get(CWEobject.class, rel.getRelated_cwe_id());
+                        CWEobject related_cwe = (CWEobject) sessionc.get(CWEobject.class, rel.getRelated_cwe_id());
+                        if (related_cwe != null) {
                             rel.setRelated_cwe(related_cwe);
                             rel.setCwe(cwe);
                             sessionc.save(rel);
@@ -1069,6 +1219,7 @@ public class CVEobject {
             }
             // Committing transaction
             txv.commit();
+            System.out.println("CWE data were put into the database");
 
             // Going through each file given in input
             for (String fileName : fileNames) {
@@ -1087,21 +1238,25 @@ public class CVEobject {
                     List<CWEobject> cwes_to_add = new ArrayList<>();
                     // Putting related CWE and CAPEC objects into database
                     for (CWEobject cwe : obj.cwe) {
-                        // If the CWE already exists in the database, only the connection between CWE and CVE will be made
-                        if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
-                            CWEobject cwe_to_add = (CWEobject) sessionc.get(CWEobject.class, cwe.getCode_id());
+                        // Connection between CWE and CVE will be made
+                        CWEobject cwe_to_add = (CWEobject) sessionc.get(CWEobject.class, cwe.getCode_id());
+                        if (cwe_to_add != null) {
                             cwes_to_add.add(cwe_to_add);
                         }
                     }
                     // CWE connecting
+                    obj.cwe = new ArrayList<>();
                     obj.cwe.addAll(cwes_to_add);
                     // Putting CVE object into database
                     sessionc.save(obj);
                     // Putting CPE node objects into database
                     for (CPEnodeObject node_obj : obj.cpe_nodes) {
                         if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
+                            // Putting CPE node object into database
+                            node_obj.setCve_obj(obj);
+                            sessionc.save(node_obj);
                             for (CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
-                                if (!(complex_cpe_obj == null)) {
+                                if (complex_cpe_obj != null) {
                                     complex_cpe_obj.setCpe_objs(new ArrayList<>());
                                     Serializable cpe_spec_id = complex_cpe_obj.getCpe_id();
                                     CPEobject cpe_to_add = (CPEobject) sessionc.get(CPEobject.class, cpe_spec_id);
@@ -1109,17 +1264,14 @@ public class CVEobject {
                                     complex_cpe_obj.getCpe_objs().add(cpe_to_add);
                                     UUID uuid = UUID.randomUUID();
                                     complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
-                                    // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
-                                    CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable());
-                                    // Putting CPE note to complex CPE object into database
-                                    sessionc.save(node_to_compl_cpe);
                                     // Putting complex CPE object into database
                                     sessionc.save(complex_cpe_obj);
+                                    // Creating the relation between CVE, complex CPE and node object, adding also vulnerable attribute to it
+                                    CPEnodeToComplex node_to_compl_cpe = new CPEnodeToComplex((obj.meta_data_id+"*"+complex_cpe_obj.getCpe_id()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable());
+                                    // Putting CPE node to complex CPE object into database
+                                    sessionc.save(node_to_compl_cpe);
                                 }
                             }
-                            // Putting CPE node object into database
-                            node_obj.setCve_obj(obj);
-                            sessionc.save(node_obj);
                         } else if (node_obj != null) {
                             // Putting CPE node object into database
                             node_obj.setCve_obj(obj);
@@ -1141,6 +1293,7 @@ public class CVEobject {
                 }
                 // Ending transaction
                 if (txv.isActive()) txv.commit();
+                System.out.println("CVE data from file '" + fileName + "' were put into the database");
             }
             // Ending session
             if (sessionc.isOpen()) sessionc.close();
@@ -1151,8 +1304,8 @@ public class CVEobject {
         if (session.isOpen()) session.close();
         // Closing session factory if its opened at the end
         if (sf.isOpen()) sf.close();
-        if ((System.currentTimeMillis() - start_time) > 60000) System.out.println("Actualization of objects in database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 60000) + " minutes, files: " + Arrays.toString(fileNames));
-        else System.out.println("Actualization of objects in database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 1000) + " seconds, files: " + Arrays.toString(fileNames));
+        if ((System.currentTimeMillis() - start_time) > 60000) System.out.println("Actualization of objects in the database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 60000) + " minutes, files: " + Arrays.toString(fileNames));
+        else System.out.println("Actualization of objects in the database done, time elapsed: " + ((System.currentTimeMillis() - start_time) / 1000) + " seconds, files: " + Arrays.toString(fileNames));
     }
 
     ///**
@@ -1196,7 +1349,7 @@ public class CVEobject {
         if (this == o) return true;
         if (!(o instanceof CVEobject)) return false;
         CVEobject cvEobject = (CVEobject) o;
-        return Double.compare(cvEobject.cvss_v2_base_score, cvss_v2_base_score) == 0 && Double.compare(cvEobject.cvss_v3_base_score, cvss_v3_base_score) == 0 && Objects.equals(meta_data_id, cvEobject.meta_data_id) && Objects.equals(data_type, cvEobject.data_type) && Objects.equals(data_format, cvEobject.data_format) && Objects.equals(data_version, cvEobject.data_version) && Objects.equals(meta_data_assigner, cvEobject.meta_data_assigner) && Objects.equals(cwe, cvEobject.cwe) && Objects.equals(references, cvEobject.references) && Objects.equals(descriptions, cvEobject.descriptions) && Objects.equals(cve_data_version, cvEobject.cve_data_version) && Objects.equals(cpe_nodes, cvEobject.cpe_nodes) && Objects.equals(cvss_v2, cvEobject.cvss_v2) && Objects.equals(cvss_v3, cvEobject.cvss_v3) && Objects.equals(published_date, cvEobject.published_date) && Objects.equals(last_modified_date, cvEobject.last_modified_date);
+        return Objects.equals(meta_data_id, cvEobject.meta_data_id) && Objects.equals(data_type, cvEobject.data_type) && Objects.equals(data_format, cvEobject.data_format) && Objects.equals(data_version, cvEobject.data_version) && Objects.equals(meta_data_assigner, cvEobject.meta_data_assigner) && Objects.equals(cwe, cvEobject.cwe) && Objects.equals(references, cvEobject.references) && Objects.equals(descriptions, cvEobject.descriptions) && Objects.equals(cve_data_version, cvEobject.cve_data_version) && Objects.equals(cpe_nodes, cvEobject.cpe_nodes) && Objects.equals(cvss_v2, cvEobject.cvss_v2) && Objects.equals(cvss_v3, cvEobject.cvss_v3) && Objects.equals(cvss_v2_base_score, cvEobject.cvss_v2_base_score) && Objects.equals(cvss_v3_base_score, cvEobject.cvss_v3_base_score) && Objects.equals(published_date, cvEobject.published_date) && Objects.equals(last_modified_date, cvEobject.last_modified_date);
     }
 
     @Override

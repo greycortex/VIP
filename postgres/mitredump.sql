@@ -325,8 +325,8 @@ ALTER TABLE mitre.cpe_compl_cpe OWNER TO postgres;
 CREATE TABLE mitre.cve (
     id character varying(255) NOT NULL,
     cve_data_version character varying(255),
-    cvss_v2_base_score double precision NOT NULL,
-    cvss_v3_base_score double precision NOT NULL,
+    cvss_v2_base_score double precision,
+    cvss_v3_base_score double precision,
     data_format character varying(255),
     data_type character varying(255),
     data_version character varying(255),

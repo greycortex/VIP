@@ -334,7 +334,7 @@ public class CPEobject implements Serializable {
                         || cpe_item.get("versionEndExcluding") != null || cpe_item.get("versionEndIncluding") != null){
 
                     // Ensuring optimalization
-                    if (count % 5000 == 0){
+                    if (count % 500 == 0){
                         txv.commit();
                         txv = session.beginTransaction();
                     }
@@ -366,10 +366,10 @@ public class CPEobject implements Serializable {
                             versionStartExcluding, versionEndExcluding, versionStartIncluding, versionEndIncluding);
 
                     // Getting all basic CPE objects that are related to the specific complex CPE object
-                    if (cpe_item.get("cpe_name") != null){
+                    JSONArray basic_cpes_to_relate = (JSONArray) cpe_item.get("cpe_name");
+                    if (!basic_cpes_to_relate.isEmpty()){
                         complex_obj.setCpe_objs(new ArrayList<>());
 
-                        JSONArray basic_cpes_to_relate = (JSONArray) cpe_item.get("cpe_name");
                         Iterator<JSONObject> iterator_basic = basic_cpes_to_relate.iterator();
 
                         while (iterator_basic.hasNext()){

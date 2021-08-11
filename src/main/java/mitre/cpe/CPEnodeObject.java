@@ -32,7 +32,7 @@ public class CPEnodeObject {
     @ManyToOne
     @JoinColumn(nullable = false)
     protected CVEobject cve;
-    @OneToMany(mappedBy = "node")
+    @OneToMany(mappedBy = "node", cascade = CascadeType.REMOVE)
     protected List<CPEnodeToComplex> node_to_compl;
     @OneToMany(mappedBy = "parent")
     protected List<CPEnodeObject> children;
@@ -42,32 +42,8 @@ public class CPEnodeObject {
     @Transient
     protected List<CPEcomplexObj> compl_cpe;
 
-    public List<CPEnodeObject> getChildren() { return children; }
-
-    public void setChildren(List<CPEnodeObject> children) { this.children = children; }
-
-    public CPEnodeObject getParent() { return parent; }
-
-    public void setParent(CPEnodeObject parent) { this.parent = parent; }
-
     public List<CPEcomplexObj> getComplex_cpe_objs() {
         return compl_cpe;
-    }
-
-    public void setComplex_cpe_objs(List<CPEcomplexObj> compl_cpe) {
-        this.compl_cpe = compl_cpe;
-    }
-
-    public List<CPEnodeToComplex> getNode_to_compl() {
-        return node_to_compl;
-    }
-
-    public void setNode_to_compl(List<CPEnodeToComplex> node_to_compl) {
-        this.node_to_compl = node_to_compl;
-    }
-
-    public CVEobject getCve_obj() {
-        return cve;
     }
 
     public void setCve_obj(CVEobject cve) {
@@ -95,9 +71,9 @@ public class CPEnodeObject {
     // * @return CPE node object
     // */
     //public static CPEnodeObject getInstance(List<CPEcomplexObj> compl_cpe,
-    //                         String operator) {
+    //                         String operator, CPEnodeObject parent) {
 
-    //    return new CPEnodeObject(compl_cpe, operator);
+    //    return new CPEnodeObject(compl_cpe, operator, parent);
     //}
 
     @Override
@@ -114,11 +90,11 @@ public class CPEnodeObject {
         if (this == o) return true;
         if (!(o instanceof CPEnodeObject)) return false;
         CPEnodeObject that = (CPEnodeObject) o;
-        return Objects.equals(id, that.id) && Objects.equals(compl_cpe, that.compl_cpe) && Objects.equals(operator, that.operator) && Objects.equals(parent, that.parent) && Objects.equals(cve, that.cve);
+        return Objects.equals(id, that.id) && Objects.equals(operator, that.operator) && Objects.equals(cve, that.cve) && Objects.equals(node_to_compl, that.node_to_compl) && Objects.equals(children, that.children) && Objects.equals(parent, that.parent) && Objects.equals(compl_cpe, that.compl_cpe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, compl_cpe, operator, parent, cve);
+        return Objects.hash(id, operator, cve, node_to_compl, children, parent, compl_cpe);
     }
 }

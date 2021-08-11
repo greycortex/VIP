@@ -19,7 +19,7 @@ public class CPEnodeToComplex {
     @Column(unique = true)
     protected String id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     protected CPEcomplexObj cpe;
 
     @ManyToOne
@@ -39,32 +39,12 @@ public class CPEnodeToComplex {
         this.id = id;
     }
 
-    public CPEcomplexObj getCpe() {
-        return cpe;
-    }
-
-    public void setCpe(CPEcomplexObj cpe) {
-        this.cpe = cpe;
-    }
-
     public CPEnodeObject getNode() {
         return node;
     }
 
-    public String getCve_id() { return cve_id; }
-
-    public void setCve_id(String cve_id) { this.cve_id = cve_id; }
-
     public void setNode(CPEnodeObject node) {
         this.node = node;
-    }
-
-    public Boolean getVulnerable() {
-        return vulnerable;
-    }
-
-    public void setVulnerable(Boolean vulnerable) {
-        this.vulnerable = vulnerable;
     }
 
     /**
