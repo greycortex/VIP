@@ -227,7 +227,7 @@ public class CVEobject implements Serializable{
                     if (node.get("negate") != null) first_op = "N" + first_op;
 
                     JSONArray children = (JSONArray) node.get("children");
-                    if (!children.isEmpty()) { // More complex structure
+                    if (children != null && !children.isEmpty()) { // More complex structure
                         CPEnodeObject parent_node_obj = new CPEnodeObject(null, first_op, null);
                         cpe_nodes_final.add(parent_node_obj); // new parent CPE node object added
 

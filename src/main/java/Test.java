@@ -18,32 +18,68 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
 import java.util.List;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 public class Test {
-
-    public static void putIntoDatabase(){
-        String[] fileNames = {"exclude/nvdcve-1.1-2002.json", "exclude/nvdcve-1.1-2003.json", "exclude/nvdcve-1.1-2004.json",
+    public static final String[] fileNames = {"exclude/nvdcve-1.1-2002.json", "exclude/nvdcve-1.1-2003.json", "exclude/nvdcve-1.1-2004.json",
                 "exclude/nvdcve-1.1-2005.json", "exclude/nvdcve-1.1-2006.json", "exclude/nvdcve-1.1-2007.json", "exclude/nvdcve-1.1-2008.json",
                 "exclude/nvdcve-1.1-2009.json", "exclude/nvdcve-1.1-2010.json", "exclude/nvdcve-1.1-2011.json", "exclude/nvdcve-1.1-2012.json",
                 "exclude/nvdcve-1.1-2013.json", "exclude/nvdcve-1.1-2014.json", "exclude/nvdcve-1.1-2015.json", "exclude/nvdcve-1.1-2016.json",
                 "exclude/nvdcve-1.1-2017.json", "exclude/nvdcve-1.1-2018.json", "exclude/nvdcve-1.1-2019.json", "exclude/nvdcve-1.1-2020.json",
                 "exclude/nvdcve-1.1-2021.json"}; // "nvdcve-1.1-2002.json" -- "nvdcve-1.1-2021.json" - - - https://nvd.nist.gov/vuln/data-feeds
-        // Putting all CVE, CWE, CAPEC and CPE objects and objects related to them into database and actualizing them
-        CVEobject.putIntoDatabase(fileNames);
+
+    
+    public static void putIntoDatabase(){
+        
+        
     }
 
-    // Quickly updating CVE, CPE, CWE and CAPEC data in the database
-    public static void quickUpdate(){
-        CVEobject.quickUpdate("exclude/nvdcve-1.1-modified.json");
-    }
-
+    /**
+     *
+     * @param args
+     * @return
+     */
     public static void main(String[] args) {
-        System.out.println("Welcome to the VIP application");
+        final String UPDATE = "u";
+        
+        Options options = new Options();
+        options.addOption(UPDATE, false, "Update DB and export queries.");
 
-        //putIntoDatabase();
 
-        quickUpdate(); // --- its slow for now
+        System.out.println("Welcome to the VIP application!");
+        // parse commandline aguments and process each command
+        try {
+            CommandLineParser parser = new BasicParser();
+            CommandLine cmd = parser.parse(options, args);
 
-        //CPEobject.feedReconstr(); // -- Reconstructs CPE match feed file by using objects from the database
+            if (cmd.hasOption(UPDATE)) { // run update
+                CVEobject.quickUpdate("exclude/nvdcve-1.1-modified.json");
+            }
+
+            // Putting all CVE and CPE objects and objects related to them into database and actualizing them
+            //CVEobject.putIntoDatabase(fileNames);
+            
+            // CWE, CAPEC 
+            //TODO: 
+            
+            //CPEobject.feedReconstr(); // -- Reconstructs CPE match feed file by using objects from the database
+
+            // exit with help
+            else {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("java -jar VIP", options);
+            }
+
+                
+        } catch (ParseException ex) {
+            System.err.println("Parsing failed.  Reason: " + ex.getMessage());
+        }
+        
+        // this is the end
     }
 }
