@@ -615,16 +615,19 @@ public class CVEobject implements Serializable{
     /**
      * This method's purpose is to put all given CVE, CWE and CAPEC objects and related objects into database or to update them
      *
+     * @param cpe_file path to .json file with CPE dictionary data (CPE match feed file)
      * @param fileNames paths to .json files with CVE objects
+     * @param cwe_file path to .xml file with CWE data
+     * @param capec_file path to .xml file with CAPEC data
      */
-    public static void putIntoDatabase (String[] fileNames) {
+    public static void putIntoDatabase (String cpe_file, String[] fileNames, String cwe_file, String capec_file) {
         // Measuring, how long it will take to update the database
         long start_time = System.currentTimeMillis();
 
-        List<CWEextRefObj> external_refs = CWEextRefObj.CWEextRefToArrayList("exclude/cwec_v4.5.xml"); // Getting External Reference objects from the first file
-        external_refs.addAll(CWEextRefObj.CWEextRefToArrayList("exclude/capec_latest.xml")); // Getting External Reference objects from the second file
-        List<CAPECobject> capec_objs = CAPECobject.CAPECfileToArrayList(external_refs); // Getting CAPEC objects from file
-        List<CWEobject> cwe_objs = CWEobject.CWEfileToArraylist(capec_objs, external_refs); // Getting CWE objects from file
+        List<CWEextRefObj> external_refs = CWEextRefObj.CWEextRefToArrayList(cwe_file); // Getting External Reference objects from the first file
+        external_refs.addAll(CWEextRefObj.CWEextRefToArrayList(capec_file)); // Getting External Reference objects from the second file
+        List<CAPECobject> capec_objs = CAPECobject.CAPECfileToArrayList(capec_file, external_refs); // Getting CAPEC objects from file
+        List<CWEobject> cwe_objs = CWEobject.CWEfileToArraylist(cwe_file, capec_objs, external_refs); // Getting CWE objects from file
 
         int refresh = 0; // Counting to ensure optimalization later on
 
@@ -654,7 +657,7 @@ public class CVEobject implements Serializable{
             session.close();
             sf.close();
             // Putting CPE objects from CPE match feed file into database
-            CPEobject.putIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+            CPEobject.putIntoDatabase(cpe_file); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
             System.out.println("Actualization of CVE, CWE and CAPEC objects started");
             // Creating connection, session factory and session, beginning transaction
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
@@ -1007,7 +1010,7 @@ public class CVEobject implements Serializable{
             session.close();
             sf.close();
             // Putting CPE objects from CPE match feed file into database
-            CPEobject.putIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+            CPEobject.putIntoDatabase(cpe_file); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
             System.out.println("Actualization of CVE, CWE and CAPEC objects started");
             // Creating connection, session factory and session
             Configuration conn = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)

@@ -121,10 +121,10 @@ public class CWEextRefObj implements Serializable {
                             NamedNodeMap ext_ref_attr = ext_refs_nodes.item(y).getAttributes();
                             String ext_ref_id = null;
 
-                            if (file.equals("exclude/cwec_v4.5.xml")) {
+                            if (file.startsWith("exclude/cwec")) {
                                 ext_ref_id = "CWE-" + ext_ref_attr.getNamedItem("Reference_ID").getNodeValue(); // getting reference id attribute
                             }
-                            else if (file.equals("exclude/capec_latest.xml")) {
+                            else if (file.startsWith("exclude/capec")) {
                                 ext_ref_id = "CAPEC-" + ext_ref_attr.getNamedItem("Reference_ID").getNodeValue(); // getting reference id attribute
                             }
 

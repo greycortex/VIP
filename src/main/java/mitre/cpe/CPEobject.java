@@ -177,16 +177,18 @@ public class CPEobject implements Serializable {
     }
 
     /**
+     * @param file path to .json file with CPE dictionary data (CPE match feed file)
+     *
      * @return List that contains parsed lines (Strings) from the CPE feed file
      * @throws IOException
      */
-    public static List<String> parseIntoLines() { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+    public static List<String> parseIntoLines(String file) { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
         System.out.println("Parsing of basic CPE objects from match feed file started");
         // List which will contain parsed lines from the CPE file
         List<String> cpe23urilines = new ArrayList<>();
 
         // This block of code goes through the selected file line by line and add the lines that contain "cpe23uri" to the cpe23urilines List
-        try (BufferedReader br = new BufferedReader(new FileReader("exclude/nvdcpematch-1.0.json"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             for (String line; (line = br.readLine()) != null; ) {
                 if (line.contains("cpe23Uri")) {
                     cpe23urilines.add(line);
@@ -202,13 +204,15 @@ public class CPEobject implements Serializable {
 
     /**
      * @return List that contains basic CPE objects without duplicates made from the cpe23uri lines List returned by the parseIntoLines() method
+     *
+     * @param file path to .json file with CPE dictionary data (CPE match feed file)
      */
-    public static List<CPEobject> linesIntoReadyList() {
+    public static List<CPEobject> linesIntoReadyList(String file) { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
         // Defining the object List
         List<CPEobject> obj_list = new ArrayList<>();
 
         // Taking the lines returned by the parserToLineArrayList() method
-        List<String> cpe23uriliness = parseIntoLines();
+        List<String> cpe23uriliness = parseIntoLines(file);
 
         // We go line by line (Object by Object)
         for (String line : cpe23uriliness) {
@@ -289,8 +293,10 @@ public class CPEobject implements Serializable {
 
     /**
      * This method parses complex CPE objects from the up-to-date file and puts them into database with right relations between objects
+     *
+     * @param file path to .json file with CPE dictionary data (CPE match feed file)
      */
-    public static void CPEcomplexIntoDatabase(){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+    public static void CPEcomplexIntoDatabase(String file){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
 
         // Creating connection
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
@@ -314,7 +320,7 @@ public class CPEobject implements Serializable {
         // Parsing JSON file
         JSONParser parser = new JSONParser();
 
-        try (Reader reader = new FileReader("exclude/nvdcpematch-1.0.json")){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+        try (Reader reader = new FileReader(file)){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
 
             JSONObject jsonObject = (JSONObject) parser.parse(reader);
 
@@ -598,10 +604,11 @@ public class CPEobject implements Serializable {
      * it also calls the CPEcomplexIntoDatabase() method which puts all complex CPE objects from the up-to-date file
      * into database with right relations between objects
      *
+     * @param file path to .json file with CPE dictionary data (CPE match feed file)
      */
-    public static void putIntoDatabase() {
+    public static void putIntoDatabase(String file) { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
         // list of objects from up-to-date file
-        List<CPEobject> compared_objects = linesIntoReadyList();
+        List<CPEobject> compared_objects = linesIntoReadyList(file);
 
         System.out.println("Actualization of basic CPE objects from match feed file in database started");
 
@@ -642,7 +649,7 @@ public class CPEobject implements Serializable {
         System.out.println("Actualization of complex CPE objects from match feed file in database started");
 
         // Calling method CPEcomplexIntoDatabase() which will put all complex CPE objects from match feed file into database with right relations
-        CPEcomplexIntoDatabase(); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+        CPEcomplexIntoDatabase(file); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
 
         if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Actualization of complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
         else System.out.println("Actualization of complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");

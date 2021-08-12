@@ -140,10 +140,10 @@ public class CWEcategoryObj {
                                                 String cat_view_id = null;
                                                 NamedNodeMap cat_relation_attr = category_relation_nodes.item(g).getAttributes();
 
-                                                if (file.equals("exclude/capec_latest.xml")){
+                                                if (file.startsWith("exclude/capec")){
                                                     cat_capec_id = cat_relation_attr.getNamedItem("CAPEC_ID").getNodeValue(); // getting CAPEC ID attribute - relationship (member) object
 
-                                                } else if (file.equals("exclude/cwec_v4.5.xml")){
+                                                } else if (file.startsWith("exclude/cwec")){
                                                     cat_cwe_id = cat_relation_attr.getNamedItem("CWE_ID").getNodeValue(); // getting CWE ID attribute - relationship (member) object
                                                     cat_view_id = cat_relation_attr.getNamedItem("View_ID").getNodeValue(); // getting view ID attribute - relationship (member) object
                                                 }
@@ -160,9 +160,9 @@ public class CWEcategoryObj {
                                                 NamedNodeMap cat_reference_attr = category_reference_nodes.item(g).getAttributes();
 
                                                 String cat_ext_ref_id = null;
-                                                if (file.equals("exclude/capec_latest.xml")) {
+                                                if (file.startsWith("exclude/capec")) {
                                                     cat_ext_ref_id = "CAPEC-" + cat_reference_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ext. ref. ID attribute - external reference reference object
-                                                } else if (file.equals("exclude/cwec_v4.5.xml")) {
+                                                } else if (file.startsWith("exclude/cwec")) {
                                                     cat_ext_ref_id = "CWE-" + cat_reference_attr.getNamedItem("External_Reference_ID").getNodeValue(); // getting ext. ref. ID attribute - external reference reference object
                                                 }
 

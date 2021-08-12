@@ -241,18 +241,19 @@ public class CWEobject implements Serializable {
      * It goes through file that contains latest list of CWE weaknesses,
      * parses them and returns them in a List
      *
+     * @param cwe_file path to .xml file with CWE data
      * @param capec_objs existing CAPEC objects for search of the relating ones
      * @param ext_refs existing CWE External Reference objects for search of the relating ones
      * @return List of CWE weakness objects from given XML file
      */
-    public static List<CWEobject> CWEfileToArraylist(List<CAPECobject> capec_objs, List<CWEextRefObj> ext_refs) {
+    public static List<CWEobject> CWEfileToArraylist(String cwe_file, List<CAPECobject> capec_objs, List<CWEextRefObj> ext_refs) {
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         List<CWEobject> cwe_objs = new ArrayList<>(); // empty List which will be filled with CWE weakness objects later on
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse(new FileInputStream("exclude/cwec_v4.5.xml")); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+            Document document = builder.parse(new FileInputStream(cwe_file)); // https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
             Element doc_element = document.getDocumentElement();
             NodeList nodes = doc_element.getChildNodes();
 

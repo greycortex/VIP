@@ -32,11 +32,13 @@ public class Test {
                 "exclude/nvdcve-1.1-2013.json", "exclude/nvdcve-1.1-2014.json", "exclude/nvdcve-1.1-2015.json", "exclude/nvdcve-1.1-2016.json",
                 "exclude/nvdcve-1.1-2017.json", "exclude/nvdcve-1.1-2018.json", "exclude/nvdcve-1.1-2019.json", "exclude/nvdcve-1.1-2020.json",
                 "exclude/nvdcve-1.1-2021.json"}; // "nvdcve-1.1-2002.json" -- "nvdcve-1.1-2021.json" - - - https://nvd.nist.gov/vuln/data-feeds
+    public static final String cpe_file = "exclude/nvdcpematch-1.0.json"; // - - - https://nvd.nist.gov/vuln/data-feeds
+    public static final String cwe_file = "exclude/cwec_v4.5.xml"; // - - - https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+    public static final String capec_file = "exclude/capec_latest.xml"; // - - - https://capec.mitre.org/data/xml/capec_latest.xml
 
     
     public static void putIntoDatabase(){
-        
-        
+
     }
 
     /**
@@ -61,8 +63,8 @@ public class Test {
                 CVEobject.quickUpdate("exclude/nvdcve-1.1-modified.json");
             }
 
-            // Putting all CVE and CPE objects and objects related to them into database and actualizing them
-            //CVEobject.putIntoDatabase(fileNames);
+            // Putting all CVE, CWE, CAPEC and CPE objects and objects related to them into database and actualizing them
+            //CVEobject.putIntoDatabase(cpe_file, fileNames, cwe_file, capec_file);
             
             // CWE, CAPEC 
             //TODO: 

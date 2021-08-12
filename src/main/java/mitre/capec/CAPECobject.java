@@ -190,17 +190,18 @@ public class CAPECobject implements Serializable {
      * It goes through file that contains latest list of CAPEC attack patterns,
      * parses them and returns them in a List
      *
+     * @param capec_file path to .xml file with CAPEC data
      * @param ext_refs existing External Reference objects for search of the relating ones
      * @return List of CAPEC attack pattern objects from given XML file
      */
-    public static List<CAPECobject> CAPECfileToArrayList(List<CWEextRefObj> ext_refs){
+    public static List<CAPECobject> CAPECfileToArrayList(String capec_file, List<CWEextRefObj> ext_refs){
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
         List<CAPECobject> capec_objs = new ArrayList<>(); // empty List which will be filled with CAPEC attack pattern objects later on
 
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse(new FileInputStream("exclude/capec_latest.xml")); // https://capec.mitre.org/data/xml/capec_latest.xml
+            Document document = builder.parse(new FileInputStream(capec_file)); // https://capec.mitre.org/data/xml/capec_latest.xml
             Element doc_element = document.getDocumentElement();
             NodeList nodes = doc_element.getChildNodes();
 
