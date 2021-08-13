@@ -20,4 +20,15 @@ There is a method which can successfully reconstruct CPE match feed file by usin
 
 ![Current database schema](https://github.com/greycortex/VIP/blob/master/doc/current_mitre_schema.png?raw=true)
 
+## To compile this
+UPDATE hibernate.cfg.xml and copy to src/main/resources/ to make this project.
+
+## To run this
+Usage: java -jar VIP
+ -e   Extend the DB by CWEs and CAPEC.
+ -i   Initiate DB and insert CPEs and CVEs.
+ -u   Update DB and export queries.
+CPE feed (https://nvd.nist.gov/vuln/data-feeds): exclude/nvdcpematch-1.0.json
+CVE feeds (https://nvd.nist.gov/vuln/data-feeds): \[exclude/nvdcve-1.1-2002.json, exclude/nvdcve-1.1-2003.json, exclude/nvdcve-1.1-2004.json, exclude/nvdcve-1.1-2005.json, exclude/nvdcve-1.1-2006.json, exclude/nvdcve-1.1-2007.json, exclude/nvdcve-1.1-2008.json, exclude/nvdcve-1.1-2009.json, exclude/nvdcve-1.1-2010.json, exclude/nvdcve-1.1-2011.json, exclude/nvdcve-1.1-2012.json, exclude/nvdcve-1.1-2013.json, exclude/nvdcve-1.1-2014.json, exclude/nvdcve-1.1-2015.json, exclude/nvdcve-1.1-2016.json, exclude/nvdcve-1.1-2017.json, exclude/nvdcve-1.1-2018.json, exclude/nvdcve-1.1-2019.json, exclude/nvdcve-1.1-2020.json, exclude/nvdcve-1.1-2021.json\]
+
 Copyright (c) 2021 GreyCortex s.r.o.

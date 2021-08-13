@@ -37,12 +37,13 @@ public class Test {
     public static final String cpe_file = "exclude/nvdcpematch-1.0.json"; 
     
     /** CVEs from https://nvd.nist.gov/vuln/data-feeds */
-    public static final String[] cve_files = {"exclude/nvdcve-1.1-2002.json", "exclude/nvdcve-1.1-2003.json", "exclude/nvdcve-1.1-2004.json",
+    public static final String[] cve_files = {"exclude/nvdcve-1.1-2002.json"}; 
+                /*, "exclude/nvdcve-1.1-2003.json", "exclude/nvdcve-1.1-2004.json",
                 "exclude/nvdcve-1.1-2005.json", "exclude/nvdcve-1.1-2006.json", "exclude/nvdcve-1.1-2007.json", "exclude/nvdcve-1.1-2008.json",
                 "exclude/nvdcve-1.1-2009.json", "exclude/nvdcve-1.1-2010.json", "exclude/nvdcve-1.1-2011.json", "exclude/nvdcve-1.1-2012.json",
                 "exclude/nvdcve-1.1-2013.json", "exclude/nvdcve-1.1-2014.json", "exclude/nvdcve-1.1-2015.json", "exclude/nvdcve-1.1-2016.json",
                 "exclude/nvdcve-1.1-2017.json", "exclude/nvdcve-1.1-2018.json", "exclude/nvdcve-1.1-2019.json", "exclude/nvdcve-1.1-2020.json",
-                "exclude/nvdcve-1.1-2021.json"}; // "nvdcve-1.1-2002.json" -- "nvdcve-1.1-2021.json"
+                "exclude/nvdcve-1.1-2021.json"}; // "nvdcve-1.1-2002.json" -- "nvdcve-1.1-2021.json" */
     
     /** https://cwe.mitre.org/data/xml/cwec_latest.xml.zip */
     public static final String cwe_file = "exclude/cwec_v4.5.xml";
