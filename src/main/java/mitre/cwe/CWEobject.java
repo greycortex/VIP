@@ -750,14 +750,12 @@ public class CWEobject implements Serializable {
      * This method's purpose is to put all CWE objects and their relations into database
      *
      * @param cwe_objs      List of all parsed CWE objects
-     * @param conf          object needed to get hibernate configuration
+     * @param sf            object needed to get hibernate Session Factory and to work with database
      */
-    public static void CWEintoDatabase(List<CWEobject> cwe_objs, Configuration conf) {
+    public static void CWEintoDatabase(List<CWEobject> cwe_objs, SessionFactory sf) {
 
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
-        // Building session factory, openning session, beginning transaction
-        SessionFactory sesf = conf.buildSessionFactory(reg);
-        Session sessionc = sesf.openSession();
+        // Openning session, beginning transaction
+        Session sessionc = sf.openSession();
         Transaction txv = sessionc.beginTransaction();
 
         // Putting CWE objects into database
@@ -879,7 +877,6 @@ public class CWEobject implements Serializable {
         // Committing transaction, closing session and session factory
         txv.commit();
         sessionc.close();
-        sesf.close();
         System.out.println("CWE data were put into the database");
     }
 

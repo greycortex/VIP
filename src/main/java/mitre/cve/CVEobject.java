@@ -604,13 +604,11 @@ public class CVEobject implements Serializable{
      *
      * @param cve_files paths to .json files with CVE objects
      * @param cwe_objs  parsed CWE objects needed for making relation between them and CVE objects
-     * @param conf      object needed to get hibernate configuration
+     * @param sf        object needed to get hibernate Session Factory and to work with database
      */
-    public static void putIntoDatabase (String[] cve_files, List<CWEobject> cwe_objs, Configuration conf) {
-        ServiceRegistry regg = conf.getStandardServiceRegistryBuilder().build();
-        // Creating session factory and session, beginning transaction
-        SessionFactory sesf = conf.buildSessionFactory(regg);
-        Session sessionc = sesf.openSession();
+    public static void putIntoDatabase (String[] cve_files, List<CWEobject> cwe_objs, SessionFactory sf) {
+        // Creating Session, beginning transaction
+        Session sessionc = sf.openSession();
         Transaction txv = sessionc.beginTransaction();
 
         // Counting to ensure optimalization later on
@@ -685,15 +683,15 @@ public class CVEobject implements Serializable{
                 if (refresh % 250 == 0) {
                     txv.commit();
                     sessionc.close();
-                    sessionc = sesf.openSession();
+                    sessionc = sf.openSession();
                     txv = sessionc.beginTransaction();
                 }
             }
             System.out.println("CVE data from file '" + fileName + "' were put into the database");
         }
-        // Ending session and session factory
+        // Ending session and committing transaction
+        if (txv.isActive()) txv.commit();
         if (sessionc.isOpen()) sessionc.close();
-        if (sesf.isOpen()) sesf.close();
         System.out.println("CVE data were put into the database");
     }
 

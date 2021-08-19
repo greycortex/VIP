@@ -295,13 +295,11 @@ public class CPEobject implements Serializable {
      * This method parses complex CPE objects from the up-to-date file and puts them into database with right relations between objects
      *
      * @param file path to .json file with CPE dictionary data (CPE match feed file)
-     * @param conf object needed to get hibernate configuration
+     * @param sf   object needed to get hibernate Session Factory and to work with database
      */
-    public static void CPEcomplexIntoDatabase(String file, Configuration conf){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+    public static void CPEcomplexIntoDatabase(String file, SessionFactory sf){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
 
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
-        // Creating transaction, session and session factory
-        SessionFactory sf = conf.buildSessionFactory(reg);
+        // Creating Session and session factory
         Session session = sf.openSession();
         Transaction txv = session.beginTransaction();
 
@@ -411,7 +409,6 @@ public class CPEobject implements Serializable {
         // Commiting transaction, closing session and session factory
         if (txv.isActive()) txv.commit();
         if (session.isOpen()) session.close();
-        sf.close();
     }
 
     /**
@@ -595,17 +592,15 @@ public class CPEobject implements Serializable {
      * into database with right relations between objects
      *
      * @param file path to .json file with CPE dictionary data (CPE match feed file)
-     * @param conf object needed to get hibernate configuration
+     * @param sf   object needed to get hibernate Session Factory and to work with database
      */
-    public static void putIntoDatabase(String file, Configuration conf) { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+    public static void putIntoDatabase(String file, SessionFactory sf) { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
         // list of objects from up-to-date file
         List<CPEobject> compared_objects = linesIntoReadyList(file);
 
         System.out.println("Filling database with CPE objects started");
 
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
-        // Creating session and session factory
-        SessionFactory sf = conf.buildSessionFactory(reg);
+        // Creating session
         Session session = sf.openSession();
 
         // Measuring, how long it will take to put basic CPE objects into database
@@ -620,7 +615,6 @@ public class CPEobject implements Serializable {
         // Ending transaction, session and session factory
         txv.commit();
         session.close();
-        sf.close();
         if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Filling database with CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
         else System.out.println("Filling database with CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
 
@@ -629,7 +623,7 @@ public class CPEobject implements Serializable {
         System.out.println("Filling database with complex CPE objects from match feed file in database started");
 
         // Calling method CPEcomplexIntoDatabase() which will put all complex CPE objects from match feed file into database with right relations
-        CPEcomplexIntoDatabase(file, conf); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+        CPEcomplexIntoDatabase(file, sf); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
 
         if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Filling database with complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
         else System.out.println("Filling database with complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");

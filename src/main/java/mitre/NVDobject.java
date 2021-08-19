@@ -63,16 +63,15 @@ public class NVDobject {
 
         Session session = sf.openSession();
 
-        // If the cpe table is empty, the method doesn't empty the database
         Query q = session.createQuery("from cpe");
         q.setMaxResults(10);
+        // If the cpe table is empty, the method doesn't empty the database
         if (q.getResultList().isEmpty()) {
             System.out.println("Database table empty, emptying is not included");
-            // Closing session and session factory
+            // Closing session
             session.close();
-            sf.close();
             // Putting all CVE, CPE, CAPEC and CWE data into database along with all relations
-            extendedDBcore(cpe_file, cve_files, cwe_objs, capec_objs, external_refs, con);
+            extendedDBcore(cpe_file, cve_files, cwe_objs, capec_objs, external_refs, sf);
         }
         // If the cpe table isn't empty, the method does empty the database
         else {
@@ -129,13 +128,13 @@ public class NVDobject {
                     "DROP TABLE IF EXISTS mitre.external_reference CASCADE;" +
                     "DROP TABLE IF EXISTS mitre.ext_ref_authors CASCADE;").executeUpdate();
             session.getTransaction().commit();
-            // Closing session and session factory
+            // Closing session
             session.close();
-            sf.close();
             // Putting all CVE, CPE, CAPEC and CWE data into database along with all relations
-            extendedDBcore(cpe_file, cve_files, cwe_objs, capec_objs, external_refs, con);
+            extendedDBcore(cpe_file, cve_files, cwe_objs, capec_objs, external_refs, sf);
         }
-
+        // Closing session factory
+        sf.close();
         System.out.println("Extended database creation done");
     }
 
@@ -146,12 +145,12 @@ public class NVDobject {
      */
     public static void quickUpdate(String fileName) {
         System.out.println("Actualization of CPE and CVE objects in the database started");
-        // Creating connection
+        // Creating configuration
         Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
                 .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
                 .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
-        // Creating session and session factory
+        // Creating session, session factory and transaction
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
         Transaction txv = session.beginTransaction();
@@ -178,14 +177,16 @@ public class NVDobject {
             }
         }
         System.out.println("Existing but not up-to-date CVE data removed from the database");
-        // Commiting transaction, closing session and session factory
+        // Commiting transaction, closing session
         txv.commit();
         session.close();
-        sf.close();
 
         // Putting all new and up-to-date CVE objects into database
         String[] file_arr = {fileName};
-        CVEobject.putIntoDatabase(file_arr, null, con);
+        CVEobject.putIntoDatabase(file_arr, null, sf);
+
+        // Closing session factory
+        sf.close();
         System.out.println("Actualization of CPE and CVE objects in the database done");
     }
 
@@ -197,17 +198,15 @@ public class NVDobject {
      * @param cwe_objs        List of parsed CWE objects
      * @param capec_objs      List of parsed CAPEC objects
      * @param external_refs   List of parsed External Reference objects
-     * @param conf            object needed to get hibernate configuration
+     * @param sf              object needed to get hibernate Session Factory and to work with database
      */
-    public static void extendedDBcore(String cpe_file, String[] cve_files, List<CWEobject> cwe_objs, List<CAPECobject> capec_objs, List<CWEextRefObj> external_refs, Configuration conf) {
+    public static void extendedDBcore(String cpe_file, String[] cve_files, List<CWEobject> cwe_objs, List<CAPECobject> capec_objs, List<CWEextRefObj> external_refs, SessionFactory sf) {
         // Putting CPE objects from CPE match feed file into database
-        CPEobject.putIntoDatabase(cpe_file, conf); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+        CPEobject.putIntoDatabase(cpe_file, sf); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
 
         System.out.println("Filling database with CVE, CWE and CAPEC objects started");
-        ServiceRegistry regg = conf.getStandardServiceRegistryBuilder().build();
-        // Creating session factory and session, beginning transaction
-        SessionFactory sesf = conf.buildSessionFactory(regg);
-        Session sessionc = sesf.openSession();
+        // Creating session, beginning transaction
+        Session sessionc = sf.openSession();
         Transaction txv = sessionc.beginTransaction();
 
         // Putting External Reference objects into database
@@ -218,15 +217,14 @@ public class NVDobject {
         // Committing transaction, closing session and session factory
         txv.commit();
         sessionc.close();
-        sesf.close();
 
         // Putting CAPEC objects into database
-        CAPECobject.CAPECintoDatabase(capec_objs, conf);
+        CAPECobject.CAPECintoDatabase(capec_objs, sf);
 
         // Putting CWE objects into database
-        CWEobject.CWEintoDatabase(cwe_objs, conf);
+        CWEobject.CWEintoDatabase(cwe_objs, sf);
 
         // Putting CVE objects into database
-        CVEobject.putIntoDatabase(cve_files, cwe_objs, conf);
+        CVEobject.putIntoDatabase(cve_files, cwe_objs, sf);
     }
 }

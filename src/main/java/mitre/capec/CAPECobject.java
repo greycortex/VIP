@@ -515,14 +515,12 @@ public class CAPECobject implements Serializable {
      * This method's purpose is to put all CAPEC objects and their relations into database
      *
      * @param capec_objs    List of all parsed CAPEC objects
-     * @param conf          object needed to get hibernate configuration
+     * @param sf            object needed to get hibernate Session Factory and to work with database
      */
-    public static void CAPECintoDatabase(List<CAPECobject> capec_objs, Configuration conf) {
+    public static void CAPECintoDatabase(List<CAPECobject> capec_objs, SessionFactory sf) {
 
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
-        // Building session factory, openning session, beginning transaction
-        SessionFactory sesf = conf.buildSessionFactory(reg);
-        Session sessionc = sesf.openSession();
+        // Openning session, beginning transaction
+        Session sessionc = sf.openSession();
         Transaction txv = sessionc.beginTransaction();
 
         // Putting CAPEC objects into database
@@ -593,7 +591,6 @@ public class CAPECobject implements Serializable {
         // Committing transaction, closing session and session factory
         txv.commit();
         sessionc.close();
-        sesf.close();
         System.out.println("CAPEC data were put into the database");
     }
 
