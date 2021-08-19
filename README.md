@@ -16,6 +16,17 @@ It can parse and save into database (including slow updates):
 
 There is a method which can successfully reconstruct CPE match feed file by using objects from the database, too.
 
+## To compile this project
+
+**UPDATE hibernate.cfg.xml file and copy it to src/main/resources in this project.**
+
+## To run this
+
+**Usage:** java -jar VIP
+- -e &nbsp; &nbsp; &nbsp; Create and fill database with data including CVE, CPE, CWE and CAPEC structures
+- -b &nbsp; &nbsp; &nbsp; Create and fill database with data including CVE and CPE structures
+- -u &nbsp; &nbsp; &nbsp; Perform a quick update of the database
+
 ## Current database schema
 
 ![Current database schema](https://github.com/greycortex/VIP/blob/master/doc/current_mitre_schema.png?raw=true)

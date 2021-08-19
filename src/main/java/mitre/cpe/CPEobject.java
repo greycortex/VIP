@@ -72,6 +72,7 @@ public class CPEobject implements Serializable {
     }
 
     /**
+     * @param cpe_id    CPE ID - cpeUri String
      * @param vendor    vendor attribute
      * @param product   product attribute
      * @param version   version attribute
@@ -180,7 +181,6 @@ public class CPEobject implements Serializable {
      * @param file path to .json file with CPE dictionary data (CPE match feed file)
      *
      * @return List that contains parsed lines (Strings) from the CPE feed file
-     * @throws IOException
      */
     public static List<String> parseIntoLines(String file) { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
         System.out.println("Parsing of basic CPE objects from match feed file started");
@@ -295,23 +295,13 @@ public class CPEobject implements Serializable {
      * This method parses complex CPE objects from the up-to-date file and puts them into database with right relations between objects
      *
      * @param file path to .json file with CPE dictionary data (CPE match feed file)
+     * @param conf object needed to get hibernate configuration
      */
-    public static void CPEcomplexIntoDatabase(String file){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+    public static void CPEcomplexIntoDatabase(String file, Configuration conf){ // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
 
-        // Creating connection
-        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class)
-                .addAnnotatedClass(CAPECattStepObj.class).addAnnotatedClass(CAPECobject.class).addAnnotatedClass(CAPECrelationObj.class)
-                .addAnnotatedClass(CAPECskillObj.class).addAnnotatedClass(CWEalterTermObj.class).addAnnotatedClass(CWEapplPlatfObj.class)
-                .addAnnotatedClass(CWEconseqObj.class).addAnnotatedClass(CWEdemExObj.class).addAnnotatedClass(CWEdetMethObj.class)
-                .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
-                .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
-                .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
-                .addAnnotatedClass(CWEweakOrdObj.class).addAnnotatedClass(CWEextRefObj.class);
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
         // Creating transaction, session and session factory
-        SessionFactory sf = con.buildSessionFactory(reg);
+        SessionFactory sf = conf.buildSessionFactory(reg);
         Session session = sf.openSession();
         Transaction txv = session.beginTransaction();
 
@@ -411,7 +401,7 @@ public class CPEobject implements Serializable {
                         }
                     }
                     UUID uuid = UUID.randomUUID();
-                    complex_obj.setCpe_id(complex_obj.getCpe_id() + "*" + uuid.toString()); // creating unique ID
+                    complex_obj.setCpe_id(complex_obj.getCpe_id() + "#" + uuid.toString()); // creating unique ID
                     session.save(complex_obj);
                 }
             }
@@ -605,27 +595,17 @@ public class CPEobject implements Serializable {
      * into database with right relations between objects
      *
      * @param file path to .json file with CPE dictionary data (CPE match feed file)
+     * @param conf object needed to get hibernate configuration
      */
-    public static void putIntoDatabase(String file) { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+    public static void putIntoDatabase(String file, Configuration conf) { // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
         // list of objects from up-to-date file
         List<CPEobject> compared_objects = linesIntoReadyList(file);
 
-        System.out.println("Actualization of basic CPE objects from match feed file in database started");
+        System.out.println("Filling database with CPE objects started");
 
-        // Creating connection
-        Configuration con = new Configuration().configure().addAnnotatedClass(CVEobject.class).addAnnotatedClass(CPEobject.class)
-                .addAnnotatedClass(CVSS2object.class).addAnnotatedClass(CVSS3object.class).addAnnotatedClass(CPEnodeObject.class)
-                .addAnnotatedClass(ReferenceObject.class).addAnnotatedClass(CPEcomplexObj.class).addAnnotatedClass(CPEnodeToComplex.class)
-                .addAnnotatedClass(CAPECattStepObj.class).addAnnotatedClass(CAPECobject.class).addAnnotatedClass(CAPECrelationObj.class)
-                .addAnnotatedClass(CAPECskillObj.class).addAnnotatedClass(CWEalterTermObj.class).addAnnotatedClass(CWEapplPlatfObj.class)
-                .addAnnotatedClass(CWEconseqObj.class).addAnnotatedClass(CWEdemExObj.class).addAnnotatedClass(CWEdetMethObj.class)
-                .addAnnotatedClass(CWEexampCodeObj.class).addAnnotatedClass(CWEextRefRefObj.class).addAnnotatedClass(CWEintrModesObj.class)
-                .addAnnotatedClass(CWEnoteObj.class).addAnnotatedClass(CWEobject.class).addAnnotatedClass(CWEobsExObj.class)
-                .addAnnotatedClass(CWEpotMitObj.class).addAnnotatedClass(CWErelationObj.class).addAnnotatedClass(CWEtaxMapObj.class)
-                .addAnnotatedClass(CWEweakOrdObj.class).addAnnotatedClass(CWEextRefObj.class);
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
         // Creating session and session factory
-        SessionFactory sf = con.buildSessionFactory(reg);
+        SessionFactory sf = conf.buildSessionFactory(reg);
         Session session = sf.openSession();
 
         // Measuring, how long it will take to put basic CPE objects into database
@@ -637,22 +617,22 @@ public class CPEobject implements Serializable {
         for (CPEobject obj : compared_objects){
             session.save(obj);
         }
-        // Ending transaction and session
+        // Ending transaction, session and session factory
         txv.commit();
         session.close();
-        if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Actualization of basic CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
-        else System.out.println("Actualization of basic CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
         sf.close();
+        if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Filling database with CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
+        else System.out.println("Filling database with CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
 
         // Measuring, how long it will take to put complex CPE objects into database
         start_time = System.currentTimeMillis();
-        System.out.println("Actualization of complex CPE objects from match feed file in database started");
+        System.out.println("Filling database with complex CPE objects from match feed file in database started");
 
         // Calling method CPEcomplexIntoDatabase() which will put all complex CPE objects from match feed file into database with right relations
-        CPEcomplexIntoDatabase(file); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
+        CPEcomplexIntoDatabase(file, conf); // file - https://nvd.nist.gov/feeds/json/cpematch/1.0/nvdcpematch-1.0.json.zip
 
-        if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Actualization of complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
-        else System.out.println("Actualization of complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
+        if ((System.currentTimeMillis()-start_time) > 60000) System.out.println("Filling database with complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/60000)+" minutes");
+        else System.out.println("Filling database with complex CPE objects from match feed file in database done, time elapsed: "+((System.currentTimeMillis()-start_time)/1000)+" seconds");
     }
 
     /**

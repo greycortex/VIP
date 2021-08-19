@@ -45,6 +45,17 @@ public class CPEcomplexObj extends CPEobject {
     /**
      * Copies constructor
      *
+     * @param cpe_id                  CPE ID - cpeUri String
+     * @param vendor                  vendor attribute
+     * @param product                 product attribute
+     * @param version                 version attribute
+     * @param update                  update attribute
+     * @param edition                 edition attribute
+     * @param language                language attribute
+     * @param swEdition               software edition attribute
+     * @param targetSw                target software attribute
+     * @param targetHw                target hardware attribute
+     * @param other                   other attribute
      * @param vulnerable              vulnerability boolean value for specific CPE object
      * @param version_start_excluding version start excluding parameter
      * @param version_end_excluding   version end excluding parameter
@@ -67,6 +78,13 @@ public class CPEcomplexObj extends CPEobject {
     /**
      * This method's purpose is to create more complex CPE object from given parameters (with less complex
      * CPE object as first attribute) and return it
+     *
+     * @param cpeUri                  cpeUri String - contains basic CPE attributes
+     * @param vulnerable              vulnerability boolean value for specific CPE object
+     * @param version_start_excluding version start excluding parameter
+     * @param version_end_excluding   version end excluding parameter
+     * @param version_start_including version start including parameter
+     * @param version_end_including   version end including parameter
      *
      * @return more complex CPE object
      */

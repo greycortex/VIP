@@ -1,6 +1,12 @@
 package mitre.capec;
 
 import mitre.cwe.*;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -25,7 +31,7 @@ import java.util.Set;
  * It can parse CAPEC attack pattern objects from given XML file
  * It uses DOM XML parser
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
  * It can also create a CAPEC attack pattern object from given parameters and return it
  *
@@ -503,6 +509,92 @@ public class CAPECobject implements Serializable {
         }
 
         return capec_objs; // returning List filled with CAPEC attack pattern objects
+    }
+
+    /**
+     * This method's purpose is to put all CAPEC objects and their relations into database
+     *
+     * @param capec_objs    List of all parsed CAPEC objects
+     * @param conf          object needed to get hibernate configuration
+     */
+    public static void CAPECintoDatabase(List<CAPECobject> capec_objs, Configuration conf) {
+
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
+        // Building session factory, openning session, beginning transaction
+        SessionFactory sesf = conf.buildSessionFactory(reg);
+        Session sessionc = sesf.openSession();
+        Transaction txv = sessionc.beginTransaction();
+
+        // Putting CAPEC objects into database
+        for (CAPECobject capec : capec_objs) {
+            if (sessionc.get(CAPECobject.class, capec.getCapec_id()) == null) {
+                // Putting CAPEC object into database
+                sessionc.save(capec);
+            }
+        }
+        // Committing transaction
+        txv.commit();
+        // Beginning transaction
+        txv = sessionc.beginTransaction();
+
+        // Putting related objects of CAPEC objects into database
+        for (CAPECobject capec : capec_objs) {
+            if (sessionc.get(CAPECobject.class, capec.getCapec_id()) != null) {
+                // Putting CAPEC note objects into database
+                for (CWEnoteObj note : capec.getNotes()) {
+                    note.setCapec(capec);
+                    sessionc.save(note);
+                }
+                // Putting CAPEC taxonomy mapping objects into database
+                for (CWEtaxMapObj tax : capec.getTax_maps()) {
+                    tax.setCapec(capec);
+                    sessionc.save(tax);
+                }
+                // Putting CAPEC alternate term objects into database
+                for (CWEalterTermObj alter : capec.getAlter_terms()) {
+                    alter.setCapec(capec);
+                    sessionc.save(alter);
+                }
+                // Putting external reference reference objects into database
+                for (CWEextRefRefObj ext_ref_ref : capec.getExt_ref_refs()) {
+                    if (ext_ref_ref.getExt_ref() != null) {
+                        CWEextRefObj ext_ref_to_set = (CWEextRefObj) sessionc.get(CWEextRefObj.class, ext_ref_ref.getExt_ref().getReference_id());
+                        ext_ref_ref.setExt_ref(ext_ref_to_set);
+                        ext_ref_ref.setCapec(capec);
+                        sessionc.save(ext_ref_ref);
+                    }
+                }
+                // Putting CAPEC consequence objects into database
+                for (CWEconseqObj conseq : capec.getConsequences()) {
+                    conseq.setCapec(capec);
+                    sessionc.save(conseq);
+                }
+                // Putting CAPEC relation objects into database
+                for (CAPECrelationObj relation : capec.getRelated_patterns()) {
+                    CAPECobject related_capec = (CAPECobject) sessionc.get(CAPECobject.class, relation.getRelated_capec_id());
+                    if (related_capec != null) {
+                        relation.setRelated_capec(related_capec);
+                        relation.setCapec(capec);
+                        sessionc.save(relation);
+                    }
+                }
+                // Putting CAPEC attack step objects into database
+                for (CAPECattStepObj att_step : capec.getAttack_steps()) {
+                    att_step.setCapec(capec);
+                    sessionc.save(att_step);
+                }
+                // Putting CAPEC skills required objects into database
+                for (CAPECskillObj skill : capec.getSkills_required()) {
+                    skill.setCapec(capec);
+                    sessionc.save(skill);
+                }
+            }
+        }
+        // Committing transaction, closing session and session factory
+        txv.commit();
+        sessionc.close();
+        sesf.close();
+        System.out.println("CAPEC data were put into the database");
     }
 
     ///**

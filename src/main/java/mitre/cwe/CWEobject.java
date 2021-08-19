@@ -2,6 +2,12 @@ package mitre.cwe;
 
 import mitre.capec.CAPECobject;
 import mitre.cve.CVEobject;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
 import org.xml.sax.SAXException;
 import org.w3c.dom.*;
 
@@ -20,7 +26,7 @@ import java.util.*;
  * <p>
  * It can parse CWE weakness objects from given XML file
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
  * It also can create a CWE object from given parameters and return it
  *
@@ -738,6 +744,143 @@ public class CWEobject implements Serializable {
         }
 
         return cwe_objs;
+    }
+
+    /**
+     * This method's purpose is to put all CWE objects and their relations into database
+     *
+     * @param cwe_objs      List of all parsed CWE objects
+     * @param conf          object needed to get hibernate configuration
+     */
+    public static void CWEintoDatabase(List<CWEobject> cwe_objs, Configuration conf) {
+
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
+        // Building session factory, openning session, beginning transaction
+        SessionFactory sesf = conf.buildSessionFactory(reg);
+        Session sessionc = sesf.openSession();
+        Transaction txv = sessionc.beginTransaction();
+
+        // Putting CWE objects into database
+        for (CWEobject cwe : cwe_objs) {
+            if (sessionc.get(CWEobject.class, cwe.getCode_id()) == null) {
+                // Creating List for CAPEC connecting
+                List<CAPECobject> capecs_to_add = new ArrayList<>();
+                // Connecting related CAPEC objects
+                for (CAPECobject capec : cwe.getCapec()) {
+                    // Connection between CAPEC and CWE will be made
+                    CAPECobject capec_to_add = (CAPECobject) sessionc.get(CAPECobject.class, capec.getCapec_id());
+                    if (capec_to_add != null) {
+                        capecs_to_add.add(capec_to_add);
+                    }
+                }
+                // CAPEC connecting
+                cwe.setCapec(new ArrayList<>());
+                cwe.getCapec().addAll(capecs_to_add);
+                // Putting CWE object into database
+                sessionc.save(cwe);
+            }
+        }
+        // Committing transaction
+        txv.commit();
+        // Beginning transaction
+        txv = sessionc.beginTransaction();
+
+        for (CWEobject cwe : cwe_objs) {
+            if (sessionc.get(CWEobject.class, cwe.getCode_id()) != null) {
+                // Putting CWE relation objects into database
+                for (CWErelationObj rel: cwe.getRelations()) {
+                    CWEobject related_cwe = (CWEobject) sessionc.get(CWEobject.class, rel.getRelated_cwe_id());
+                    if (related_cwe != null) {
+                        rel.setRelated_cwe(related_cwe);
+                        rel.setCwe(cwe);
+                        sessionc.save(rel);
+                    }
+                }
+                // Putting CWE applicable platform objects into database
+                for (CWEapplPlatfObj appl: cwe.getAppl_platform_objs()) {
+                    appl.setCwe(cwe);
+                    sessionc.save(appl);
+                }
+                // Putting CWE note objects into database
+                for (CWEnoteObj note: cwe.getNotes()) {
+                    note.setCwe(cwe);
+                    sessionc.save(note);
+                }
+                // Putting CWE introduction mode objects into database
+                for (CWEintrModesObj intr: cwe.getIntr_modes()) {
+                    intr.setCwe(cwe);
+                    sessionc.save(intr);
+                }
+                // Putting CWE consequence objects into database
+                for (CWEconseqObj conseq: cwe.getConsequences()) {
+                    conseq.setCwe(cwe);
+                    sessionc.save(conseq);
+                }
+                // Putting CWE alternate terms objects into database
+                for (CWEalterTermObj alter: cwe.getAlter_terms()) {
+                    alter.setCwe(cwe);
+                    sessionc.save(alter);
+                }
+                // Putting external reference reference objects into database
+                for (CWEextRefRefObj ext_ref_ref: cwe.getExt_ref_refs()) {
+                    if (ext_ref_ref.getExt_ref() != null) {
+                        CWEextRefObj ext_ref_to_set = (CWEextRefObj) sessionc.get(CWEextRefObj.class, ext_ref_ref.getExt_ref().getReference_id());
+                        ext_ref_ref.setExt_ref(ext_ref_to_set);
+                        ext_ref_ref.setCwe(cwe);
+                        sessionc.save(ext_ref_ref);
+                    }
+                }
+                // Putting CWE taxonomy mapping objects into database
+                for (CWEtaxMapObj tax: cwe.getTax_maps()) {
+                    tax.setCwe(cwe);
+                    sessionc.save(tax);
+                }
+                // Putting CWE potential mitigation objects into database
+                for (CWEpotMitObj pot: cwe.getPot_mits()) {
+                    pot.setCwe(cwe);
+                    sessionc.save(pot);
+                }
+                // Putting CWE weakness ordinality objects into database
+                for (CWEweakOrdObj ord: cwe.getWeak_ords()) {
+                    ord.setCwe(cwe);
+                    sessionc.save(ord);
+                }
+                // Putting CWE demonstrative example objects into database
+                for (CWEdemExObj dem_ex: cwe.getDem_examples()) {
+                    dem_ex.setCwe(cwe);
+                    sessionc.save(dem_ex);
+                    // Putting CWE CWE demonstrative example - example code objects into database
+                    for (CWEexampCodeObj examp_code : dem_ex.getDem_ex_ex_codes()) {
+                        examp_code.setDem_ex(dem_ex);
+                        sessionc.save(examp_code);
+                    }
+                    // Putting CWE CWE demonstrative example - external reference reference objects into database
+                    for (CWEextRefRefObj ext_ref_ref : dem_ex.getDem_ex_ext_ref_refs()) {
+                        if (ext_ref_ref.getExt_ref() != null) {
+                            CWEextRefObj ext_ref_to_set = (CWEextRefObj) sessionc.get(CWEextRefObj.class, ext_ref_ref.getExt_ref().getReference_id());
+                            ext_ref_ref.setExt_ref(ext_ref_to_set);
+                            ext_ref_ref.setDem_ex(dem_ex);
+                            sessionc.save(ext_ref_ref);
+                        }
+                    }
+                }
+                // Putting CWE observed example objects into database
+                for (CWEobsExObj obs_ex: cwe.getObs_examples()) {
+                    obs_ex.setCwe(cwe);
+                    sessionc.save(obs_ex);
+                }
+                // Putting CWE detection method objects into database
+                for (CWEdetMethObj det_met: cwe.getDet_meths()) {
+                    det_met.setCwe(cwe);
+                    sessionc.save(det_met);
+                }
+            }
+        }
+        // Committing transaction, closing session and session factory
+        txv.commit();
+        sessionc.close();
+        sesf.close();
+        System.out.println("CWE data were put into the database");
     }
 
     ///**

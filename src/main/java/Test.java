@@ -1,3 +1,4 @@
+import mitre.NVDobject;
 import mitre.capec.CAPECattStepObj;
 import mitre.capec.CAPECobject;
 import mitre.capec.CAPECrelationObj;
@@ -26,49 +27,49 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class Test {
-    public static final String[] fileNames = {"exclude/nvdcve-1.1-2002.json", "exclude/nvdcve-1.1-2003.json", "exclude/nvdcve-1.1-2004.json",
+    // CVEs from https://nvd.nist.gov/vuln/data-feeds
+    public static final String[] cve_files = {"exclude/nvdcve-1.1-2002.json", "exclude/nvdcve-1.1-2003.json", "exclude/nvdcve-1.1-2004.json",
                 "exclude/nvdcve-1.1-2005.json", "exclude/nvdcve-1.1-2006.json", "exclude/nvdcve-1.1-2007.json", "exclude/nvdcve-1.1-2008.json",
                 "exclude/nvdcve-1.1-2009.json", "exclude/nvdcve-1.1-2010.json", "exclude/nvdcve-1.1-2011.json", "exclude/nvdcve-1.1-2012.json",
                 "exclude/nvdcve-1.1-2013.json", "exclude/nvdcve-1.1-2014.json", "exclude/nvdcve-1.1-2015.json", "exclude/nvdcve-1.1-2016.json",
                 "exclude/nvdcve-1.1-2017.json", "exclude/nvdcve-1.1-2018.json", "exclude/nvdcve-1.1-2019.json", "exclude/nvdcve-1.1-2020.json",
-                "exclude/nvdcve-1.1-2021.json"}; // "nvdcve-1.1-2002.json" -- "nvdcve-1.1-2021.json" - - - https://nvd.nist.gov/vuln/data-feeds
-    public static final String cpe_file = "exclude/nvdcpematch-1.0.json"; // - - - https://nvd.nist.gov/vuln/data-feeds
-    public static final String cwe_file = "exclude/cwec_v4.5.xml"; // - - - https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
-    public static final String capec_file = "exclude/capec_latest.xml"; // - - - https://capec.mitre.org/data/xml/capec_latest.xml
+                "exclude/nvdcve-1.1-2021.json"};
+    // CPEs from https://nvd.nist.gov/vuln/data-feeds
+    public static final String cpe_file = "exclude/nvdcpematch-1.0.json";
+    // CWEs from https://cwe.mitre.org/data/xml/cwec_latest.xml.zip
+    public static final String cwe_file = "exclude/cwec_v4.5.xml";
+    // CAPECs from https://capec.mitre.org/data/xml/capec_latest.xml
+    public static final String capec_file = "exclude/capec_latest.xml";
+    // CVEs from https://nvd.nist.gov/vuln/data-feeds
+    public static final String update_cve_cpe_file = "exclude/nvdcve-1.1-modified.json";
 
-    
-    public static void putIntoDatabase(){
-
-    }
-
-    /**
-     *
-     * @param args
-     * @return
-     */
+    // Main method
     public static void main(String[] args) {
         final String UPDATE = "u";
-        
-        Options options = new Options();
-        options.addOption(UPDATE, false, "Update DB and export queries.");
+        final String BASIC = "b";
+        final String EXTENDED = "e";
 
+        Options options = new Options();
+        options.addOption(UPDATE, false, "Perform a quick update of the database.");
+        options.addOption(BASIC, false, "Create and fill database with data including CVE and CPE structures.");
+        options.addOption(EXTENDED, false, "Create and fill database with data including CVE, CPE, CWE and CAPEC structures.");
 
         System.out.println("Welcome to the VIP application!");
-        // parse commandline aguments and process each command
+        // parse commandline arguments and process each command
         try {
             CommandLineParser parser = new BasicParser();
             CommandLine cmd = parser.parse(options, args);
 
             if (cmd.hasOption(UPDATE)) { // run update
-                CVEobject.quickUpdate("exclude/nvdcve-1.1-modified.json");
+                NVDobject.quickUpdate(update_cve_cpe_file);
+            }
+            else if (cmd.hasOption(BASIC)) { // run basic database creation
+                ; // ---
+            }
+            else if (cmd.hasOption(EXTENDED)) { // run extended database creation
+                NVDobject.extendedDatabase(cpe_file, cve_files, cwe_file, capec_file);
             }
 
-            // Putting all CVE, CWE, CAPEC and CPE objects and objects related to them into database and actualizing them
-            //CVEobject.putIntoDatabase(cpe_file, fileNames, cwe_file, capec_file);
-            
-            // CWE, CAPEC 
-            //TODO: 
-            
             //CPEobject.feedReconstr(); // -- Reconstructs CPE match feed file by using objects from the database
 
             // exit with help
@@ -77,7 +78,6 @@ public class Test {
                 formatter.printHelp("java -jar VIP", options);
             }
 
-                
         } catch (ParseException ex) {
             System.err.println("Parsing failed.  Reason: " + ex.getMessage());
         }
