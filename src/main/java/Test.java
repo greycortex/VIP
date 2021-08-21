@@ -1,30 +1,11 @@
-import mitre.NVDobject;
-import mitre.capec.CAPECattStepObj;
-import mitre.capec.CAPECobject;
-import mitre.capec.CAPECrelationObj;
-import mitre.capec.CAPECskillObj;
-import mitre.cpe.CPEcomplexObj;
-import mitre.cpe.CPEnodeObject;
-import mitre.cpe.CPEnodeToComplex;
-import mitre.cpe.CPEobject;
-import mitre.cve.CVEobject;
-import mitre.cve.ReferenceObject;
-import mitre.cvss.CVSS2object;
-import mitre.cvss.CVSS3object;
-import mitre.cwe.*;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
-
-import java.util.List;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+
+import java.util.Arrays;
 
 public class Test {
     // CVEs from https://nvd.nist.gov/vuln/data-feeds
@@ -50,9 +31,14 @@ public class Test {
         final String EXTENDED = "e";
 
         Options options = new Options();
-        options.addOption(UPDATE, false, "Perform a quick update of the database.");
-        options.addOption(BASIC, false, "Create and fill database with data including CVE and CPE structures.");
-        options.addOption(EXTENDED, false, "Create and fill database with data including CVE, CPE, CWE and CAPEC structures.");
+        options.addOption(UPDATE, false, "Perform a quick update of the database. \nCVE file: '"+update_cve_cpe_file+"'");
+
+        options.addOption(BASIC, false, "Create and fill database with data including CVE and CPE structures. " +
+                                                         "\nCVE files: '"+ Arrays.toString(cve_files) +"' \nCPE file: '"+cpe_file+"'");
+
+        options.addOption(EXTENDED, false, "Create and fill database with data including CVE, CPE, CWE and CAPEC structures. " +
+                                                            "\nCVE files: '"+ Arrays.toString(cve_files) +"' \nCPE file: '"+cpe_file+"' " +
+                                                            "\nCAPEC file: '"+capec_file+"' \nCWE file: '"+cwe_file+"'");
 
         System.out.println("Welcome to the VIP application!");
         // parse commandline arguments and process each command
@@ -60,17 +46,18 @@ public class Test {
             CommandLineParser parser = new BasicParser();
             CommandLine cmd = parser.parse(options, args);
 
-            if (cmd.hasOption(UPDATE)) { // run update
+            if (cmd.hasOption(UPDATE)) { // run quick update
                 NVDobject.quickUpdate(update_cve_cpe_file);
             }
             else if (cmd.hasOption(BASIC)) { // run basic database creation
-                ; // ---
+                NVDobject.basicDatabase(cpe_file, cve_files);
             }
             else if (cmd.hasOption(EXTENDED)) { // run extended database creation
                 NVDobject.extendedDatabase(cpe_file, cve_files, cwe_file, capec_file);
             }
 
-            //CPEobject.feedReconstr(); // -- Reconstructs CPE match feed file by using objects from the database
+            // Reconstructs CPE match feed file by using objects from the database
+            //extended_mitre.cpe.CPEobject.feedReconstr();
 
             // exit with help
             else {

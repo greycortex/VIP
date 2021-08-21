@@ -115,7 +115,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <!-- ======== START OF CLASS DATA ======== -->
 <main role="main">
 <div class="header">
-<div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html">mitre.cpe</a></div>
+<div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html">extended_mitre.cpe</a></div>
 <h2 title="Class CPEcomplexObj" class="title">Class CPEcomplexObj</h2>
 </div>
 <div class="contentContainer">
@@ -123,10 +123,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="CPEobject.html" title="class in mitre.cpe">mitre.cpe.CPEobject</a></li>
+<li><a href="CPEobject.html" title="class in extended_mitre.cpe">extended_mitre.cpe.CPEobject</a></li>
 <li>
 <ul class="inheritance">
-<li>mitre.cpe.CPEcomplexObj</li>
+<li>extended_mitre.cpe.CPEcomplexObj</li>
 </ul>
 </li>
 </ul>
@@ -142,7 +142,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <hr>
 <pre>@Entity(name="compl_cpe")
 public class <span class="typeNameLabel">CPEcomplexObj</span>
-extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
+extends <a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a></pre>
 <div class="block">This class represents a complex CPE object (CPE object attributes plus vulnerable etc. from CVE data feed JSON file)
  <p>
  It extends CPEobject class - adds a few attributes so that it can contain additional attributes gotten from CVE data feed JSON file
@@ -175,12 +175,12 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>protected java.util.List&lt;<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a>&gt;</code></td>
+<td class="colFirst"><code>protected java.util.List&lt;<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#cpe">cpe</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>protected java.util.List&lt;<a href="CPEnodeToComplex.html" title="class in mitre.cpe">CPEnodeToComplex</a>&gt;</code></td>
+<td class="colFirst"><code>protected java.util.List&lt;<a href="CPEnodeToComplex.html" title="class in extended_mitre.cpe">CPEnodeToComplex</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#node_to_compl">node_to_compl</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -214,7 +214,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <li class="blockList"><a id="fields.inherited.from.class.mitre.cpe.CPEobject">
 <!--   -->
 </a>
-<h3>Fields inherited from class&nbsp;mitre.cpe.<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></h3>
+<h3>Fields inherited from class&nbsp;extended_mitre.cpe.<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a></h3>
 <code><a href="CPEobject.html#compl_cpe">compl_cpe</a>, <a href="CPEobject.html#cpe_id">cpe_id</a>, <a href="CPEobject.html#edition">edition</a>, <a href="CPEobject.html#language">language</a>, <a href="CPEobject.html#other">other</a>, <a href="CPEobject.html#product">product</a>, <a href="CPEobject.html#swEdition">swEdition</a>, <a href="CPEobject.html#targetHw">targetHw</a>, <a href="CPEobject.html#targetSw">targetSw</a>, <a href="CPEobject.html#update">update</a>, <a href="CPEobject.html#vendor">vendor</a>, <a href="CPEobject.html#version">version</a></code></li>
 </ul>
 </li>
@@ -284,13 +284,13 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a>&gt;</code></td>
+<td class="colFirst"><code>java.util.List&lt;<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCpe_objs()">getCpe_objs</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>static <a href="CPEcomplexObj.html" title="class in mitre.cpe">CPEcomplexObj</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getInstanceFromCPE(mitre.cpe.CPEobject,java.lang.Boolean,java.lang.String,java.lang.String,java.lang.String,java.lang.String)">getInstanceFromCPE</a></span>&#8203;(<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a>&nbsp;cpeUri,
+<td class="colFirst"><code>static <a href="CPEcomplexObj.html" title="class in extended_mitre.cpe">CPEcomplexObj</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getInstanceFromCPE(mitre.cpe.CPEobject,java.lang.Boolean,java.lang.String,java.lang.String,java.lang.String,java.lang.String)">getInstanceFromCPE</a></span>&#8203;(<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a>&nbsp;cpeUri,
                   java.lang.Boolean&nbsp;vulnerable,
                   java.lang.String&nbsp;version_start_excluding,
                   java.lang.String&nbsp;version_end_excluding,
@@ -313,7 +313,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCpe_objs(java.util.List)">setCpe_objs</a></span>&#8203;(java.util.List&lt;<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a>&gt;&nbsp;cpe)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCpe_objs(java.util.List)">setCpe_objs</a></span>&#8203;(java.util.List&lt;<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a>&gt;&nbsp;cpe)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
@@ -326,7 +326,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <li class="blockList"><a id="methods.inherited.from.class.mitre.cpe.CPEobject">
 <!--   -->
 </a>
-<h3>Methods inherited from class&nbsp;mitre.cpe.<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></h3>
+<h3>Methods inherited from class&nbsp;extended_mitre.cpe.<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a></h3>
 <code><a href="CPEobject.html#CPEcomplexIntoDatabase(java.lang.String,org.hibernate.cfg.Configuration)">CPEcomplexIntoDatabase</a>, <a href="CPEobject.html#cpeUriToObject(java.lang.String)">cpeUriToObject</a>, <a href="CPEobject.html#feedReconstr()">feedReconstr</a>, <a href="CPEobject.html#getCpe_id()">getCpe_id</a>, <a href="CPEobject.html#linesIntoReadyList(java.lang.String)">linesIntoReadyList</a>, <a href="CPEobject.html#parseIntoLines(java.lang.String)">parseIntoLines</a>, <a href="CPEobject.html#putIntoDatabase(java.lang.String,org.hibernate.cfg.Configuration)">putIntoDatabase</a>, <a href="CPEobject.html#setCpe_id(java.lang.String)">setCpe_id</a></code></li>
 </ul>
 <ul class="blockList">
@@ -403,7 +403,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>cpe</h4>
-<pre>protected&nbsp;java.util.List&lt;<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a>&gt; cpe</pre>
+<pre>protected&nbsp;java.util.List&lt;<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a>&gt; cpe</pre>
 </li>
 </ul>
 <a id="node_to_compl">
@@ -412,7 +412,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>node_to_compl</h4>
-<pre>protected&nbsp;java.util.List&lt;<a href="CPEnodeToComplex.html" title="class in mitre.cpe">CPEnodeToComplex</a>&gt; node_to_compl</pre>
+<pre>protected&nbsp;java.util.List&lt;<a href="CPEnodeToComplex.html" title="class in extended_mitre.cpe">CPEnodeToComplex</a>&gt; node_to_compl</pre>
 </li>
 </ul>
 </li>
@@ -494,7 +494,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getCpe_objs</h4>
-<pre class="methodSignature">public&nbsp;java.util.List&lt;<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a>&gt;&nbsp;getCpe_objs()</pre>
+<pre class="methodSignature">public&nbsp;java.util.List&lt;<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a>&gt;&nbsp;getCpe_objs()</pre>
 </li>
 </ul>
 <a id="setCpe_objs(java.util.List)">
@@ -503,7 +503,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setCpe_objs</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;setCpe_objs&#8203;(java.util.List&lt;<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a>&gt;&nbsp;cpe)</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;setCpe_objs&#8203;(java.util.List&lt;<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a>&gt;&nbsp;cpe)</pre>
 </li>
 </ul>
 <a id="getVulnerable()">
@@ -521,7 +521,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getInstanceFromCPE</h4>
-<pre class="methodSignature">public static&nbsp;<a href="CPEcomplexObj.html" title="class in mitre.cpe">CPEcomplexObj</a>&nbsp;getInstanceFromCPE&#8203;(<a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a>&nbsp;cpeUri,
+<pre class="methodSignature">public static&nbsp;<a href="CPEcomplexObj.html" title="class in extended_mitre.cpe">CPEcomplexObj</a>&nbsp;getInstanceFromCPE&#8203;(<a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a>&nbsp;cpeUri,
                                                java.lang.Boolean&nbsp;vulnerable,
                                                java.lang.String&nbsp;version_start_excluding,
                                                java.lang.String&nbsp;version_end_excluding,
@@ -551,7 +551,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;toString()</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code><a href="CPEobject.html#toString()">toString</a></code>&nbsp;in class&nbsp;<code><a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></code></dd>
+<dd><code><a href="CPEobject.html#toString()">toString</a></code>&nbsp;in class&nbsp;<code><a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -566,7 +566,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <div class="block">Compares to input_obj</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code><a href="CPEobject.html#equals(java.lang.Object)">equals</a></code>&nbsp;in class&nbsp;<code><a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></code></dd>
+<dd><code><a href="CPEobject.html#equals(java.lang.Object)">equals</a></code>&nbsp;in class&nbsp;<code><a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>o</code> - Object that is compared with</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -583,7 +583,7 @@ extends <a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></pre>
 <pre class="methodSignature">public&nbsp;int&nbsp;hashCode()</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code><a href="CPEobject.html#hashCode()">hashCode</a></code>&nbsp;in class&nbsp;<code><a href="CPEobject.html" title="class in mitre.cpe">CPEobject</a></code></dd>
+<dd><code><a href="CPEobject.html#hashCode()">hashCode</a></code>&nbsp;in class&nbsp;<code><a href="CPEobject.html" title="class in extended_mitre.cpe">CPEobject</a></code></dd>
 </dl>
 </li>
 </ul>
