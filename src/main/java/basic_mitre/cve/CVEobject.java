@@ -141,6 +141,18 @@ public class CVEobject implements Serializable {
         this.last_modified_date = last_modified_date;
     }
 
+    public List<CPEnodeObject> getCpe_nodes() {
+        return cpe_nodes;
+    }
+
+    public CVSS2object getCvss_v2() {
+        return cvss_v2;
+    }
+
+    public CVSS3object getCvss_v3() {
+        return cvss_v3;
+    }
+
     /**
      * This method's purpose is to create and return all CVE objects from JSON file (input)
      *

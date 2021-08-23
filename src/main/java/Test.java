@@ -57,7 +57,7 @@ public class Test {
             }
 
             // Reconstructs CPE match feed file by using objects from the database
-            //extended_mitre.cpe.CPEobject.feedReconstr();
+            // extended_mitre.cpe.CPEobject.feedReconstr();
 
             // exit with help
             else {

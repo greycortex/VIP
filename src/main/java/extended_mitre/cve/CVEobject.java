@@ -153,6 +153,18 @@ public class CVEobject implements Serializable {
         this.last_modified_date = last_modified_date;
     }
 
+    public List<CPEnodeObject> getCpe_nodes() {
+        return cpe_nodes;
+    }
+
+    public CVSS2object getCvss_v2() {
+        return cvss_v2;
+    }
+
+    public CVSS3object getCvss_v3() {
+        return cvss_v3;
+    }
+
     /**
      * This method's purpose is to create and return all CVE objects from JSON file (input)
      *
@@ -571,7 +583,7 @@ public class CVEobject implements Serializable {
                 if (obj.cvss_v3 != null) sessionc.save(obj.cvss_v3);
                 // Creating List for CWE connecting
                 List<CWEobject> cwes_to_add = new ArrayList<>();
-                // Putting related CWE and CAPEC objects into database
+                // Making connections with related CWE objects
                 for (CWEobject cwe : obj.cwe) {
                     // Connection between CWE and CVE will be made
                     CWEobject cwe_to_add = (CWEobject) sessionc.get(CWEobject.class, cwe.getCode_id());

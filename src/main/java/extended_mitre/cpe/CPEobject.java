@@ -498,26 +498,26 @@ public class CPEobject implements Serializable {
             for (int i = 0; i<compl_objs.size(); i++) {
                 // Making cpe23Uri String
                 String[] id_splitstr = compl_objs.get(i).getCpe_id().split("[*]");
-                //// Replacing problematic backslashes
-                //id_splitstr[0] = id_splitstr[0].replace("\\","\\\\");
+                // Replacing problematic backslashes
+                id_splitstr[0] = id_splitstr[0].replace("\\","\\\\");
                 // Writing cpe23Uri into the file
                 file.write("\t\t{\"cpe23Uri\" : \""+id_splitstr[0]+"\",\n");
 
                 // Writing attributes of the complex object into the file (plus replacing problematic backslashes)
                 if (compl_objs.get(i).version_end_excluding != null) {
-                    //compl_objs.get(i).version_end_excluding = compl_objs.get(i).version_end_excluding.replace("\\","\\\\");
+                    compl_objs.get(i).version_end_excluding = compl_objs.get(i).version_end_excluding.replace("\\","\\\\");
                     file.write("\t\t\"versionEndExcluding\" : \""+compl_objs.get(i).version_end_excluding+"\",\n");
                 }
                 if (compl_objs.get(i).version_end_including != null) {
-                    //compl_objs.get(i).version_end_including = compl_objs.get(i).version_end_including.replace("\\","\\\\");
+                    compl_objs.get(i).version_end_including = compl_objs.get(i).version_end_including.replace("\\","\\\\");
                     file.write("\t\t\"versionEndIncluding\" : \""+compl_objs.get(i).version_end_including+"\",\n");
                 }
                 if (compl_objs.get(i).version_start_excluding != null) {
-                    //compl_objs.get(i).version_start_excluding = compl_objs.get(i).version_start_excluding.replace("\\","\\\\");
+                    compl_objs.get(i).version_start_excluding = compl_objs.get(i).version_start_excluding.replace("\\","\\\\");
                     file.write("\t\t\"versionStartExcluding\" : \""+compl_objs.get(i).version_start_excluding+"\",\n");
                 }
                 if (compl_objs.get(i).version_start_including != null) {
-                    //compl_objs.get(i).version_start_including = compl_objs.get(i).version_start_including.replace("\\","\\\\");
+                    compl_objs.get(i).version_start_including = compl_objs.get(i).version_start_including.replace("\\","\\\\");
                     file.write("\t\t\"versionStartIncluding\" : \""+compl_objs.get(i).version_start_including+"\",\n");
                 }
 
@@ -537,12 +537,12 @@ public class CPEobject implements Serializable {
                     for (int y = 0; y < rel_basic_objs.size(); y++){
                         // If its last, no comma
                         if (y == (rel_basic_objs.size()-1)) {
-                            //rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
+                            rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
                             file.write("\t\t{\"cpe23Uri\" : \""+rel_basic_objs.get(y).cpe_id+"\"}\n");
                             basic_objs_to_remove.add(rel_basic_objs.get(y));
                         }
                         else {
-                            //rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
+                            rel_basic_objs.get(y).cpe_id = rel_basic_objs.get(y).cpe_id.replace("\\","\\\\");
                             file.write("\t\t{\"cpe23Uri\" : \""+rel_basic_objs.get(y).cpe_id+"\"},\n");
                             basic_objs_to_remove.add(rel_basic_objs.get(y));
                         }
@@ -583,11 +583,11 @@ public class CPEobject implements Serializable {
             for (int i = 0; i<basic_objs.size(); i++){
                 // If its last, no comma + ending the JSON structure - reconstruction done
                 if (i == (basic_objs.size()-1)){
-                    //basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
+                    basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
                     file.write("\t\t{\"cpe23Uri\" : \""+basic_objs.get(i).cpe_id+"\",\n");
                     file.write("\t\t\"cpe_name\" : [ ] } \n ] \n }\n");
                 } else {
-                    //basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
+                    basic_objs.get(i).cpe_id = basic_objs.get(i).cpe_id.replace("\\","\\\\");
                     file.write("\t\t{\"cpe23Uri\" : \""+basic_objs.get(i).cpe_id+"\",\n");
                     file.write("\t\t\"cpe_name\" : [ ] },\n");
                 }
