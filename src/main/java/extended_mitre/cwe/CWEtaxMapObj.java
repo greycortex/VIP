@@ -8,9 +8,9 @@ import java.util.Objects;
 /**
  * This class represents a CWE taxonomy mapping object (name, entry name attribute, entry ID, mapping fit attribute)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE taxonomy mapping object from given parameters and return it
+ * It can create a CWE taxonomy mapping object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -86,11 +86,11 @@ public class CWEtaxMapObj {
         if (this == o) return true;
         if (!(o instanceof CWEtaxMapObj)) return false;
         CWEtaxMapObj that = (CWEtaxMapObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(entry_name, that.entry_name) && Objects.equals(entry_id, that.entry_id) && Objects.equals(mapping_fit, that.mapping_fit) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(name, that.name) && Objects.equals(entry_name, that.entry_name) && Objects.equals(entry_id, that.entry_id) && Objects.equals(mapping_fit, that.mapping_fit) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, entry_name, entry_id, mapping_fit, capec, cwe);
+        return Objects.hash(name, entry_name, entry_id, mapping_fit);
     }
 }

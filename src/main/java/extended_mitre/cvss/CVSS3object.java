@@ -9,11 +9,11 @@ import java.util.Objects;
  * This class represents a CVSS v3 object (Base score metrics, ...)
  * <p>
  * It can create a CVSS v3 (base metric v3) object from given parameters and return it
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database including quick updates
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "cvss3")
 @Table(name="cvss3", schema = "mitre")
 public class CVSS3object {
 
@@ -82,6 +82,118 @@ public class CVSS3object {
         this.impact_score_v3 = impact_score_v3;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getVector_string() {
+        return vector_string;
+    }
+
+    public void setVector_string(String vector_string) {
+        this.vector_string = vector_string;
+    }
+
+    public String getAttack_vector() {
+        return attack_vector;
+    }
+
+    public void setAttack_vector(String attack_vector) {
+        this.attack_vector = attack_vector;
+    }
+
+    public String getAttack_complexity() {
+        return attack_complexity;
+    }
+
+    public void setAttack_complexity(String attack_complexity) {
+        this.attack_complexity = attack_complexity;
+    }
+
+    public String getPrivileges_required() {
+        return privileges_required;
+    }
+
+    public void setPrivileges_required(String privileges_required) {
+        this.privileges_required = privileges_required;
+    }
+
+    public String getUser_interaction() {
+        return user_interaction;
+    }
+
+    public void setUser_interaction(String user_interaction) {
+        this.user_interaction = user_interaction;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    public String getConfidentiality_impact() {
+        return confidentiality_impact;
+    }
+
+    public void setConfidentiality_impact(String confidentiality_impact) {
+        this.confidentiality_impact = confidentiality_impact;
+    }
+
+    public String getIntegrity_impact() {
+        return integrity_impact;
+    }
+
+    public void setIntegrity_impact(String integrity_impact) {
+        this.integrity_impact = integrity_impact;
+    }
+
+    public String getAvailability_impact() {
+        return availability_impact;
+    }
+
+    public void setAvailability_impact(String availability_impact) {
+        this.availability_impact = availability_impact;
+    }
+
+    public double getBase_score_v3() {
+        return base_score_v3;
+    }
+
+    public void setBase_score_v3(double base_score_v3) {
+        this.base_score_v3 = base_score_v3;
+    }
+
+    public String getBase_severity_v3() {
+        return base_severity_v3;
+    }
+
+    public void setBase_severity_v3(String base_severity_v3) {
+        this.base_severity_v3 = base_severity_v3;
+    }
+
+    public double getExploitability_score_v3() {
+        return exploitability_score_v3;
+    }
+
+    public void setExploitability_score_v3(double exploitability_score_v3) {
+        this.exploitability_score_v3 = exploitability_score_v3;
+    }
+
+    public double getImpact_score_v3() {
+        return impact_score_v3;
+    }
+
+    public void setImpact_score_v3(double impact_score_v3) {
+        this.impact_score_v3 = impact_score_v3;
+    }
+
     ///**
     // * This method's purpose is to create a CVSS v3 (base metric v3) object from given parameters and return it
     // *
@@ -122,11 +234,11 @@ public class CVSS3object {
         if (this == o) return true;
         if (!(o instanceof CVSS3object)) return false;
         CVSS3object that = (CVSS3object) o;
-        return Double.compare(that.base_score_v3, base_score_v3) == 0 && Double.compare(that.exploitability_score_v3, exploitability_score_v3) == 0 && Double.compare(that.impact_score_v3, impact_score_v3) == 0 && Objects.equals(id, that.id) && Objects.equals(version, that.version) && Objects.equals(vector_string, that.vector_string) && Objects.equals(attack_vector, that.attack_vector) && Objects.equals(attack_complexity, that.attack_complexity) && Objects.equals(privileges_required, that.privileges_required) && Objects.equals(user_interaction, that.user_interaction) && Objects.equals(scope, that.scope) && Objects.equals(confidentiality_impact, that.confidentiality_impact) && Objects.equals(integrity_impact, that.integrity_impact) && Objects.equals(availability_impact, that.availability_impact) && Objects.equals(base_severity_v3, that.base_severity_v3) && Objects.equals(cve_obj, that.cve_obj);
+        return Double.compare(that.base_score_v3, base_score_v3) == 0 && Double.compare(that.exploitability_score_v3, exploitability_score_v3) == 0 && Double.compare(that.impact_score_v3, impact_score_v3) == 0 && Objects.equals(version, that.version) && Objects.equals(vector_string, that.vector_string) && Objects.equals(attack_vector, that.attack_vector) && Objects.equals(attack_complexity, that.attack_complexity) && Objects.equals(privileges_required, that.privileges_required) && Objects.equals(user_interaction, that.user_interaction) && Objects.equals(scope, that.scope) && Objects.equals(confidentiality_impact, that.confidentiality_impact) && Objects.equals(integrity_impact, that.integrity_impact) && Objects.equals(availability_impact, that.availability_impact) && Objects.equals(base_severity_v3, that.base_severity_v3);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, version, vector_string, attack_vector, attack_complexity, privileges_required, user_interaction, scope, confidentiality_impact, integrity_impact, availability_impact, base_score_v3, base_severity_v3, exploitability_score_v3, impact_score_v3, cve_obj);
+        return Objects.hash(version, vector_string, attack_vector, attack_complexity, privileges_required, user_interaction, scope, confidentiality_impact, integrity_impact, availability_impact, base_score_v3, base_severity_v3, exploitability_score_v3, impact_score_v3);
     }
 }

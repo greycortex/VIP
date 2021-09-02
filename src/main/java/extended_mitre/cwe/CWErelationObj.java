@@ -6,9 +6,9 @@ import java.util.Objects;
 /**
  * This class represents a CWE relation object (nature attribute, CWE code (ID) of related CWE, view_id attribute, ordinal attribute)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE relation object from given parameters and return it
+ * It can create a CWE relation object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -92,11 +92,11 @@ public class CWErelationObj {
         if (this == o) return true;
         if (!(o instanceof CWErelationObj)) return false;
         CWErelationObj that = (CWErelationObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(nature, that.nature) && Objects.equals(related_cwe_id, that.related_cwe_id) && Objects.equals(view_id, that.view_id) && Objects.equals(ordinal, that.ordinal) && Objects.equals(cwe, that.cwe) && Objects.equals(related_cwe, that.related_cwe);
+        return Objects.equals(nature, that.nature) && Objects.equals(related_cwe_id, that.related_cwe_id) && Objects.equals(view_id, that.view_id) && Objects.equals(ordinal, that.ordinal) && Objects.equals(cwe, that.cwe) && Objects.equals(related_cwe, that.related_cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nature, related_cwe_id, view_id, ordinal, cwe, related_cwe);
+        return Objects.hash(nature, related_cwe_id, view_id, ordinal);
     }
 }

@@ -29,7 +29,7 @@ import java.util.*;
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "cwe")
 @Table(name="cwe", schema = "mitre")
 public class CWEobject implements Serializable {
 

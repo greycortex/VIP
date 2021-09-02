@@ -6,9 +6,9 @@ import java.util.Objects;
 /**
  * This class represents a CWE demonstrative example - example code object (nature attribute, language attribute, content)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE demonstrative example - example code object from given parameters and return it
+ * It can create a CWE demonstrative example - example code object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -75,11 +75,11 @@ public class CWEexampCodeObj {
         if (this == o) return true;
         if (!(o instanceof CWEexampCodeObj)) return false;
         CWEexampCodeObj that = (CWEexampCodeObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(nature, that.nature) && Objects.equals(language, that.language) && Objects.equals(content, that.content) && Objects.equals(dem_ex, that.dem_ex);
+        return Objects.equals(nature, that.nature) && Objects.equals(language, that.language) && Objects.equals(content, that.content) && Objects.equals(dem_ex, that.dem_ex);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nature, language, content, dem_ex);
+        return Objects.hash(nature, language, content);
     }
 }

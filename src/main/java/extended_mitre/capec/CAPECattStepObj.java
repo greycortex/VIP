@@ -7,9 +7,9 @@ import java.util.Objects;
 /**
  * This class represents an attack step object (step attribute, phase attribute, description attribute, technique attributes)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CAPEC attack step object from given parameters and return it
+ * It can create a CAPEC attack step object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -83,11 +83,11 @@ public class CAPECattStepObj {
         if (this == o) return true;
         if (!(o instanceof CAPECattStepObj)) return false;
         CAPECattStepObj that = (CAPECattStepObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(step, that.step) && Objects.equals(phase, that.phase) && Objects.equals(description, that.description) && Objects.equals(techniques, that.techniques) && Objects.equals(capec, that.capec);
+        return Objects.equals(step, that.step) && Objects.equals(phase, that.phase) && Objects.equals(description, that.description) && Objects.equals(techniques, that.techniques) && Objects.equals(capec, that.capec);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, step, phase, description, techniques, capec);
+        return Objects.hash(step, phase, description, techniques);
     }
 }

@@ -7,9 +7,9 @@ import java.util.Objects;
 /**
  * This class represents a CAPEC relation object (nature attribute, CAPEC code (ID) of related CAPEC attack pattern, exclude IDs)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CAPEC relation object from given parameters and return it
+ * It can create a CAPEC relation object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -90,11 +90,11 @@ public class CAPECrelationObj {
         if (this == o) return true;
         if (!(o instanceof CAPECrelationObj)) return false;
         CAPECrelationObj that = (CAPECrelationObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(nature, that.nature) && Objects.equals(related_capec_id, that.related_capec_id) && Objects.equals(exclude_ids, that.exclude_ids) && Objects.equals(capec, that.capec) && Objects.equals(related_capec, that.related_capec);
+        return Objects.equals(nature, that.nature) && Objects.equals(related_capec_id, that.related_capec_id) && Objects.equals(exclude_ids, that.exclude_ids) && Objects.equals(capec, that.capec) && Objects.equals(related_capec, that.related_capec);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nature, related_capec_id, exclude_ids, capec, related_capec);
+        return Objects.hash(nature, related_capec_id, exclude_ids);
     }
 }

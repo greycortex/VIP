@@ -4,8 +4,9 @@ import javax.persistence.*;
 import java.util.Objects;
 
 /**
- * This class represents ManyToMany relation between complex CPE object and CPE node object,
- * it also has vulnerable attribute from the complex CPE object
+ * This class represents ManyToMany relation between complex or basic CPE object and CPE node object,
+ * it also has vulnerable attribute from the complex CPE object data from CVE object
+ * Objects can be put into database including quick updates
  * <p>
  * @author Thomas Bozek (XarfNao)
  */
@@ -50,6 +51,30 @@ public class CPEnodeToCPE {
         this.node = node;
     }
 
+    public CPEcomplexObj getCompl_cpe() {
+        return compl_cpe;
+    }
+
+    public void setCompl_cpe(CPEcomplexObj compl_cpe) {
+        this.compl_cpe = compl_cpe;
+    }
+
+    public CPEobject getCpe() {
+        return cpe;
+    }
+
+    public void setCpe(CPEobject cpe) {
+        this.cpe = cpe;
+    }
+
+    public Boolean getVulnerable() {
+        return vulnerable;
+    }
+
+    public void setVulnerable(Boolean vulnerable) {
+        this.vulnerable = vulnerable;
+    }
+
     /**
      * @param id          id of the specific relation - combination of complex CPE id and CVE id
      * @param compl_cpe   complex CPE object from the specific relation
@@ -72,11 +97,11 @@ public class CPEnodeToCPE {
         if (this == o) return true;
         if (!(o instanceof CPEnodeToCPE)) return false;
         CPEnodeToCPE that = (CPEnodeToCPE) o;
-        return Objects.equals(id, that.id) && Objects.equals(compl_cpe, that.compl_cpe) && Objects.equals(cpe, that.cpe) && Objects.equals(node, that.node) && Objects.equals(cve_id, that.cve_id) && Objects.equals(vulnerable, that.vulnerable);
+        return Objects.equals(compl_cpe, that.compl_cpe) && Objects.equals(cpe, that.cpe) && Objects.equals(node, that.node) && Objects.equals(cve_id, that.cve_id) && Objects.equals(vulnerable, that.vulnerable);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, compl_cpe, cpe, node, cve_id, vulnerable);
+        return Objects.hash(compl_cpe, cpe, node, cve_id, vulnerable);
     }
 }

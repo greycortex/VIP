@@ -9,13 +9,13 @@ import java.util.Objects;
 /**
  * This class represents a CWE consequence object (scope attributes, impact attributes, note attributes, likelihood attributes)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE consequence object from given parameters and return it
+ * It can create a CWE consequence object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "consequence")
 @Table(name="consequence", schema = "mitre")
 public class CWEconseqObj {
 
@@ -101,11 +101,11 @@ public class CWEconseqObj {
         if (this == o) return true;
         if (!(o instanceof CWEconseqObj)) return false;
         CWEconseqObj that = (CWEconseqObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(scopes, that.scopes) && Objects.equals(impacts, that.impacts) && Objects.equals(notes, that.notes) && Objects.equals(likelihoods, that.likelihoods) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(scopes, that.scopes) && Objects.equals(impacts, that.impacts) && Objects.equals(notes, that.notes) && Objects.equals(likelihoods, that.likelihoods) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, scopes, impacts, notes, likelihoods, capec, cwe);
+        return Objects.hash(scopes, impacts, notes, likelihoods);
     }
 }

@@ -6,9 +6,9 @@ import java.util.Objects;
 /**
  * This class represents a CWE observed example object (reference attribute, description attribute, link attribute)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE observed example object from given parameters and return it
+ * It can create a CWE observed example object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -76,11 +76,11 @@ public class CWEobsExObj {
         if (this == o) return true;
         if (!(o instanceof CWEobsExObj)) return false;
         CWEobsExObj that = (CWEobsExObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(reference, that.reference) && Objects.equals(description, that.description) && Objects.equals(link, that.link) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(reference, that.reference) && Objects.equals(description, that.description) && Objects.equals(link, that.link) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, reference, description, link, cwe);
+        return Objects.hash(reference, description, link);
     }
 }

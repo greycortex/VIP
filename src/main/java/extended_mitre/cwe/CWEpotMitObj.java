@@ -8,13 +8,13 @@ import java.util.Objects;
  * This class represents a CWE potential mitigation object (mitigation id attribute, phase attributes, strategy attribute, description attribute,
  * effectiveness attribute, effectiveness notes attribute)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE potential mitigation object from given parameters and return it
+ * It can create a CWE potential mitigation object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "pot_mit")
 @Table(name="cwe_potential_mitigation", schema = "mitre")
 public class CWEpotMitObj {
 
@@ -95,11 +95,11 @@ public class CWEpotMitObj {
         if (this == o) return true;
         if (!(o instanceof CWEpotMitObj)) return false;
         CWEpotMitObj that = (CWEpotMitObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(mitigation_id, that.mitigation_id) && Objects.equals(phases, that.phases) && Objects.equals(strategy, that.strategy) && Objects.equals(description, that.description) && Objects.equals(effectiveness, that.effectiveness) && Objects.equals(effectiveness_notes, that.effectiveness_notes) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(mitigation_id, that.mitigation_id) && Objects.equals(phases, that.phases) && Objects.equals(strategy, that.strategy) && Objects.equals(description, that.description) && Objects.equals(effectiveness, that.effectiveness) && Objects.equals(effectiveness_notes, that.effectiveness_notes) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, mitigation_id, phases, strategy, description, effectiveness, effectiveness_notes, cwe);
+        return Objects.hash(mitigation_id, phases, strategy, description, effectiveness, effectiveness_notes);
     }
 }

@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * This class represents a complex CPE object (CPE object attributes plus vulnerable etc. from CVE data feed JSON file)
+ * This class represents a complex CPE object (basic CPE object attributes plus vulnerable etc. from CVE data feed JSON file)
  * <p>
  * It extends CPEobject class - adds a few attributes so that it can contain additional attributes gotten from CVE data feed JSON file
- * It can also store those additional attributes in the database
+ * Objects can be put into database including quick updates
  * <p>
  * @author Tomas Bozek (XarfNao)
  */
@@ -94,7 +94,7 @@ public class CPEcomplexObj extends CPEobject implements Serializable {
     }
 
     /**
-     * This method's purpose is to create more complex CPE object from given parameters (with less complex
+     * This method's purpose is to create more complex CPE object from given parameters (with basic
      * CPE object as first attribute) and return it
      *
      * @param cpeUri                  cpeUri String - contains basic CPE attributes
@@ -156,11 +156,11 @@ public class CPEcomplexObj extends CPEobject implements Serializable {
         if (!(o instanceof CPEcomplexObj)) return false;
         if (!super.equals(o)) return false;
         CPEcomplexObj that = (CPEcomplexObj) o;
-        return Objects.equals(vulnerable, that.vulnerable) && Objects.equals(version_start_excluding, that.version_start_excluding) && Objects.equals(version_end_excluding, that.version_end_excluding) && Objects.equals(version_start_including, that.version_start_including) && Objects.equals(version_end_including, that.version_end_including) && Objects.equals(cpe, that.cpe) && Objects.equals(node_to_compl, that.node_to_compl);
+        return Objects.equals(vulnerable, that.vulnerable) && Objects.equals(version_start_excluding, that.version_start_excluding) && Objects.equals(version_end_excluding, that.version_end_excluding) && Objects.equals(version_start_including, that.version_start_including) && Objects.equals(version_end_including, that.version_end_including);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), vulnerable, version_start_excluding, version_end_excluding, version_start_including, version_end_including, cpe, node_to_compl);
+        return Objects.hash(super.hashCode(), vulnerable, version_start_excluding, version_end_excluding, version_start_including, version_end_including);
     }
 }

@@ -1,9 +1,3 @@
-import basic_mitre.cpe.CPEcomplexObj;
-import basic_mitre.cpe.CPEnodeObject;
-import basic_mitre.cpe.CPEnodeToCPE;
-import basic_mitre.cpe.CPEobject;
-import basic_mitre.cve.ReferenceObject;
-import extended_mitre.cwe.CWEobject;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -33,6 +27,7 @@ public class NVDobject {
 
     /**
      * This method's purpose is to quickly update CVE and CPE objects in the database
+     * It uses the quickUpdateCore() methods from CVEobject classes for this purpose
      *
      * @param update_file path to .json file with CVE objects - "modified" file containing recently changed data
      */
@@ -87,6 +82,7 @@ public class NVDobject {
             // List for removing objects that will be updated now later on
             List<extended_mitre.cve.CVEobject> cves_to_remove = new ArrayList<>();
             for (extended_mitre.cve.CVEobject cve_obj : cve_objs) {
+                // Getting specific CVE from the database
                 extended_mitre.cve.CVEobject cve_db = session.get(extended_mitre.cve.CVEobject.class, cve_obj.getMeta_data_id());
                 if (cve_db != null) {
                     refresh++;
@@ -98,130 +94,23 @@ public class NVDobject {
                         txv = session.beginTransaction();
                     }
 
-                    // ---
-
                     // Removing object that was updated now
                     cves_to_remove.add(cve_obj);
-                }
-            }
-            // Removing all objects, that has been updated until now
-            cve_objs.removeAll(cves_to_remove);
-            // If the CVE object is new, it is put into the database
-            for (extended_mitre.cve.CVEobject obj : cve_objs) {
-                refresh++;
-                // Putting CVSS v2 object into database
-                if (obj.getCvss_v2() != null) session.save(obj.getCvss_v2());
-                // Putting CVSS v3 object into database
-                if (obj.getCvss_v3() != null) session.save(obj.getCvss_v3());
-                // Putting CVE object into database
-                session.save(obj);
-                // Putting CPE node objects into database
-                for (extended_mitre.cpe.CPEnodeObject node_obj : obj.getCpe_nodes()) {
-                    if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
-                        // Putting CPE node object into database
-                        node_obj.setCve_obj(obj);
-                        session.save(node_obj);
-                        for (extended_mitre.cpe.CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
-                            if (complex_cpe_obj != null) {
-                                // Making basic CPE id for creating or getting CPE object later on
-                                String basic_cpe_id = complex_cpe_obj.getCpe_id();
-                                // ensuring unique ID of complex CPE object
-                                if (complex_cpe_obj.getVersion_start_including() != null) {
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#star_in_" + complex_cpe_obj.getVersion_start_including());
-                                }
-                                if (complex_cpe_obj.getVersion_start_excluding() != null) {
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#star_ex_" + complex_cpe_obj.getVersion_start_excluding());
-                                }
-                                if (complex_cpe_obj.getVersion_end_including() != null) {
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#end_in_" + complex_cpe_obj.getVersion_end_including());
-                                }
-                                if (complex_cpe_obj.getVersion_end_excluding() != null) {
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#end_ex_" + complex_cpe_obj.getVersion_end_excluding());
-                                }
 
-                                extended_mitre.cpe.CPEcomplexObj compl_cpe_db = null;
-                                extended_mitre.cpe.CPEobject cpe_db = null;
-                                // Figuring out if it will be complex or basic CPE object - following is the complex CPE case
-                                if (complex_cpe_obj.getVersion_end_excluding() != null || complex_cpe_obj.getVersion_start_excluding() != null ||
-                                        complex_cpe_obj.getVersion_end_including() != null || complex_cpe_obj.getVersion_start_including() != null) {
-                                    compl_cpe_db = (extended_mitre.cpe.CPEcomplexObj) session.get(extended_mitre.cpe.CPEcomplexObj.class, complex_cpe_obj.getCpe_id());
-                                    // Making connection if the complex CPE object already exists
-                                    if (compl_cpe_db != null) {
-                                        if (session.get(extended_mitre.cpe.CPEnodeToCPE.class, (obj.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_obj.getId())) == null) {
-                                            // Creating connection between CPE and CVE
-                                            extended_mitre.cpe.CPEnodeToCPE node_to_cpe = new extended_mitre.cpe.CPEnodeToCPE((obj.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_obj.getId()), compl_cpe_db, node_obj, obj.getMeta_data_id(), complex_cpe_obj.getVulnerable(), null);
-                                            // Putting CPE node to CPE object into database
-                                            session.save(node_to_cpe);
-                                        }
-                                    }
-                                    // Creating new complex CPE object if it doesn't exist
-                                    else {
-                                        // Creating basic CPE object to connect with if it doesn't exist
-                                        cpe_db = (extended_mitre.cpe.CPEobject) session.get(extended_mitre.cpe.CPEobject.class, basic_cpe_id);
-                                        if (cpe_db == null) {
-                                            cpe_db = extended_mitre.cpe.CPEobject.cpeUriToObject(basic_cpe_id);
-                                            session.save(cpe_db);
-                                        }
-                                        complex_cpe_obj.setCpe_objs(new ArrayList<>());
-                                        // Making connection between complex CPE object and basic CPE object
-                                        complex_cpe_obj.getCpe_objs().add(cpe_db);
-                                        // Ensuring unique ID and putting complex CPE object into database
-                                        complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id()+"#"+obj.getMeta_data_id());
-                                        session.save(complex_cpe_obj);
-                                        // Making connection between complex CPE object and CVE object
-                                        extended_mitre.cpe.CPEnodeToCPE node_to_cpe = new extended_mitre.cpe.CPEnodeToCPE((obj.getMeta_data_id()+"#"+complex_cpe_obj.getCpe_id()+"#"+node_obj.getId()), complex_cpe_obj, node_obj, obj.getMeta_data_id(), complex_cpe_obj.getVulnerable(), null);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(node_to_cpe);
-                                    }
-                                }
-                                // Following is the basic CPE case
-                                else {
-                                    // If the basic CPE object does exist, just the connection will be made
-                                    cpe_db = (extended_mitre.cpe.CPEobject) session.get(extended_mitre.cpe.CPEobject.class, basic_cpe_id);
-                                    if (cpe_db != null) {
-                                        if (session.get(extended_mitre.cpe.CPEnodeToCPE.class, (obj.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId())) == null) {
-                                            // Creating connection between basic CPE object and CVE
-                                            extended_mitre.cpe.CPEnodeToCPE node_to_cpe = new extended_mitre.cpe.CPEnodeToCPE((obj.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId()), null, node_obj, obj.getMeta_data_id(), complex_cpe_obj.getVulnerable(), cpe_db);
-                                            // Putting CPE node to CPE object into database
-                                            session.save(node_to_cpe);
-                                        }
-                                    }
-                                    // If the basic CPE object doesn't exist, it will be created and put into database
-                                    else {
-                                        cpe_db = extended_mitre.cpe.CPEobject.cpeUriToObject(basic_cpe_id);
-                                        session.save(cpe_db);
-                                        // Creating connection between basic CPE object and CVE
-                                        extended_mitre.cpe.CPEnodeToCPE node_to_cpe = new extended_mitre.cpe.CPEnodeToCPE((obj.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId()), null, node_obj, obj.getMeta_data_id(), complex_cpe_obj.getVulnerable(), cpe_db);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(node_to_cpe);
-                                    }
-                                }
-                            }
-                        }
-                    } else if (node_obj != null) {
-                        // Putting CPE node object into database
-                        node_obj.setCve_obj(obj);
-                        session.save(node_obj);
-                    }
-                }
-                for (extended_mitre.cve.ReferenceObject ref_obj : obj.getReferences()) {
-                    // Putting CVE reference object into database
-                    ref_obj.setCve_obj(obj);
-                    session.save(ref_obj);
-                }
-                // Ensuring optimalization
-                if (refresh % 250 == 0) {
-                    txv.commit();
-                    session.close();
-                    session = sf.openSession();
-                    txv = session.beginTransaction();
+                    // Quickly updating CVE and CPE objects in the database
+                    extended_mitre.cve.CVEobject.quickUpdateCore(session, cve_db, cve_obj);
                 }
             }
-            // Committing transaction, closing session and session factory
+            // Committing transaction, closing session
             if (txv.isActive()) txv.commit();
             if (session.isOpen()) session.close();
+            // Removing all objects, that has been updated until now
+            cve_objs.removeAll(cves_to_remove);
+            // Putting all new CVE objects into database
+            extended_mitre.cve.CVEobject.putIntoDatabaseCore(cve_objs, sf);
+            // Closing session factory
             sf.close();
-            System.out.println("Actualization of CVE and CPE data done");
+            System.out.println("Quick actualization of CVE and CPE data done");
         }
         // If the database structure is basic, following code will be executed
         else if (db_exists) {
@@ -241,6 +130,7 @@ public class NVDobject {
             // List for removing objects that will be updated now later on
             List<basic_mitre.cve.CVEobject> cves_to_remove = new ArrayList<>();
             for (basic_mitre.cve.CVEobject cve_obj : cve_objs) {
+                // Getting specific CVE from the database
                 basic_mitre.cve.CVEobject cve_db = session.get(basic_mitre.cve.CVEobject.class, cve_obj.getMeta_data_id());
                 if (cve_db != null) {
                     refresh++;
@@ -252,130 +142,23 @@ public class NVDobject {
                         txv = session.beginTransaction();
                     }
 
-                    // ---
-
                     // Removing object that was updated now
                     cves_to_remove.add(cve_obj);
-                }
-            }
-            // Removing all objects, that has been updated until now
-            cve_objs.removeAll(cves_to_remove);
-            // If the CVE object is new, it is put into the database
-            for (basic_mitre.cve.CVEobject obj : cve_objs) {
-                refresh++;
-                // Putting CVSS v2 object into database
-                if (obj.getCvss_v2() != null) session.save(obj.getCvss_v2());
-                // Putting CVSS v3 object into database
-                if (obj.getCvss_v3() != null) session.save(obj.getCvss_v3());
-                // Putting CVE object into database
-                session.save(obj);
-                // Putting CPE node objects into database
-                for (basic_mitre.cpe.CPEnodeObject node_obj : obj.getCpe_nodes()) {
-                    if (node_obj != null && node_obj.getComplex_cpe_objs() != null) {
-                        // Putting CPE node object into database
-                        node_obj.setCve_obj(obj);
-                        session.save(node_obj);
-                        for (basic_mitre.cpe.CPEcomplexObj complex_cpe_obj : node_obj.getComplex_cpe_objs()) {
-                            if (complex_cpe_obj != null) {
-                                // Making basic CPE id for creating or getting CPE object later on
-                                String basic_cpe_id = complex_cpe_obj.getCpe_id();
-                                // ensuring unique ID of complex CPE object
-                                if (complex_cpe_obj.getVersion_start_including() != null) {
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#star_in_" + complex_cpe_obj.getVersion_start_including());
-                                }
-                                if (complex_cpe_obj.getVersion_start_excluding() != null) {
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#star_ex_" + complex_cpe_obj.getVersion_start_excluding());
-                                }
-                                if (complex_cpe_obj.getVersion_end_including() != null) {
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#end_in_" + complex_cpe_obj.getVersion_end_including());
-                                }
-                                if (complex_cpe_obj.getVersion_end_excluding() != null) {
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#end_ex_" + complex_cpe_obj.getVersion_end_excluding());
-                                }
 
-                                basic_mitre.cpe.CPEcomplexObj compl_cpe_db = null;
-                                basic_mitre.cpe.CPEobject cpe_db = null;
-                                // Figuring out if it will be complex or basic CPE object - following is the complex CPE case
-                                if (complex_cpe_obj.getVersion_end_excluding() != null || complex_cpe_obj.getVersion_start_excluding() != null ||
-                                        complex_cpe_obj.getVersion_end_including() != null || complex_cpe_obj.getVersion_start_including() != null) {
-                                    compl_cpe_db = (basic_mitre.cpe.CPEcomplexObj) session.get(basic_mitre.cpe.CPEcomplexObj.class, complex_cpe_obj.getCpe_id());
-                                    // Making connection if the complex CPE object already exists
-                                    if (compl_cpe_db != null) {
-                                        if (session.get(basic_mitre.cpe.CPEnodeToCPE.class, (obj.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_obj.getId())) == null) {
-                                            // Creating connection between CPE and CVE
-                                            basic_mitre.cpe.CPEnodeToCPE node_to_cpe = new basic_mitre.cpe.CPEnodeToCPE((obj.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_obj.getId()), compl_cpe_db, node_obj, obj.getMeta_data_id(), complex_cpe_obj.getVulnerable(), null);
-                                            // Putting CPE node to CPE object into database
-                                            session.save(node_to_cpe);
-                                        }
-                                    }
-                                    // Creating new complex CPE object if it doesn't exist
-                                    else {
-                                        // Creating basic CPE object to connect with if it doesn't exist
-                                        cpe_db = (basic_mitre.cpe.CPEobject) session.get(basic_mitre.cpe.CPEobject.class, basic_cpe_id);
-                                        if (cpe_db == null) {
-                                            cpe_db = basic_mitre.cpe.CPEobject.cpeUriToObject(basic_cpe_id);
-                                            session.save(cpe_db);
-                                        }
-                                        complex_cpe_obj.setCpe_objs(new ArrayList<>());
-                                        // Making connection between complex CPE object and basic CPE object
-                                        complex_cpe_obj.getCpe_objs().add(cpe_db);
-                                        // Ensuring unique ID and putting complex CPE object into database
-                                        complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id()+"#"+obj.getMeta_data_id());
-                                        session.save(complex_cpe_obj);
-                                        // Making connection between complex CPE object and CVE object
-                                        basic_mitre.cpe.CPEnodeToCPE node_to_cpe = new basic_mitre.cpe.CPEnodeToCPE((obj.getMeta_data_id()+"#"+complex_cpe_obj.getCpe_id()+"#"+node_obj.getId()), complex_cpe_obj, node_obj, obj.getMeta_data_id(), complex_cpe_obj.getVulnerable(), null);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(node_to_cpe);
-                                    }
-                                }
-                                // Following is the basic CPE case
-                                else {
-                                    // If the basic CPE object does exist, just the connection will be made
-                                    cpe_db = (basic_mitre.cpe.CPEobject) session.get(basic_mitre.cpe.CPEobject.class, basic_cpe_id);
-                                    if (cpe_db != null) {
-                                        if (session.get(basic_mitre.cpe.CPEnodeToCPE.class, (obj.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId())) == null) {
-                                            // Creating connection between basic CPE object and CVE
-                                            basic_mitre.cpe.CPEnodeToCPE node_to_cpe = new basic_mitre.cpe.CPEnodeToCPE((obj.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId()), null, node_obj, obj.getMeta_data_id(), complex_cpe_obj.getVulnerable(), cpe_db);
-                                            // Putting CPE node to CPE object into database
-                                            session.save(node_to_cpe);
-                                        }
-                                    }
-                                    // If the basic CPE object doesn't exist, it will be created and put into database
-                                    else {
-                                        cpe_db = basic_mitre.cpe.CPEobject.cpeUriToObject(basic_cpe_id);
-                                        session.save(cpe_db);
-                                        // Creating connection between basic CPE object and CVE
-                                        basic_mitre.cpe.CPEnodeToCPE node_to_cpe = new basic_mitre.cpe.CPEnodeToCPE((obj.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId()), null, node_obj, obj.getMeta_data_id(), complex_cpe_obj.getVulnerable(), cpe_db);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(node_to_cpe);
-                                    }
-                                }
-                            }
-                        }
-                    } else if (node_obj != null) {
-                        // Putting CPE node object into database
-                        node_obj.setCve_obj(obj);
-                        session.save(node_obj);
-                    }
-                }
-                for (basic_mitre.cve.ReferenceObject ref_obj : obj.getReferences()) {
-                    // Putting CVE reference object into database
-                    ref_obj.setCve_obj(obj);
-                    session.save(ref_obj);
-                }
-                // Ensuring optimalization
-                if (refresh % 250 == 0) {
-                    txv.commit();
-                    session.close();
-                    session = sf.openSession();
-                    txv = session.beginTransaction();
+                    // Quickly updating CVE and CPE objects in the database
+                    basic_mitre.cve.CVEobject.quickUpdateCore(session, cve_db, cve_obj);
                 }
             }
-            // Committing transaction, closing session and session factory
+            // Committing transaction, closing session
             if (txv.isActive()) txv.commit();
             if (session.isOpen()) session.close();
+            // Removing all objects, that has been updated until now
+            cve_objs.removeAll(cves_to_remove);
+            // Putting all new CVE objects into database
+            basic_mitre.cve.CVEobject.putIntoDatabaseCore(cve_objs, sf);
+            // Closing session factory
             sf.close();
-            System.out.println("Actualization of CVE and CPE data done");
+            System.out.println("Quick actualization of CVE and CPE data done");
         }
         // If the database doesn't contain any table, nothing will happen
         else System.out.println("Database structure doesn't exist, it needs to be filled first, nothing will happen now");

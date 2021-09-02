@@ -8,9 +8,9 @@ import java.util.Objects;
 /**
  * This class represents a CWE note object (type attribute, content of the note)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE note object from given parameters and return it
+ * It can create a CWE note object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -79,11 +79,11 @@ public class CWEnoteObj {
         if (this == o) return true;
         if (!(o instanceof CWEnoteObj)) return false;
         CWEnoteObj that = (CWEnoteObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(type, that.type) && Objects.equals(note_content, that.note_content) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(type, that.type) && Objects.equals(note_content, that.note_content) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, note_content, capec, cwe);
+        return Objects.hash(type, note_content);
     }
 }

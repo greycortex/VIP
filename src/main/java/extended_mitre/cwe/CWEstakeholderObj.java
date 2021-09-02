@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * This class represents a CWE stakeholder object (type attribute, description attribute)
  * <p>
- * //* It can create a CWE stakeholder object from given parameters and return it
+ * It can create a CWE stakeholder object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */

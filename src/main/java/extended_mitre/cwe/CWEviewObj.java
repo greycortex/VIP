@@ -19,7 +19,7 @@ import java.util.Objects;
  * This class represents a CWE view object (CWE view ID, name attribute, type attribute, status attribute,
  * objective attribute, filter attribute, relationship objects, note objects, external reference reference objects)
  * <p>
- * //* It can create a CWE view object from given parameters and return it
+ * It can create a CWE view object from given parameters and return it
  * <p>
  * It also can go through an XML file with CWE weaknesses or CAPEC objects, find view objects, parse them into
  * CWE view objects and return them, deprecated ones not included

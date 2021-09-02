@@ -293,7 +293,7 @@ public class CPEobject implements Serializable {
     }
 
     /**
-     * This method parses complex CPE objects from the up-to-date file and puts them into database with right relations between objects
+     * This method parses complex CPE objects from the up-to-date file and puts them into database with right relations between basic and complex CPE objects
      *
      * @param file path to .json file with CPE dictionary data (CPE match feed file)
      * @param sf   object needed to get hibernate Session Factory and to work with database
@@ -416,7 +416,7 @@ public class CPEobject implements Serializable {
                     if (complex_obj.getVersion_end_excluding() != null) {
                         complex_obj.setCpe_id(complex_obj.getCpe_id() + "#end_ex_" + complex_obj.getVersion_end_excluding());
                     }
-                    // If the object doesn't exist, it will be put into database
+                    // If the object doesn't exist, it will be put into the database
                     if (session.get(CPEcomplexObj.class, complex_obj.getCpe_id()) == null){
                         session.save(complex_obj);
                     }
@@ -604,11 +604,11 @@ public class CPEobject implements Serializable {
     }
 
     /**
-     * This method's purpose is to put basic CPE objects into database so that it can be up-to-date
+     * This method's purpose is to put basic CPE objects into database
      * <p>
      * This method loads all basic CPE objects from the up-to-date file and puts them into database,
      * it also calls the CPEcomplexIntoDatabase() method which puts all complex CPE objects from the up-to-date file
-     * into database with right relations between objects
+     * into database with right relations between complex and basic CPE objects
      *
      * @param file path to .json file with CPE dictionary data (CPE match feed file)
      * @param sf   object needed to get hibernate Session Factory and to work with database

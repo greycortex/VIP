@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * This class represents a CWE relationship (member) object (CWE ID attribute or CAPEC ID attribute, view ID attribute)
  * <p>
- * //* It can create a CWE relationship (member) object from given parameters and return it
+ * It can create a CWE relationship (member) object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */

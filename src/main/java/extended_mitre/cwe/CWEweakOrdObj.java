@@ -6,9 +6,9 @@ import java.util.Objects;
 /**
  * This class represents a CWE weakness ordinality object (ordinality attribute, description attribute)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE weakness ordinality object from given parameters and return it
+ * It can create a CWE weakness ordinality object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -71,11 +71,11 @@ public class CWEweakOrdObj {
         if (this == o) return true;
         if (!(o instanceof CWEweakOrdObj)) return false;
         CWEweakOrdObj that = (CWEweakOrdObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(ordinality, that.ordinality) && Objects.equals(description, that.description) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(ordinality, that.ordinality) && Objects.equals(description, that.description) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, ordinality, description, cwe);
+        return Objects.hash(ordinality, description);
     }
 }

@@ -9,9 +9,9 @@ import java.util.Objects;
 /**
  * This class represents a CWE external reference reference object (section attribute, reference id attribute)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE external reference reference object from given parameters and return it
+ * It can create a CWE external reference reference object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -93,11 +93,11 @@ public class CWEextRefRefObj implements Serializable {
         if (this == o) return true;
         if (!(o instanceof CWEextRefRefObj)) return false;
         CWEextRefRefObj that = (CWEextRefRefObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(section, that.section) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe) && Objects.equals(dem_ex, that.dem_ex) && Objects.equals(ext_ref, that.ext_ref);
+        return Objects.equals(section, that.section) && Objects.equals(capec, that.capec) && Objects.equals(cwe, that.cwe) && Objects.equals(dem_ex, that.dem_ex) && Objects.equals(ext_ref, that.ext_ref);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, section, capec, cwe, dem_ex, ext_ref);
+        return Objects.hash(section);
     }
 }

@@ -7,13 +7,13 @@ import java.util.Objects;
 /**
  * This class represents a reference object which can be found in CVE object
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database and quickly updated
  * <p>
- * //* It can create a reference object from given parameters and return it
+ * It can create a reference object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "cve_reference")
 @Table(name="cve_reference", schema = "mitre")
 public class ReferenceObject {
 
@@ -39,10 +39,6 @@ public class ReferenceObject {
     @JoinColumn(nullable = false)
     protected CVEobject cve;
 
-    public CVEobject getCve_obj() {
-        return cve;
-    }
-
     public void setCve_obj(CVEobject cve) {
         this.cve = cve;
     }
@@ -60,6 +56,46 @@ public class ReferenceObject {
         this.url = url;
         this.name = name;
         this.refsource = refsource;
+        this.tags = tags;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getRefsource() {
+        return refsource;
+    }
+
+    public void setRefsource(String refsource) {
+        this.refsource = refsource;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
 
@@ -88,11 +124,11 @@ public class ReferenceObject {
         if (this == o) return true;
         if (!(o instanceof ReferenceObject)) return false;
         ReferenceObject that = (ReferenceObject) o;
-        return Objects.equals(id, that.id) && Objects.equals(url, that.url) && Objects.equals(name, that.name) && Objects.equals(refsource, that.refsource) && Objects.equals(tags, that.tags) && Objects.equals(cve, that.cve);
+        return Objects.equals(url, that.url) && Objects.equals(name, that.name) && Objects.equals(refsource, that.refsource) && Objects.equals(tags, that.tags);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, url, name, refsource, tags, cve);
+        return Objects.hash(url, name, refsource, tags);
     }
 }

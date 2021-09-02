@@ -19,7 +19,7 @@ import java.util.Objects;
  * This class represents a CWE category object (CWE category id, category name attribute, category status attribute,
  * category summary attribute, relationship objects (CWE ID, view ID), external reference reference objects)
  * <p>
- * //* It can create a CWE category object from given parameters and return it
+ * It can create a CWE category object from given parameters and return it
  * <p>
  * It also can go through an XML file with CWE weaknesses or CAPEC objects, find category objects, parse them into
  * CWE category objects and return them

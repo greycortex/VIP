@@ -7,9 +7,9 @@ import java.util.Objects;
  * This class represents a CWE detection method object (method id attribute, method attribute, description attribute,
  * effectiveness attribute, effectiveness notes attribute)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE detection method object from given parameters and return it
+ * It can create a CWE detection method object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -86,11 +86,11 @@ public class CWEdetMethObj {
         if (this == o) return true;
         if (!(o instanceof CWEdetMethObj)) return false;
         CWEdetMethObj that = (CWEdetMethObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(method_id, that.method_id) && Objects.equals(method, that.method) && Objects.equals(description, that.description) && Objects.equals(effectiveness, that.effectiveness) && Objects.equals(effectiveness_notes, that.effectiveness_notes) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(method_id, that.method_id) && Objects.equals(method, that.method) && Objects.equals(description, that.description) && Objects.equals(effectiveness, that.effectiveness) && Objects.equals(effectiveness_notes, that.effectiveness_notes) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, method_id, method, description, effectiveness, effectiveness_notes, cwe);
+        return Objects.hash(method_id, method, description, effectiveness, effectiveness_notes);
     }
 }

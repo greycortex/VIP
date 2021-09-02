@@ -6,9 +6,9 @@ import java.util.Objects;
 /**
  * This class represents a CAPEC skill object (level attribute, skill info)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CAPEC skill object from given parameters and return it
+ * It can create a CAPEC skill object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -71,11 +71,11 @@ public class CAPECskillObj {
         if (this == o) return true;
         if (!(o instanceof CAPECskillObj)) return false;
         CAPECskillObj that = (CAPECskillObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(level, that.level) && Objects.equals(content, that.content) && Objects.equals(capec, that.capec);
+        return Objects.equals(level, that.level) && Objects.equals(content, that.content) && Objects.equals(capec, that.capec);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, level, content, capec);
+        return Objects.hash(level, content);
     }
 }

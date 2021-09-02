@@ -1,5 +1,7 @@
 unnamed package
-extended_mitre
+basic_mitre.cpe
+basic_mitre.cve
+basic_mitre.cvss
 extended_mitre.capec
 extended_mitre.cpe
 extended_mitre.cve

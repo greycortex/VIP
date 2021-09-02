@@ -6,9 +6,9 @@ import java.util.Objects;
 /**
  * This class represents a CWE applicable platform object (type attribute, class attribute, name attribute, prevalence attribute)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE applicable platform object from given parameters and return it
+ * It can create a CWE applicable platform object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
@@ -78,11 +78,11 @@ public class CWEapplPlatfObj {
         if (this == o) return true;
         if (!(o instanceof CWEapplPlatfObj)) return false;
         CWEapplPlatfObj that = (CWEapplPlatfObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(type, that.type) && Objects.equals(platform_class, that.platform_class) && Objects.equals(name, that.name) && Objects.equals(prevalence, that.prevalence) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(type, that.type) && Objects.equals(platform_class, that.platform_class) && Objects.equals(name, that.name) && Objects.equals(prevalence, that.prevalence) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, platform_class, name, prevalence, cwe);
+        return Objects.hash(type, platform_class, name, prevalence);
     }
 }

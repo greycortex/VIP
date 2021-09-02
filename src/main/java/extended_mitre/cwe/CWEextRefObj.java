@@ -24,16 +24,16 @@ import java.util.Objects;
 /**
  * This class represents a CWE external reference object (reference ID attribute, author attributes, )
  * <p>
- * //* It can create a CWE external reference object from given parameters and return it
+ * It can create a CWE external reference object from given parameters and return it
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
  * It also can go through file with CWE weaknesses or CAPEC objects, find external reference objects, parse them into
  * CWE external reference objects and return them
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "ext_ref")
 @Table(name="external_reference", schema = "mitre")
 public class CWEextRefObj implements Serializable {
 

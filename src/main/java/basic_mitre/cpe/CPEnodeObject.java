@@ -10,11 +10,11 @@ import java.util.Objects;
  * This class represents a CPE node object (cpe_matches, vulnerable attributes of specific CPE objects, ...)
  * <p>
  * It can create a CPE node object and return it, its used in CVE objects
- * Objects can be put into database
+ * Objects can be put into database including quick updates
  * <p>
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "cve_node")
 @Table(name="cve_node", schema = "mitre")
 public class CPEnodeObject {
 
@@ -54,19 +54,55 @@ public class CPEnodeObject {
         return id;
     }
 
+    public String getOperator() {
+        return operator;
+    }
+
+    public void setOperator(String operator) {
+        this.operator = operator;
+    }
+
+    public List<CPEnodeToCPE> getNode_to_compl() {
+        return node_to_compl;
+    }
+
+    public void setNode_to_compl(List<CPEnodeToCPE> node_to_compl) {
+        this.node_to_compl = node_to_compl;
+    }
+
+    public CPEnodeObject getParent() {
+        return parent;
+    }
+
+    public void setParent(CPEnodeObject parent) {
+        this.parent = parent;
+    }
+
+    public List<CPEnodeObject> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<CPEnodeObject> children) {
+        this.children = children;
+    }
+
     /**
      * Copies constructor
      *
      * @param compl_cpe        more complex CPE (CPEcomplexObj) objects from node
      * @param operator         operator attribute of specific CPE node object
      * @param parent           parent CPE node object
+     * @param node_to_compl    related CVE to CPE relations
+     * @param children         children CPE node objects
      */
     public CPEnodeObject(List<CPEcomplexObj> compl_cpe,
-                         String operator, CPEnodeObject parent) {
+                         String operator, CPEnodeObject parent, List<CPEnodeToCPE> node_to_compl, List<CPEnodeObject> children) {
 
         this.compl_cpe = compl_cpe;
         this.operator = operator;
         this.parent = parent;
+        this.node_to_compl = node_to_compl;
+        this.children = children;
     }
 
     ///**
@@ -75,9 +111,9 @@ public class CPEnodeObject {
     // * @return CPE node object
     // */
     //public static CPEnodeObject getInstance(List<CPEcomplexObj> compl_cpe,
-    //                         String operator, CPEnodeObject parent) {
+    //                         String operator, CPEnodeObject parent, List<CPEnodeToCPE> node_to_compl, List<CPEnodeObject> children) {
 
-    //    return new CPEnodeObject(compl_cpe, operator, parent);
+    //    return new CPEnodeObject(compl_cpe, operator, parent, node_to_compl, children);
     //}
 
     @Override
@@ -98,11 +134,11 @@ public class CPEnodeObject {
         if (this == o) return true;
         if (!(o instanceof CPEnodeObject)) return false;
         CPEnodeObject that = (CPEnodeObject) o;
-        return Objects.equals(id, that.id) && Objects.equals(operator, that.operator) && Objects.equals(cve, that.cve) && Objects.equals(node_to_compl, that.node_to_compl) && Objects.equals(children, that.children) && Objects.equals(parent, that.parent) && Objects.equals(compl_cpe, that.compl_cpe);
+        return Objects.equals(operator, that.operator) && Objects.equals(parent, that.parent) && Objects.equals(node_to_compl, that.node_to_compl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, operator, cve, node_to_compl, children, parent, compl_cpe);
+        return Objects.hash(operator, node_to_compl, parent);
     }
 }

@@ -59,7 +59,7 @@ public class Test {
             // Reconstructs CPE match feed file by using objects from the database
             // extended_mitre.cpe.CPEobject.feedReconstr();
 
-            // exit with help
+            // Exit with help
             else {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("java -jar VIP", options);
@@ -69,6 +69,6 @@ public class Test {
             System.err.println("Parsing failed.  Reason: " + ex.getMessage());
         }
         
-        // this is the end
+        // This is the end
     }
 }

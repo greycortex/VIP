@@ -7,13 +7,13 @@ import java.util.Objects;
 /**
  * This class represents a CWE demonstrative example object (nature attribute, language attribute, content)
  * <p>
- * Objects can be put into database including updates (Via CVEobject.putIntoDatabase() method)
+ * Objects can be put into database
  * <p>
- * //* It can create a CWE demonstrative example object from given parameters and return it
+ * It can create a CWE demonstrative example object from given parameters and return it
  *
  * @author Tomas Bozek (XarfNao)
  */
-@Entity
+@Entity(name = "dem_ex")
 @Table(name="demonstrative_examp", schema = "mitre")
 public class CWEdemExObj {
 
@@ -95,11 +95,11 @@ public class CWEdemExObj {
         if (this == o) return true;
         if (!(o instanceof CWEdemExObj)) return false;
         CWEdemExObj that = (CWEdemExObj) o;
-        return Objects.equals(id, that.id) && Objects.equals(intro_text, that.intro_text) && Objects.equals(dem_ex_ex_codes, that.dem_ex_ex_codes) && Objects.equals(dem_ex_body_texts, that.dem_ex_body_texts) && Objects.equals(dem_ex_ext_ref_refs, that.dem_ex_ext_ref_refs) && Objects.equals(cwe, that.cwe);
+        return Objects.equals(intro_text, that.intro_text) && Objects.equals(dem_ex_ex_codes, that.dem_ex_ex_codes) && Objects.equals(dem_ex_body_texts, that.dem_ex_body_texts) && Objects.equals(dem_ex_ext_ref_refs, that.dem_ex_ext_ref_refs) && Objects.equals(cwe, that.cwe);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, intro_text, dem_ex_ex_codes, dem_ex_body_texts, dem_ex_ext_ref_refs, cwe);
+        return Objects.hash(intro_text, dem_ex_ex_codes, dem_ex_body_texts, dem_ex_ext_ref_refs);
     }
 }
