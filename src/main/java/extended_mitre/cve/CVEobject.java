@@ -692,40 +692,19 @@ public class CVEobject implements Serializable {
                             // Making basic CPE id for creating or getting CPE object later on
                             String basic_cpe_id = complex_cpe_obj.getCpe_id();
                             // ensuring unique ID of complex CPE object
-                            if (complex_cpe_obj.getVersion_start_including() != null) {
-                                complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#star_in_" + complex_cpe_obj.getVersion_start_including());
-                            }
-                            if (complex_cpe_obj.getVersion_start_excluding() != null) {
-                                complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#star_ex_" + complex_cpe_obj.getVersion_start_excluding());
-                            }
-                            if (complex_cpe_obj.getVersion_end_including() != null) {
-                                complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#end_in_" + complex_cpe_obj.getVersion_end_including());
-                            }
-                            if (complex_cpe_obj.getVersion_end_excluding() != null) {
-                                complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#end_ex_" + complex_cpe_obj.getVersion_end_excluding());
-                            }
+                            complex_cpe_obj.createComplexID();
 
                             CPEcomplexObj compl_cpe_db = null;
-                            CPEcomplexObj compl_cpe_db_com = null;
                             CPEobject cpe_db = null;
                             // Figuring out if it will be complex or basic CPE object - following is the complex CPE case
                             if (complex_cpe_obj.getVersion_end_excluding() != null || complex_cpe_obj.getVersion_start_excluding() != null ||
                                     complex_cpe_obj.getVersion_end_including() != null || complex_cpe_obj.getVersion_start_including() != null) {
                                 compl_cpe_db = (CPEcomplexObj) sessionc.get(CPEcomplexObj.class, complex_cpe_obj.getCpe_id());
-                                compl_cpe_db_com = (CPEcomplexObj) sessionc.get(CPEcomplexObj.class, complex_cpe_obj.getCpe_id()+"#"+obj.meta_data_id);
                                 // Making connection if the complex CPE object already exists
                                 if (compl_cpe_db != null) {
                                     if (sessionc.get(CPEnodeToCPE.class, (obj.meta_data_id + "#" + compl_cpe_db.getCpe_id() + "#" + node_obj.getId())) == null) {
                                         // Creating connection between CPE and CVE
                                         CPEnodeToCPE node_to_cpe = new CPEnodeToCPE((obj.meta_data_id + "#" + compl_cpe_db.getCpe_id() + "#" + node_obj.getId()), compl_cpe_db, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable(), null);
-                                        // Putting CPE node to CPE object into database
-                                        sessionc.save(node_to_cpe);
-                                    }
-                                }
-                                else if (compl_cpe_db_com != null) {
-                                    if (sessionc.get(CPEnodeToCPE.class, (obj.meta_data_id + "#" + compl_cpe_db_com.getCpe_id() + "#" + node_obj.getId())) == null) {
-                                        // Creating connection between CPE and CVE
-                                        CPEnodeToCPE node_to_cpe = new CPEnodeToCPE((obj.meta_data_id + "#" + compl_cpe_db_com.getCpe_id() + "#" + node_obj.getId()), compl_cpe_db_com, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable(), null);
                                         // Putting CPE node to CPE object into database
                                         sessionc.save(node_to_cpe);
                                     }
@@ -741,8 +720,7 @@ public class CVEobject implements Serializable {
                                     complex_cpe_obj.setCpe_objs(new ArrayList<>());
                                     // Making connection between complex CPE object and basic CPE object
                                     complex_cpe_obj.getCpe_objs().add(cpe_db);
-                                    // Ensuring unique ID and putting complex CPE object into database
-                                    complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id()+"#"+obj.meta_data_id);
+                                    // Putting complex CPE object into the database
                                     sessionc.save(complex_cpe_obj);
                                     // Making connection between complex CPE object and CVE object
                                     CPEnodeToCPE node_to_cpe = new CPEnodeToCPE((obj.meta_data_id+"#"+complex_cpe_obj.getCpe_id()+"#"+node_obj.getId()), complex_cpe_obj, node_obj, obj.meta_data_id, complex_cpe_obj.getVulnerable(), null);
@@ -825,11 +803,11 @@ public class CVEobject implements Serializable {
             if (!cvss2_db.getSeverity().equals(cvss2_new.getSeverity())) cvss2_db.setSeverity(cvss2_new.getSeverity());
             if (cvss2_db.getExploitability_score_v2() != cvss2_new.getExploitability_score_v2()) cvss2_db.setExploitability_score_v2(cvss2_new.getExploitability_score_v2());
             if (cvss2_db.getImpact_score_v2() != cvss2_new.getImpact_score_v2()) cvss2_db.setImpact_score_v2(cvss2_new.getImpact_score_v2());
-            if (!cvss2_db.getAc_insuf_info().equals(cvss2_new.getAc_insuf_info())) cvss2_db.setAc_insuf_info(cvss2_new.getAc_insuf_info());
-            if (!cvss2_db.getObtain_all_privilege().equals(cvss2_new.getObtain_all_privilege())) cvss2_db.setObtain_all_privilege(cvss2_new.getObtain_all_privilege());
-            if (!cvss2_db.getObtain_user_privilege().equals(cvss2_new.getObtain_user_privilege())) cvss2_db.setObtain_user_privilege(cvss2_new.getObtain_user_privilege());
-            if (!cvss2_db.getObtain_other_privilege().equals(cvss2_new.getObtain_other_privilege())) cvss2_db.setObtain_other_privilege(cvss2_new.getObtain_other_privilege());
-            if (!cvss2_db.getUser_interaction_required().equals(cvss2_new.getUser_interaction_required())) cvss2_db.setUser_interaction_required(cvss2_new.getUser_interaction_required());
+            if (cvss2_db.getAc_insuf_info() != null && cvss2_new.getAc_insuf_info() != null && !cvss2_db.getAc_insuf_info().equals(cvss2_new.getAc_insuf_info())) cvss2_db.setAc_insuf_info(cvss2_new.getAc_insuf_info());
+            if (cvss2_db.getObtain_all_privilege() != null && cvss2_new.getObtain_all_privilege() != null && !cvss2_db.getObtain_all_privilege().equals(cvss2_new.getObtain_all_privilege())) cvss2_db.setObtain_all_privilege(cvss2_new.getObtain_all_privilege());
+            if (cvss2_db.getObtain_user_privilege() != null && cvss2_new.getObtain_user_privilege() != null && !cvss2_db.getObtain_user_privilege().equals(cvss2_new.getObtain_user_privilege())) cvss2_db.setObtain_user_privilege(cvss2_new.getObtain_user_privilege());
+            if (cvss2_db.getObtain_other_privilege() != null && cvss2_new.getObtain_other_privilege() != null && !cvss2_db.getObtain_other_privilege().equals(cvss2_new.getObtain_other_privilege())) cvss2_db.setObtain_other_privilege(cvss2_new.getObtain_other_privilege());
+            if (cvss2_db.getUser_interaction_required() != null && cvss2_new.getUser_interaction_required() != null && !cvss2_db.getUser_interaction_required().equals(cvss2_new.getUser_interaction_required())) cvss2_db.setUser_interaction_required(cvss2_new.getUser_interaction_required());
             session.merge(cvss2_db);
         }
         // If new object is detected, it will be associated and saved into the database
@@ -1046,18 +1024,7 @@ public class CVEobject implements Serializable {
                         // Making ID unique if current CPE is complex
                         if (complex_cpe_obj != null) {
                             String basic_cpe_id = complex_cpe_obj.getCpe_id();
-                            if (complex_cpe_obj.getVersion_start_including() != null) {
-                                complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#star_in_" + complex_cpe_obj.getVersion_start_including());
-                            }
-                            if (complex_cpe_obj.getVersion_start_excluding() != null) {
-                                complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#star_ex_" + complex_cpe_obj.getVersion_start_excluding());
-                            }
-                            if (complex_cpe_obj.getVersion_end_including() != null) {
-                                complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#end_in_" + complex_cpe_obj.getVersion_end_including());
-                            }
-                            if (complex_cpe_obj.getVersion_end_excluding() != null) {
-                                complex_cpe_obj.setCpe_id(complex_cpe_obj.getCpe_id() + "#end_ex_" + complex_cpe_obj.getVersion_end_excluding());
-                            }
+                            complex_cpe_obj.createComplexID();
                             // Making CPE to CVE connections - but only into PC's memory for now
                             // Complex CPE case
                             if (complex_cpe_obj.getVersion_end_excluding() != null || complex_cpe_obj.getVersion_start_excluding() != null ||
@@ -1154,147 +1121,13 @@ public class CVEobject implements Serializable {
                             }
 
                             // If there is a CPE to CVE connection from file, it will be simply added into database
-                            for (CPEnodeToCPE connection_obj : connections_obj) {
-                                // Connection from file has basic CPE object
-                                if (connection_obj.getCpe() != null) {
-                                    // If the basic CPE object does exist, just the connection will be made
-                                    CPEobject cpe_db = (CPEobject) session.get(CPEobject.class, connection_obj.getCpe().getCpe_id());
-                                    if (cpe_db != null) {
-                                        if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_db.getId())) == null) {
-                                            // Creating connection between basic CPE object and CVE
-                                            connection_obj = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_db.getId()), null, node_db, cve_db.getMeta_data_id(), connection_obj.getVulnerable(), cpe_db);
-                                            // Putting CPE node to CPE object into database
-                                            session.save(connection_obj);
-                                        }
-                                    }
-                                    // If the basic CPE object doesn't exist, it will be created and put into database
-                                    else {
-                                        cpe_db = CPEobject.cpeUriToObject(connection_obj.getCpe().getCpe_id());
-                                        session.save(cpe_db);
-                                        // Creating connection between basic CPE object and CVE
-                                        connection_obj = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_db.getId()), null, node_db, cve_db.getMeta_data_id(), connection_obj.getVulnerable(), cpe_db);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(connection_obj);
-                                    }
-                                }
-                                // Connection from file has complex CPE object
-                                else if (connection_obj.getCompl_cpe() != null) {
-                                    CPEcomplexObj compl_cpe_db = (CPEcomplexObj) session.get(CPEcomplexObj.class, connection_obj.getCompl_cpe().getCpe_id());
-                                    CPEcomplexObj compl_cpe_db_com = (CPEcomplexObj) session.get(CPEcomplexObj.class, connection_obj.getCompl_cpe().getCpe_id()+"#"+cve_db.getMeta_data_id());
-                                    // Making connection if the complex CPE object already exists
-                                    if (compl_cpe_db != null) {
-                                        if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_db.getId())) == null) {
-                                            // Creating connection between CPE and CVE
-                                            connection_obj = new CPEnodeToCPE((cve_db.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_db.getId()), compl_cpe_db, node_db, cve_db.getMeta_data_id(), connection_obj.getVulnerable(), null);
-                                            // Putting CPE node to CPE object into database
-                                            session.save(connection_obj);
-                                        }
-                                    }
-                                    else if (compl_cpe_db_com != null) {
-                                        if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id() + "#" + compl_cpe_db_com.getCpe_id() + "#" + node_db.getId())) == null) {
-                                            // Creating connection between CPE and CVE
-                                            connection_obj = new CPEnodeToCPE((cve_db.getMeta_data_id() + "#" + compl_cpe_db_com.getCpe_id() + "#" + node_db.getId()), compl_cpe_db_com, node_db, cve_db.getMeta_data_id(), connection_obj.getVulnerable(), null);
-                                            // Putting CPE node to CPE object into database
-                                            session.save(connection_obj);
-                                        }
-                                    }
-                                    // Creating new complex CPE object if it doesn't exist
-                                    else {
-                                        // Creating basic CPE id from complex CPE id
-                                        String basic_cpe_id_original = connection_obj.getCompl_cpe().getCpe_id();
-                                        String[] cpe_id_array = basic_cpe_id_original.split("#", -1);
-                                        // Creating basic CPE object to connect with if it doesn't exist
-                                        CPEobject cpe_db = (CPEobject) session.get(CPEobject.class, cpe_id_array[0]);
-                                        if (cpe_db == null) {
-                                            cpe_db = CPEobject.cpeUriToObject(cpe_id_array[0]);
-                                            session.save(cpe_db);
-                                        }
-                                        connection_obj.getCompl_cpe().setCpe_objs(new ArrayList<>());
-                                        // Making connection between complex CPE object and basic CPE object
-                                        connection_obj.getCompl_cpe().getCpe_objs().add(cpe_db);
-                                        // Ensuring unique ID and putting complex CPE object into database
-                                        connection_obj.getCompl_cpe().setCpe_id(connection_obj.getCompl_cpe().getCpe_id()+"#"+cve_db.getMeta_data_id());
-                                        session.save(connection_obj.getCompl_cpe());
-                                        // Making connection between complex CPE object and CVE object
-                                        connection_obj = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+connection_obj.getCompl_cpe().getCpe_id()+"#"+node_db.getId()), connection_obj.getCompl_cpe(), node_db, cve_db.getMeta_data_id(), connection_obj.getVulnerable(), null);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(connection_obj);
-                                    }
-                                }
-                            }
+                            connectionsCreation(connections_obj, cve_db, node_db, session);
                         }
                     }
 
                     // If CPE node object from database has no connections and the one from file has, they will be added
                     else if (node_db.getNode_to_compl() == null && node_obj.getNode_to_compl() != null) {
-                        for (CPEnodeToCPE node_to_cpe : node_obj.getNode_to_compl()) {
-                            // Connection from file has basic CPE object
-                            if (node_to_cpe.getCpe() != null) {
-                                // If the basic CPE object does exist, just the connection will be made
-                                CPEobject cpe_db = (CPEobject) session.get(CPEobject.class, node_to_cpe.getCpe().getCpe_id());
-                                if (cpe_db != null) {
-                                    if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_db.getId())) == null) {
-                                        // Creating connection between basic CPE object and CVE
-                                        node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_db.getId()), null, node_db, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), cpe_db);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(node_to_cpe);
-                                    }
-                                }
-                                // If the basic CPE object doesn't exist, it will be created and put into database
-                                else {
-                                    cpe_db = CPEobject.cpeUriToObject(node_to_cpe.getCpe().getCpe_id());
-                                    session.save(cpe_db);
-                                    // Creating connection between basic CPE object and CVE
-                                    node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_db.getId()), null, node_db, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), cpe_db);
-                                    // Putting CPE node to CPE object into database
-                                    session.save(node_to_cpe);
-                                }
-                            }
-                            // Connection from file has complex CPE object
-                            else if (node_to_cpe.getCompl_cpe() != null) {
-                                CPEcomplexObj compl_cpe_db = (CPEcomplexObj) session.get(CPEcomplexObj.class, node_to_cpe.getCompl_cpe().getCpe_id());
-                                CPEcomplexObj compl_cpe_db_com = (CPEcomplexObj) session.get(CPEcomplexObj.class, node_to_cpe.getCompl_cpe().getCpe_id()+"#"+cve_db.getMeta_data_id());
-                                // Making connection if the complex CPE object already exists
-                                if (compl_cpe_db != null) {
-                                    if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_db.getId())) == null) {
-                                        // Creating connection between CPE and CVE
-                                        node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_db.getId()), compl_cpe_db, node_db, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), null);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(node_to_cpe);
-                                    }
-                                }
-                                else if (compl_cpe_db_com != null) {
-                                    if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id() + "#" + compl_cpe_db_com.getCpe_id() + "#" + node_db.getId())) == null) {
-                                        // Creating connection between CPE and CVE
-                                        node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id() + "#" + compl_cpe_db_com.getCpe_id() + "#" + node_db.getId()), compl_cpe_db_com, node_db, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), null);
-                                        // Putting CPE node to CPE object into database
-                                        session.save(node_to_cpe);
-                                    }
-                                }
-                                // Creating new complex CPE object if it doesn't exist
-                                else {
-                                    // Creating basic CPE id from complex CPE id
-                                    String basic_cpe_id_original = node_to_cpe.getCompl_cpe().getCpe_id();
-                                    String[] cpe_id_array = basic_cpe_id_original.split("#", -1);
-                                    // Creating basic CPE object to connect with if it doesn't exist
-                                    CPEobject cpe_db = (CPEobject) session.get(CPEobject.class, cpe_id_array[0]);
-                                    if (cpe_db == null) {
-                                        cpe_db = CPEobject.cpeUriToObject(cpe_id_array[0]);
-                                        session.save(cpe_db);
-                                    }
-                                    node_to_cpe.getCompl_cpe().setCpe_objs(new ArrayList<>());
-                                    // Making connection between complex CPE object and basic CPE object
-                                    node_to_cpe.getCompl_cpe().getCpe_objs().add(cpe_db);
-                                    // Ensuring unique ID and putting complex CPE object into database
-                                    node_to_cpe.getCompl_cpe().setCpe_id(node_to_cpe.getCompl_cpe().getCpe_id()+"#"+cve_db.getMeta_data_id());
-                                    session.save(node_to_cpe.getCompl_cpe());
-                                    // Making connection between complex CPE object and CVE object
-                                    node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+node_to_cpe.getCompl_cpe().getCpe_id()+"#"+node_db.getId()), node_to_cpe.getCompl_cpe(), node_db, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), null);
-                                    // Putting CPE node to CPE object into database
-                                    session.save(node_to_cpe);
-                                }
-                            }
-                        }
+                        connectionsCreation(node_obj.getNode_to_compl(), cve_db, node_db, session);
                     }
                     // There are connection objects in the database but no connection objets in the file under current CPE node object, those in database will be deleted
                     else if (node_db.getNode_to_compl() != null && node_obj.getNode_to_compl() == null) {
@@ -1323,73 +1156,75 @@ public class CVEobject implements Serializable {
                 // Putting CPE node object from file into database
                 session.save(node_obj);
                 // Going through CPE to CVE connections of current CPE node object and saving them into database
-                for (CPEnodeToCPE node_to_cpe : node_obj.getNode_to_compl()) {
-                    // Connection from file has basic CPE object
-                    if (node_to_cpe.getCpe() != null) {
-                        // If the basic CPE object does exist, just the connection will be made
-                        CPEobject cpe_db = (CPEobject) session.get(CPEobject.class, node_to_cpe.getCpe().getCpe_id());
-                        if (cpe_db != null) {
-                            if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId())) == null) {
-                                // Creating connection between basic CPE object and CVE
-                                node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId()), null, node_obj, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), cpe_db);
-                                // Putting CPE node to CPE object into database
-                                session.save(node_to_cpe);
-                            }
-                        }
-                        // If the basic CPE object doesn't exist, it will be created and put into database
-                        else {
-                            cpe_db = CPEobject.cpeUriToObject(node_to_cpe.getCpe().getCpe_id());
-                            session.save(cpe_db);
-                            // Creating connection between basic CPE object and CVE
-                            node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_obj.getId()), null, node_obj, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), cpe_db);
-                            // Putting CPE node to CPE object into database
-                            session.save(node_to_cpe);
-                        }
+                connectionsCreation(node_obj.getNode_to_compl(), cve_db, node_obj, session);
+            }
+        }
+    }
+
+    /**
+     * This method's purpose is to put connections between specific CPE and CVE objects into the database
+     *
+     * @param connection_objs  CVE to CPE connection objects from file that will be edited and saved into the database
+     * @param cve_to_connect   CVE object that is being connected to specific CPE objects
+     * @param node_to_connect  CPE node object that is being connected to specific CPE objects
+     * @param session          Session object needed for work with the database
+     */
+    public static void connectionsCreation(List<CPEnodeToCPE> connection_objs, CVEobject cve_to_connect, CPEnodeObject node_to_connect, Session session) {
+        for (CPEnodeToCPE connection_obj : connection_objs) {
+            // Connection from file has basic CPE object
+            if (connection_obj.getCpe() != null) {
+                // If the basic CPE object does exist, just the connection will be made
+                CPEobject cpe_db = (CPEobject) session.get(CPEobject.class, connection_obj.getCpe().getCpe_id());
+                if (cpe_db != null) {
+                    if (session.get(CPEnodeToCPE.class, (cve_to_connect.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_to_connect.getId())) == null) {
+                        // Creating connection between basic CPE object and CVE
+                        connection_obj = new CPEnodeToCPE((cve_to_connect.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_to_connect.getId()), null, node_to_connect, cve_to_connect.getMeta_data_id(), connection_obj.getVulnerable(), cpe_db);
+                        // Putting CPE node to CPE object into database
+                        session.save(connection_obj);
                     }
-                    // Connection from file has complex CPE object
-                    else if (node_to_cpe.getCompl_cpe() != null) {
-                        CPEcomplexObj compl_cpe_db = (CPEcomplexObj) session.get(CPEcomplexObj.class, node_to_cpe.getCompl_cpe().getCpe_id());
-                        CPEcomplexObj compl_cpe_db_com = (CPEcomplexObj) session.get(CPEcomplexObj.class, node_to_cpe.getCompl_cpe().getCpe_id()+"#"+cve_db.getMeta_data_id());
-                        // Making connection if the complex CPE object already exists
-                        if (compl_cpe_db != null) {
-                            if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_obj.getId())) == null) {
-                                // Creating connection between CPE and CVE
-                                node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_obj.getId()), compl_cpe_db, node_obj, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), null);
-                                // Putting CPE node to CPE object into database
-                                session.save(node_to_cpe);
-                            }
-                        }
-                        else if (compl_cpe_db_com != null) {
-                            if (session.get(CPEnodeToCPE.class, (cve_db.getMeta_data_id() + "#" + compl_cpe_db_com.getCpe_id() + "#" + node_obj.getId())) == null) {
-                                // Creating connection between CPE and CVE
-                                node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id() + "#" + compl_cpe_db_com.getCpe_id() + "#" + node_obj.getId()), compl_cpe_db_com, node_obj, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), null);
-                                // Putting CPE node to CPE object into database
-                                session.save(node_to_cpe);
-                            }
-                        }
-                        // Creating new complex CPE object if it doesn't exist
-                        else {
-                            // Creating basic CPE id from complex CPE id
-                            String basic_cpe_id_original = node_to_cpe.getCompl_cpe().getCpe_id();
-                            String[] cpe_id_array = basic_cpe_id_original.split("#", -1);
-                            // Creating basic CPE object to connect with if it doesn't exist
-                            CPEobject cpe_db = (CPEobject) session.get(CPEobject.class, cpe_id_array[0]);
-                            if (cpe_db == null) {
-                                cpe_db = CPEobject.cpeUriToObject(cpe_id_array[0]);
-                                session.save(cpe_db);
-                            }
-                            node_to_cpe.getCompl_cpe().setCpe_objs(new ArrayList<>());
-                            // Making connection between complex CPE object and basic CPE object
-                            node_to_cpe.getCompl_cpe().getCpe_objs().add(cpe_db);
-                            // Ensuring unique ID and putting complex CPE object into database
-                            node_to_cpe.getCompl_cpe().setCpe_id(node_to_cpe.getCompl_cpe().getCpe_id()+"#"+cve_db.getMeta_data_id());
-                            session.save(node_to_cpe.getCompl_cpe());
-                            // Making connection between complex CPE object and CVE object
-                            node_to_cpe = new CPEnodeToCPE((cve_db.getMeta_data_id()+"#"+node_to_cpe.getCompl_cpe().getCpe_id()+"#"+node_obj.getId()), node_to_cpe.getCompl_cpe(), node_obj, cve_db.getMeta_data_id(), node_to_cpe.getVulnerable(), null);
-                            // Putting CPE node to CPE object into database
-                            session.save(node_to_cpe);
-                        }
+                }
+                // If the basic CPE object doesn't exist, it will be created and put into database
+                else {
+                    cpe_db = CPEobject.cpeUriToObject(connection_obj.getCpe().getCpe_id());
+                    session.save(cpe_db);
+                    // Creating connection between basic CPE object and CVE
+                    connection_obj = new CPEnodeToCPE((cve_to_connect.getMeta_data_id()+"#"+cpe_db.getCpe_id()+"#"+node_to_connect.getId()), null, node_to_connect, cve_to_connect.getMeta_data_id(), connection_obj.getVulnerable(), cpe_db);
+                    // Putting CPE node to CPE object into database
+                    session.save(connection_obj);
+                }
+            }
+            // Connection from file has complex CPE object
+            else if (connection_obj.getCompl_cpe() != null) {
+                CPEcomplexObj compl_cpe_db = (CPEcomplexObj) session.get(CPEcomplexObj.class, connection_obj.getCompl_cpe().getCpe_id());
+                // Making connection if the complex CPE object already exists
+                if (compl_cpe_db != null) {
+                    if (session.get(CPEnodeToCPE.class, (cve_to_connect.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_to_connect.getId())) == null) {
+                        // Creating connection between CPE and CVE
+                        connection_obj = new CPEnodeToCPE((cve_to_connect.getMeta_data_id() + "#" + compl_cpe_db.getCpe_id() + "#" + node_to_connect.getId()), compl_cpe_db, node_to_connect, cve_to_connect.getMeta_data_id(), connection_obj.getVulnerable(), null);
+                        // Putting CPE node to CPE object into database
+                        session.save(connection_obj);
                     }
+                }
+                // Creating new complex CPE object if it doesn't exist
+                else {
+                    // Creating basic CPE id from complex CPE id
+                    String basic_cpe_id_original = connection_obj.getCompl_cpe().getCpe_id();
+                    String[] cpe_id_array = basic_cpe_id_original.split("#", -1);
+                    // Creating basic CPE object to connect with if it doesn't exist
+                    CPEobject cpe_db = (CPEobject) session.get(CPEobject.class, cpe_id_array[0]);
+                    if (cpe_db == null) {
+                        cpe_db = CPEobject.cpeUriToObject(cpe_id_array[0]);
+                        session.save(cpe_db);
+                    }
+                    connection_obj.getCompl_cpe().setCpe_objs(new ArrayList<>());
+                    // Making connection between complex CPE object and basic CPE object
+                    connection_obj.getCompl_cpe().getCpe_objs().add(cpe_db);
+                    // Putting complex CPE object into the database
+                    session.save(connection_obj.getCompl_cpe());
+                    // Making connection between complex CPE object and CVE object
+                    connection_obj = new CPEnodeToCPE((cve_to_connect.getMeta_data_id()+"#"+connection_obj.getCompl_cpe().getCpe_id()+"#"+node_to_connect.getId()), connection_obj.getCompl_cpe(), node_to_connect, cve_to_connect.getMeta_data_id(), connection_obj.getVulnerable(), null);
+                    // Putting CPE node to CPE object into database
+                    session.save(connection_obj);
                 }
             }
         }

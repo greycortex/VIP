@@ -7,6 +7,10 @@ import org.apache.commons.cli.ParseException;
 
 import java.util.Arrays;
 
+/**
+ * This class is used for defining paths to files which are then used by the program
+ * It contains main method which is started right at the start of the program
+ */
 public class Test {
     // CVEs from https://nvd.nist.gov/vuln/data-feeds
     public static final String[] cve_files = {"exclude/nvdcve-1.1-2002.json", "exclude/nvdcve-1.1-2003.json", "exclude/nvdcve-1.1-2004.json",

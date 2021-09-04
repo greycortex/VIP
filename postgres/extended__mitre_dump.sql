@@ -223,8 +223,7 @@ CREATE TABLE mitre.compl_cpe (
     version_end_excluding character varying(255),
     version_end_including character varying(255),
     version_start_excluding character varying(255),
-    version_start_including character varying(255),
-    vulnerable boolean
+    version_start_including character varying(255)
 );
 
 

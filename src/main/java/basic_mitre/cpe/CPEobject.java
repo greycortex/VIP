@@ -391,18 +391,7 @@ public class CPEobject implements Serializable {
                         }
                     }
                     // creating unique ID
-                    if (complex_obj.getVersion_start_including() != null) {
-                        complex_obj.setCpe_id(complex_obj.getCpe_id() + "#star_in_" + complex_obj.getVersion_start_including());
-                    }
-                    if (complex_obj.getVersion_start_excluding() != null) {
-                        complex_obj.setCpe_id(complex_obj.getCpe_id() + "#star_ex_" + complex_obj.getVersion_start_excluding());
-                    }
-                    if (complex_obj.getVersion_end_including() != null) {
-                        complex_obj.setCpe_id(complex_obj.getCpe_id() + "#end_in_" + complex_obj.getVersion_end_including());
-                    }
-                    if (complex_obj.getVersion_end_excluding() != null) {
-                        complex_obj.setCpe_id(complex_obj.getCpe_id() + "#end_ex_" + complex_obj.getVersion_end_excluding());
-                    }
+                    complex_obj.createComplexID();
                     // If the object doesn't exist, it will be put into the database
                     if (session.get(CPEcomplexObj.class, complex_obj.getCpe_id()) == null){
                         session.save(complex_obj);

@@ -404,18 +404,7 @@ public class CPEobject implements Serializable {
                         }
                     }
                     // creating unique ID
-                    if (complex_obj.getVersion_start_including() != null) {
-                        complex_obj.setCpe_id(complex_obj.getCpe_id() + "#star_in_" + complex_obj.getVersion_start_including());
-                    }
-                    if (complex_obj.getVersion_start_excluding() != null) {
-                        complex_obj.setCpe_id(complex_obj.getCpe_id() + "#star_ex_" + complex_obj.getVersion_start_excluding());
-                    }
-                    if (complex_obj.getVersion_end_including() != null) {
-                        complex_obj.setCpe_id(complex_obj.getCpe_id() + "#end_in_" + complex_obj.getVersion_end_including());
-                    }
-                    if (complex_obj.getVersion_end_excluding() != null) {
-                        complex_obj.setCpe_id(complex_obj.getCpe_id() + "#end_ex_" + complex_obj.getVersion_end_excluding());
-                    }
+                    complex_obj.createComplexID();
                     // If the object doesn't exist, it will be put into the database
                     if (session.get(CPEcomplexObj.class, complex_obj.getCpe_id()) == null){
                         session.save(complex_obj);
@@ -462,7 +451,7 @@ public class CPEobject implements Serializable {
         List<CPEobject> basic_objs = (List<CPEobject>) basic_q.getResultList();
 
         // Taking all complex CPE objects that were taken from the CPE match feed file from the database
-        Query compl_q = session.createQuery("from compl_cpe_ex where vulnerable is null");
+        Query compl_q = session.createQuery("from compl_cpe_ex");
 
         // list of complex objects into match feed file from database
         List<CPEcomplexObj> compl_objs = (List<CPEcomplexObj>) compl_q.getResultList();

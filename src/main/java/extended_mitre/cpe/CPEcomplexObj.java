@@ -19,6 +19,7 @@ public class CPEcomplexObj extends CPEobject implements Serializable {
 
     public CPEcomplexObj(){ } // default constructor
 
+    @Transient
     protected Boolean vulnerable;
     protected String version_start_excluding;
     protected String version_end_excluding;
@@ -114,6 +115,24 @@ public class CPEcomplexObj extends CPEobject implements Serializable {
                 version_end_excluding, version_start_including, version_end_including);
     }
 
+    /**
+     * This method's purpose is to create complex CPE id from basic CPE id and complex CPE id attributes
+     */
+    public void createComplexID() {
+        if (this.version_start_including != null) {
+            this.cpe_id = this.cpe_id + "#star_in_" + this.version_start_including;
+        }
+        if (this.version_start_excluding != null) {
+            this.cpe_id = this.cpe_id + "#star_ex_" + this.version_start_excluding;
+        }
+        if (this.version_end_including != null) {
+            this.cpe_id = this.cpe_id + "#end_in_" + this.version_end_including;
+        }
+        if (this.version_end_excluding != null) {
+            this.cpe_id = this.cpe_id + "#end_ex_" + this.version_end_excluding;
+        }
+    }
+
     ///**
     // * This method's purpose is to create more complex CPE object from given parameters and return it
     // *
@@ -156,11 +175,11 @@ public class CPEcomplexObj extends CPEobject implements Serializable {
         if (!(o instanceof CPEcomplexObj)) return false;
         if (!super.equals(o)) return false;
         CPEcomplexObj that = (CPEcomplexObj) o;
-        return Objects.equals(vulnerable, that.vulnerable) && Objects.equals(version_start_excluding, that.version_start_excluding) && Objects.equals(version_end_excluding, that.version_end_excluding) && Objects.equals(version_start_including, that.version_start_including) && Objects.equals(version_end_including, that.version_end_including);
+        return Objects.equals(version_start_excluding, that.version_start_excluding) && Objects.equals(version_end_excluding, that.version_end_excluding) && Objects.equals(version_start_including, that.version_start_including) && Objects.equals(version_end_including, that.version_end_including);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), vulnerable, version_start_excluding, version_end_excluding, version_start_including, version_end_including);
+        return Objects.hash(super.hashCode(), version_start_excluding, version_end_excluding, version_start_including, version_end_including);
     }
 }

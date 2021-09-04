@@ -57,22 +57,15 @@ public class NVDobject {
         control_sess.close();
         control_sf.close();
 
+        // Creating configuration, session factory and session
+        Configuration con = getConfiguration();
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
+        SessionFactory sf = con.buildSessionFactory(reg);
+        Session session = sf.openSession();
+
         // If the database structure is extended, following code will be executed
         if (db_exists && db_extended) {
-            // Creating configuration, session factory, session and transaction
-            Configuration con = new Configuration().configure().addAnnotatedClass(extended_mitre.cve.CVEobject.class).addAnnotatedClass(extended_mitre.cpe.CPEobject.class)
-                    .addAnnotatedClass(extended_mitre.cvss.CVSS2object.class).addAnnotatedClass(extended_mitre.cvss.CVSS3object.class).addAnnotatedClass(extended_mitre.cpe.CPEnodeObject.class)
-                    .addAnnotatedClass(extended_mitre.cve.ReferenceObject.class).addAnnotatedClass(extended_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(extended_mitre.cpe.CPEnodeToCPE.class)
-                    .addAnnotatedClass(extended_mitre.capec.CAPECattStepObj.class).addAnnotatedClass(extended_mitre.capec.CAPECobject.class).addAnnotatedClass(extended_mitre.capec.CAPECrelationObj.class)
-                    .addAnnotatedClass(extended_mitre.capec.CAPECskillObj.class).addAnnotatedClass(extended_mitre.cwe.CWEalterTermObj.class).addAnnotatedClass(extended_mitre.cwe.CWEapplPlatfObj.class)
-                    .addAnnotatedClass(extended_mitre.cwe.CWEconseqObj.class).addAnnotatedClass(extended_mitre.cwe.CWEdemExObj.class).addAnnotatedClass(extended_mitre.cwe.CWEdetMethObj.class)
-                    .addAnnotatedClass(extended_mitre.cwe.CWEexampCodeObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefRefObj.class).addAnnotatedClass(extended_mitre.cwe.CWEintrModesObj.class)
-                    .addAnnotatedClass(extended_mitre.cwe.CWEnoteObj.class).addAnnotatedClass(extended_mitre.cwe.CWEobject.class).addAnnotatedClass(extended_mitre.cwe.CWEobsExObj.class)
-                    .addAnnotatedClass(extended_mitre.cwe.CWEpotMitObj.class).addAnnotatedClass(extended_mitre.cwe.CWErelationObj.class).addAnnotatedClass(extended_mitre.cwe.CWEtaxMapObj.class)
-                    .addAnnotatedClass(extended_mitre.cwe.CWEweakOrdObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefObj.class); // extended structure of the database
-            ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
-            SessionFactory sf = con.buildSessionFactory(reg);
-            Session session = sf.openSession();
+            // Beginning transaction
             Transaction txv = session.beginTransaction();
             // Ensuring optimalization
             int refresh = 0;
@@ -108,19 +101,14 @@ public class NVDobject {
             cve_objs.removeAll(cves_to_remove);
             // Putting all new CVE objects into database
             extended_mitre.cve.CVEobject.putIntoDatabaseCore(cve_objs, sf);
-            // Closing session factory
-            sf.close();
             System.out.println("Quick actualization of CVE and CPE data done");
+            db_exists = false;
+            db_extended = false;
         }
+
         // If the database structure is basic, following code will be executed
         else if (db_exists) {
-            // Creating configuration, session factory, session and transaction
-            Configuration con = new Configuration().configure().addAnnotatedClass(basic_mitre.cve.CVEobject.class).addAnnotatedClass(basic_mitre.cpe.CPEobject.class)
-                    .addAnnotatedClass(basic_mitre.cvss.CVSS2object.class).addAnnotatedClass(basic_mitre.cvss.CVSS3object.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeObject.class)
-                    .addAnnotatedClass(basic_mitre.cve.ReferenceObject.class).addAnnotatedClass(basic_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeToCPE.class);
-            ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build(); // basic structure of the database
-            SessionFactory sf = con.buildSessionFactory(reg);
-            Session session = sf.openSession();
+            // Beginning transaction
             Transaction txv = session.beginTransaction();
             // Ensuring optimalization
             int refresh = 0;
@@ -156,12 +144,15 @@ public class NVDobject {
             cve_objs.removeAll(cves_to_remove);
             // Putting all new CVE objects into database
             basic_mitre.cve.CVEobject.putIntoDatabaseCore(cve_objs, sf);
-            // Closing session factory
-            sf.close();
             System.out.println("Quick actualization of CVE and CPE data done");
+            db_exists = false;
         }
+
         // If the database doesn't contain any table, nothing will happen
         else System.out.println("Database structure doesn't exist, it needs to be filled first, nothing will happen now");
+
+        // Closing session factory
+        sf.close();
     }
 
     /**
@@ -175,10 +166,10 @@ public class NVDobject {
         System.out.println("Basic database creation started");
 
         // Creating configuration
-        Configuration con = new Configuration().configure().addAnnotatedClass(basic_mitre.cve.CVEobject.class).addAnnotatedClass(basic_mitre.cpe.CPEobject.class)
-                .addAnnotatedClass(basic_mitre.cvss.CVSS2object.class).addAnnotatedClass(basic_mitre.cvss.CVSS3object.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeObject.class)
-                .addAnnotatedClass(basic_mitre.cve.ReferenceObject.class).addAnnotatedClass(basic_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeToCPE.class);
-        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build(); // basic structure of the database
+        db_exists = true;
+        Configuration con = getConfiguration();
+        db_exists = false;
+        ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating session, session factory and transaction
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
@@ -232,16 +223,9 @@ public class NVDobject {
         System.out.println("Extended database creation started");
 
         // Creating configuration, session factory and session
-        Configuration con = new Configuration().configure().addAnnotatedClass(extended_mitre.cve.CVEobject.class).addAnnotatedClass(extended_mitre.cpe.CPEobject.class)
-                .addAnnotatedClass(extended_mitre.cvss.CVSS2object.class).addAnnotatedClass(extended_mitre.cvss.CVSS3object.class).addAnnotatedClass(extended_mitre.cpe.CPEnodeObject.class)
-                .addAnnotatedClass(extended_mitre.cve.ReferenceObject.class).addAnnotatedClass(extended_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(extended_mitre.cpe.CPEnodeToCPE.class)
-                .addAnnotatedClass(extended_mitre.capec.CAPECattStepObj.class).addAnnotatedClass(extended_mitre.capec.CAPECobject.class).addAnnotatedClass(extended_mitre.capec.CAPECrelationObj.class)
-                .addAnnotatedClass(extended_mitre.capec.CAPECskillObj.class).addAnnotatedClass(extended_mitre.cwe.CWEalterTermObj.class).addAnnotatedClass(extended_mitre.cwe.CWEapplPlatfObj.class)
-                .addAnnotatedClass(extended_mitre.cwe.CWEconseqObj.class).addAnnotatedClass(extended_mitre.cwe.CWEdemExObj.class).addAnnotatedClass(extended_mitre.cwe.CWEdetMethObj.class)
-                .addAnnotatedClass(extended_mitre.cwe.CWEexampCodeObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefRefObj.class).addAnnotatedClass(extended_mitre.cwe.CWEintrModesObj.class)
-                .addAnnotatedClass(extended_mitre.cwe.CWEnoteObj.class).addAnnotatedClass(extended_mitre.cwe.CWEobject.class).addAnnotatedClass(extended_mitre.cwe.CWEobsExObj.class)
-                .addAnnotatedClass(extended_mitre.cwe.CWEpotMitObj.class).addAnnotatedClass(extended_mitre.cwe.CWErelationObj.class).addAnnotatedClass(extended_mitre.cwe.CWEtaxMapObj.class)
-                .addAnnotatedClass(extended_mitre.cwe.CWEweakOrdObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefObj.class); // extended structure of the database
+        db_extended = true;
+        Configuration con = getConfiguration();
+        db_extended = false;
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
@@ -392,5 +376,36 @@ public class NVDobject {
         session.getTransaction().commit();
         // Closing session
         session.close();
+    }
+
+    /**
+     * This method's purpose is to create and return Configuration object with either basic or extended database structure
+     *
+     * @return Configuration object with current database structure
+     */
+    public static Configuration getConfiguration () {
+        Configuration con = null;
+
+        if (db_extended) {
+            // extended structure of the database
+            con = new Configuration().configure().addAnnotatedClass(extended_mitre.cve.CVEobject.class).addAnnotatedClass(extended_mitre.cpe.CPEobject.class)
+                    .addAnnotatedClass(extended_mitre.cvss.CVSS2object.class).addAnnotatedClass(extended_mitre.cvss.CVSS3object.class).addAnnotatedClass(extended_mitre.cpe.CPEnodeObject.class)
+                    .addAnnotatedClass(extended_mitre.cve.ReferenceObject.class).addAnnotatedClass(extended_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(extended_mitre.cpe.CPEnodeToCPE.class)
+                    .addAnnotatedClass(extended_mitre.capec.CAPECattStepObj.class).addAnnotatedClass(extended_mitre.capec.CAPECobject.class).addAnnotatedClass(extended_mitre.capec.CAPECrelationObj.class)
+                    .addAnnotatedClass(extended_mitre.capec.CAPECskillObj.class).addAnnotatedClass(extended_mitre.cwe.CWEalterTermObj.class).addAnnotatedClass(extended_mitre.cwe.CWEapplPlatfObj.class)
+                    .addAnnotatedClass(extended_mitre.cwe.CWEconseqObj.class).addAnnotatedClass(extended_mitre.cwe.CWEdemExObj.class).addAnnotatedClass(extended_mitre.cwe.CWEdetMethObj.class)
+                    .addAnnotatedClass(extended_mitre.cwe.CWEexampCodeObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefRefObj.class).addAnnotatedClass(extended_mitre.cwe.CWEintrModesObj.class)
+                    .addAnnotatedClass(extended_mitre.cwe.CWEnoteObj.class).addAnnotatedClass(extended_mitre.cwe.CWEobject.class).addAnnotatedClass(extended_mitre.cwe.CWEobsExObj.class)
+                    .addAnnotatedClass(extended_mitre.cwe.CWEpotMitObj.class).addAnnotatedClass(extended_mitre.cwe.CWErelationObj.class).addAnnotatedClass(extended_mitre.cwe.CWEtaxMapObj.class)
+                    .addAnnotatedClass(extended_mitre.cwe.CWEweakOrdObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefObj.class);
+        }
+        else if (db_exists) {
+            // basic structure of the database
+            con = new Configuration().configure().addAnnotatedClass(basic_mitre.cve.CVEobject.class).addAnnotatedClass(basic_mitre.cpe.CPEobject.class)
+                    .addAnnotatedClass(basic_mitre.cvss.CVSS2object.class).addAnnotatedClass(basic_mitre.cvss.CVSS3object.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeObject.class)
+                    .addAnnotatedClass(basic_mitre.cve.ReferenceObject.class).addAnnotatedClass(basic_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeToCPE.class);
+        }
+
+        return con;
     }
 }
