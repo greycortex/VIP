@@ -27,9 +27,7 @@ public class Test {
     public static final String capec_file = "exclude/capec_latest.xml";
     // CVEs from https://nvd.nist.gov/vuln/data-feeds
     public static final String update_cve_cpe_file = "exclude/nvdcve-1.1-modified.json";
-    // Path to file with changed Hibernate configuration for SQL query output
-    public static final String update_config_file = "update_hibernate.cfg.xml";
-    // Path to file that will be filled with ready SQL queries containing update data
+    // Path to file that will be filled with ready SQL queries containing database update data
     public static final String update_output_file = "exclude/update_queries.sql";
 
     // Main method
@@ -40,7 +38,6 @@ public class Test {
 
         Options options = new Options();
         options.addOption(UPDATE, false, "Perform a quick update of the database. \nCVE file: '"+update_cve_cpe_file +
-                                                          "' \nHibernate configuration file used: '"+update_config_file +
                                                           "' \nSQL query output file: '"+update_output_file+"'");
 
         options.addOption(BASIC, false, "Create and fill database with data including CVE and CPE structures. " +
@@ -57,7 +54,7 @@ public class Test {
             CommandLine cmd = parser.parse(options, args);
 
             if (cmd.hasOption(UPDATE)) { // run quick update
-                NVDobject.quickUpdate(update_cve_cpe_file, update_config_file, update_output_file);
+                NVDobject.quickUpdate(update_cve_cpe_file, update_output_file);
             }
             else if (cmd.hasOption(BASIC)) { // run basic database creation
                 NVDobject.basicDatabase(cpe_file, cve_files);

@@ -33,10 +33,9 @@ public class NVDobject {
      * file (its path is given in output_file argument)
      *
      * @param update_file path to .json file with CVE objects - "modified" file containing recently changed data
-     * @param config_file path to Hibernate configuration file with SQL query output turned on
      * @param output_file path to file that will be filled with all valuable SQL queries
      */
-    public static void quickUpdate(String update_file, String config_file, String output_file) {
+    public static void quickUpdate(String update_file, String output_file) {
         // Opening session and controlling if database structure exists and if its extended or not
         Configuration control_conf = new Configuration().configure();
         ServiceRegistry control_reg = new StandardServiceRegistryBuilder().applySettings(control_conf.getProperties()).build();
@@ -63,7 +62,7 @@ public class NVDobject {
         control_sf.close();
 
         // Creating configuration, session factory and session
-        Configuration con = getConfiguration(config_file);
+        Configuration con = getConfiguration(true);
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         SessionFactory sf = con.buildSessionFactory(reg);
         Session session = sf.openSession();
@@ -202,7 +201,7 @@ public class NVDobject {
 
         // Creating configuration
         db_exists = true;
-        Configuration con = getConfiguration(null);
+        Configuration con = getConfiguration(false);
         db_exists = false;
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         // Creating session, session factory and transaction
@@ -259,7 +258,7 @@ public class NVDobject {
 
         // Creating configuration, session factory and session
         db_extended = true;
-        Configuration con = getConfiguration(null);
+        Configuration con = getConfiguration(false);
         db_extended = false;
         ServiceRegistry reg = new StandardServiceRegistryBuilder().applySettings(con.getProperties()).build();
         SessionFactory sf = con.buildSessionFactory(reg);
@@ -416,15 +415,15 @@ public class NVDobject {
     /**
      * This method's purpose is to create and return Configuration object with either basic or extended database structure
      *
-     * @param config_file path to file with Hibernate configuration data if the default isn't used
+     * @param update tells if method is called by update method or not, if yes, turns on show sql property needed for getting valuable SQL queries
      * @return Configuration object with current database structure
      */
-    public static Configuration getConfiguration (String config_file) {
+    public static Configuration getConfiguration (Boolean update) {
         Configuration con = null;
 
-        if (config_file != null && db_extended) {
+        if (update && db_extended) {
             // extended structure of the database
-            con = new Configuration().configure(config_file).addAnnotatedClass(extended_mitre.cve.CVEobject.class).addAnnotatedClass(extended_mitre.cpe.CPEobject.class)
+            con = new Configuration().configure().addAnnotatedClass(extended_mitre.cve.CVEobject.class).addAnnotatedClass(extended_mitre.cpe.CPEobject.class)
                     .addAnnotatedClass(extended_mitre.cvss.CVSS2object.class).addAnnotatedClass(extended_mitre.cvss.CVSS3object.class).addAnnotatedClass(extended_mitre.cpe.CPEnodeObject.class)
                     .addAnnotatedClass(extended_mitre.cve.ReferenceObject.class).addAnnotatedClass(extended_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(extended_mitre.cpe.CPEnodeToCPE.class)
                     .addAnnotatedClass(extended_mitre.capec.CAPECattStepObj.class).addAnnotatedClass(extended_mitre.capec.CAPECobject.class).addAnnotatedClass(extended_mitre.capec.CAPECrelationObj.class)
@@ -433,13 +432,14 @@ public class NVDobject {
                     .addAnnotatedClass(extended_mitre.cwe.CWEexampCodeObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefRefObj.class).addAnnotatedClass(extended_mitre.cwe.CWEintrModesObj.class)
                     .addAnnotatedClass(extended_mitre.cwe.CWEnoteObj.class).addAnnotatedClass(extended_mitre.cwe.CWEobject.class).addAnnotatedClass(extended_mitre.cwe.CWEobsExObj.class)
                     .addAnnotatedClass(extended_mitre.cwe.CWEpotMitObj.class).addAnnotatedClass(extended_mitre.cwe.CWErelationObj.class).addAnnotatedClass(extended_mitre.cwe.CWEtaxMapObj.class)
-                    .addAnnotatedClass(extended_mitre.cwe.CWEweakOrdObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefObj.class);
+                    .addAnnotatedClass(extended_mitre.cwe.CWEweakOrdObj.class).addAnnotatedClass(extended_mitre.cwe.CWEextRefObj.class).setProperty("hibernate.show_sql", "true");
         }
-        else if (config_file != null && db_exists) {
+        else if (update && db_exists) {
             // basic structure of the database
-            con = new Configuration().configure(config_file).addAnnotatedClass(basic_mitre.cve.CVEobject.class).addAnnotatedClass(basic_mitre.cpe.CPEobject.class)
+            con = new Configuration().configure().addAnnotatedClass(basic_mitre.cve.CVEobject.class).addAnnotatedClass(basic_mitre.cpe.CPEobject.class)
                     .addAnnotatedClass(basic_mitre.cvss.CVSS2object.class).addAnnotatedClass(basic_mitre.cvss.CVSS3object.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeObject.class)
-                    .addAnnotatedClass(basic_mitre.cve.ReferenceObject.class).addAnnotatedClass(basic_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeToCPE.class);
+                    .addAnnotatedClass(basic_mitre.cve.ReferenceObject.class).addAnnotatedClass(basic_mitre.cpe.CPEcomplexObj.class).addAnnotatedClass(basic_mitre.cpe.CPEnodeToCPE.class)
+                    .setProperty("hibernate.show_sql", "true");
         }
         else if (db_extended) {
             // extended structure of the database

@@ -26,8 +26,6 @@ There is a method which can successfully reconstruct CPE match feed file by usin
 
 **UPDATE "hibernate.cfg.xml" file and copy it to src/main/resources in this project.**
 
-**UPDATE "update_hibernate.cfg.xml" file and copy it to src/main/resources in this project.**
-
 ## Before working with database without Hibernate use
 
 **For perfect database structure, update it by queries in the "postgres/update_schema_with_this.sql" file**
