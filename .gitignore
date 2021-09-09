@@ -27,3 +27,4 @@ hs_err_pid*
 # custom
 /exclude/
 /src/main/resources/hibernate.cfg.xml
+/src/main/resources/update_hibernate.cfg.xml

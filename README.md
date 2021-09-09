@@ -16,13 +16,17 @@ It can parse and save into database (including slow updates):
 
 ***It can also perform a quick update of CPE and CVE data thanks to "modified" file from*** - [CVE JSON data feeds](https://nvd.nist.gov/vuln/data-feeds)
 
+At the end of quick update, a file with SQL queries containing all valuable database update data will be made.
+
 There is a method which can successfully reconstruct CPE match feed file by using objects from the database, too.
 
 ### [JavaDoc documentation](https://htmlpreview.github.io/?https://github.com/greycortex/VIP/blob/master/doc/JavaDoc/index.html)
 
 ## To compile this project
 
-**UPDATE hibernate.cfg.xml file and copy it to src/main/resources in this project.**
+**UPDATE "hibernate.cfg.xml" file and copy it to src/main/resources in this project.**
+
+**UPDATE "update_hibernate.cfg.xml" file and copy it to src/main/resources in this project.**
 
 ## Before working with database without Hibernate use
 
