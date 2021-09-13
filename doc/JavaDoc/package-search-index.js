@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"basic_mitre.cpe"},{"l":"basic_mitre.cve"},{"l":"basic_mitre.cvss"},{"l":"extended_mitre.capec"},{"l":"extended_mitre.cpe"},{"l":"extended_mitre.cve"},{"l":"extended_mitre.cvss"},{"l":"extended_mitre.cwe"}]

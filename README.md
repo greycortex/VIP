@@ -10,9 +10,7 @@ It can parse and save into database (including slow updates):
 
 **CVE and CPE data from** - [CVE JSON data feeds](https://nvd.nist.gov/vuln/data-feeds)
 
-**CWE data from** - [ZIP file containing XML file with all existing CWE weaknesses](https://cwe.mitre.org/data/xml/cwec_latest.xml.zip)
-
-**CAPEC data from** - [XML file containing all existing CAPEC attack patterns](https://capec.mitre.org/data/xml/capec_latest.xml)
+**The extended version can get also CWE data from** - [ZIP file containing XML file with all existing CWE weaknesses](https://cwe.mitre.org/data/xml/cwec_latest.xml.zip) **CAPEC data from** - [XML file containing all existing CAPEC attack patterns](https://capec.mitre.org/data/xml/capec_latest.xml)
 
 ***It can also perform a quick update of CPE and CVE data thanks to "modified" file from*** - [CVE JSON data feeds](https://nvd.nist.gov/vuln/data-feeds)
 
@@ -33,18 +31,14 @@ There is a method which can successfully reconstruct CPE match feed file by usin
 ## To run this program
 
 **Usage:** java -jar VIP
-- -e &nbsp; &nbsp; &nbsp; Create and fill database with data including CVE, CPE, CWE and CAPEC structures
 - -b &nbsp; &nbsp; &nbsp; Create and fill database with data including CVE and CPE structures
 - -u &nbsp; &nbsp; &nbsp; Perform a quick update of the database (CPE and CVE data)
+- NO-NOT-NOW -e &nbsp; &nbsp; &nbsp; Create and fill database with data including CVE, CPE, CWE and CAPEC structures
 
 ## Current database schemas
 
 ### Schema of basic structure of the database
 
-![](https://github.com/greycortex/VIP/blob/master/doc/basic_mitre_schema.png?raw=true)
-
-### Schema of extended structure of the database
-
-![](https://github.com/greycortex/VIP/blob/master/doc/extended_mitre_schema.png?raw=true)
+![](https://gitlab.greycortex.com/gcx/mitre-nvd/-/raw/master/doc/basic_mitre_schema.png?raw=true)
 
 Copyright (c) 2021 GreyCortex s.r.o.
