@@ -13,7 +13,7 @@ import java.util.Arrays;
  * This class is used for defining paths to files which are then used by the program
  * It contains main method which is started right at the start of the program
  */
-public class Test {
+public class Main {
     // CPEs from https://nvd.nist.gov/vuln/data-feeds
     public static final String cpe_file = "exclude/nvdcpematch-1.0.json";
 

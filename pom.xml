@@ -38,7 +38,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>Test</mainClass>
+                            <mainClass>com.gcx.Test</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
