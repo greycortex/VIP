@@ -361,6 +361,10 @@ public class NVDobject {
         Session session = sf.openSession();
         // Emptying database
         session.beginTransaction();
+        
+        // TODO: 
+        // -- DROP SCHEMA mitre CASCADE; 
+        // -- CREATE SCHEMA mitre;
         session.createSQLQuery("DROP TABLE IF EXISTS mitre.alternate_term CASCADE;" +
                 "DROP TABLE IF EXISTS mitre.att_step_techniques CASCADE;" +
                 "DROP TABLE IF EXISTS mitre.capec CASCADE;" +
